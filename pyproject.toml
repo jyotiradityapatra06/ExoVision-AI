@@ -1,8 +1,8 @@
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = ["-ra", "--strict-config", "--strict-markers"]
-testpaths = ["backend/tests"]
-pythonpath = ["backend"]
+testpaths = ["backend/tests", "ai/tests"]
+pythonpath = ["backend", "."]
 
 [tool.ruff]
 line-length = 88

@@ -43,6 +43,10 @@ npm-debug.log*
 # Generated datasets (preserve .gitkeep)
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/kepler/
+!data/raw/kepler/.gitkeep
+!data/raw/tess/
+!data/raw/tess/.gitkeep
 data/interim/*
 !data/interim/.gitkeep
 data/processed/*
@@ -51,6 +55,7 @@ data/samples/*
 !data/samples/.gitkeep
 data/metadata/*
 !data/metadata/.gitkeep
+!data/metadata/*.json
 
 # Trained model files (preserve .gitkeep)
 models/*
@@ -65,13 +70,14 @@ models/*
 *.onnx
 *.safetensors
 
-# Common astronomy and generated array/table formats
+# Common astronomy datasets and data files (do not commit)
 *.fits
 *.fits.gz
-*.npy
-*.npz
+*.csv
 *.parquet
 *.feather
+*.npy
+*.npz
 
 # Jupyter notebooks & IDEs
 .ipynb_checkpoints/
