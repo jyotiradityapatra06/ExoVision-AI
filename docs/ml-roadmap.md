@@ -1,5 +1,8 @@
 # Machine Learning & AI Detection Roadmap
 
+Everything in this document is planned work beyond Phase 1.1. No datasets,
+feature pipelines, trained models, or inference services currently exist.
+
 ## 1. Classical Signal Processing Baseline
 - **Box Least Squares (BLS)**: Search for periodic rectangular transit dips across a frequency grid.
 - **Transit Least Squares (TLS)**: Enhanced periodogram utilizing limb-darkened transit models for improved sensitivity to small planets.

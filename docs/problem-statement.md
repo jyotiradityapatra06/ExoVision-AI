@@ -31,6 +31,9 @@ A major bottleneck in candidate confirmation is distinguishing true exoplanets f
 
 ## 4. ExoVision AI's Planned Solution
 
+The following capabilities are roadmap items and are not implemented in
+Phase 1.1:
+
 **ExoVision AI** solves these challenges by combining astronomical domain preprocessing with deep learning and machine learning architectures:
 
 1. **Automated Preprocessing & Detrending**:

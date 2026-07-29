@@ -1,38 +1,36 @@
-"""ExoVision AI FastAPI Backend Application."""
+"""ExoVision AI FastAPI application."""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(
-    title="ExoVision API",
-    description="API for detecting exoplanet transit signals from astronomical light-curve data",
-    version="0.1.0",
-)
-
-origins = [
-    "http://localhost:3000",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from app.api.v1.router import router as api_v1_router
+from app.config.settings import settings
 
 
-@app.get("/")
-def read_root() -> dict[str, str]:
-    """Root endpoint returning welcome message."""
-    return {"message": "Welcome to ExoVision API"}
+def create_app() -> FastAPI:
+    """Create and configure the FastAPI application."""
+    application = FastAPI(
+        title=settings.project_name,
+        description=(
+            "Foundation API for the future ExoVision light-curve analysis platform"
+        ),
+        version="0.1.0",
+    )
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=list(settings.cors_origins),
+        allow_credentials=True,
+        allow_methods=["GET"],
+        allow_headers=["*"],
+    )
+    application.include_router(api_v1_router, prefix=settings.api_v1_prefix)
+
+    @application.get("/", tags=["system"])
+    def read_root() -> dict[str, str]:
+        """Return basic service information."""
+        return {"message": "Welcome to ExoVision API"}
+
+    return application
 
 
-@app.get("/api/v1/health")
-def get_health() -> dict[str, str | int]:
-    """Health check endpoint for Phase 1 API monitoring."""
-    return {
-        "status": "healthy",
-        "service": "ExoVision API",
-        "phase": 1,
-    }
+app = create_app()

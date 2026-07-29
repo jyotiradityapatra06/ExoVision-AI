@@ -1,8 +1,9 @@
 # Light Curve Dataset Specifications
 
-## Supported Astronomy Datasets
+## Candidate astronomy data sources
 
-ExoVision AI is designed to ingest photometric time-series datasets from primary space-based transit survey missions:
+Future ExoVision phases may ingest photometric time-series datasets from
+space-based transit survey missions:
 
 ### 1. NASA Kepler Mission
 - **Target Stars**: ~200,000 stars in the Cygnus-Lyra constellation.
@@ -22,10 +23,14 @@ ExoVision AI is designed to ingest photometric time-series datasets from primary
 
 ## Directory Organization
 
-Raw and processed data files are stored in structured subdirectories:
+Phase 1.1 includes empty, Git-ignored directories for a future data lifecycle:
 
 - `data/raw/`: Original FITS light-curve downloads.
 - `data/interim/`: Cleaned, detrended, and outlier-filtered light curves.
 - `data/processed/`: Phase-folded flux arrays, feature matrix vectors (`.parquet` / `.npy`).
 - `data/samples/`: Benchmark sample light curves for testing algorithms.
 - `data/metadata/`: Stellar catalogs (stellar radius, mass, effective temperature) and target ID maps.
+
+No datasets or metadata are included or downloaded in Phase 1.1. File formats,
+licensing, provenance, validation, and retention rules must be defined before
+data is added in a later phase.

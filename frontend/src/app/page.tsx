@@ -6,7 +6,7 @@ import { Upload, Activity, Search, Sparkles, Orbit, CheckCircle2, AlertCircle } 
 interface HealthStatus {
   status: string;
   service: string;
-  phase: number;
+  phase: string;
 }
 
 export default function Home() {
@@ -69,7 +69,7 @@ export default function Home() {
         {/* Badge */}
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-300 text-xs font-medium mb-6">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Next-Generation Exoplanetary Photometry</span>
+          <span>Phase 1.1 Foundation</span>
         </div>
 
         {/* Main Title */}
@@ -83,7 +83,8 @@ export default function Home() {
         </p>
 
         <p className="mt-4 text-sm sm:text-base text-slate-400 max-w-xl">
-          Automated signal processing and deep learning pipeline for discovering extra-solar planetary transits from Kepler, K2, and TESS photometric time series data.
+          A production-ready foundation for future analysis of Kepler, K2,
+          and TESS photometric time-series data.
         </p>
 
         {/* Feature Cards Section */}
@@ -96,9 +97,12 @@ export default function Home() {
             <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4">
               <Upload className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Upload Light Curves</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Light-Curve Ingestion
+            </h3>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Ingest raw and preprocessed FITS or CSV photometric time-series datasets from NASA Kepler and TESS archives.
+              Planned support for FITS and CSV photometric time series from
+              NASA mission archives.
             </p>
           </div>
 
@@ -110,9 +114,12 @@ export default function Home() {
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-4">
               <Activity className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Detect Transit Signals</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Transit Detection
+            </h3>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Run Box Least Squares (BLS) periodogram search combined with deep learning algorithms to isolate subtle flux dips.
+              Planned signal-processing and machine-learning workflows for
+              identifying subtle flux dips.
             </p>
           </div>
 
@@ -124,9 +131,12 @@ export default function Home() {
             <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
               <Search className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Analyse Candidate Exoplanets</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Candidate Analysis
+            </h3>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Disambiguate false positives such as eclipsing binaries and stellar variability with phase-folded diagnostics.
+              Planned diagnostics for distinguishing transit candidates from
+              eclipsing binaries and stellar variability.
             </p>
           </div>
         </div>
@@ -138,7 +148,7 @@ export default function Home() {
           &copy; {new Date().getFullYear()} ExoVision AI. All rights reserved.
         </div>
         <div className="flex items-center space-x-6">
-          <span>Phase 1 Architecture</span>
+          <span>Phase 1.1 Foundation</span>
           <span>Next.js 15 + FastAPI</span>
         </div>
       </footer>

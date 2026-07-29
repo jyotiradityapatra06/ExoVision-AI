@@ -1,142 +1,95 @@
-# ExoVision AI 🌌🪐
+# ExoVision AI
 
-**ExoVision AI** is an advanced full-stack platform designed for detecting exoplanet transit signals from astronomical light-curve time-series data captured by space missions such as NASA's Kepler, K2, and TESS.
+ExoVision AI is a full-stack foundation for a future exoplanet transit-analysis
+platform. Phase 1.1 provides a responsive landing page, a versioned FastAPI
+health API, Python and frontend quality tooling, and an expansion-ready package
+layout.
 
----
+No datasets, signal-processing pipeline, machine-learning models, upload
+workflow, authentication, database, or deployment infrastructure are
+implemented in Phase 1.1.
 
-## 📌 Problem Statement
+## Technology stack
 
-Space telescopes collect high-precision stellar photometry across millions of stars to discover transiting exoplanets. However, transit detection is severely challenged by:
-1. **Low Signal-to-Noise Ratio**: Earth-sized planets produce tiny fractional flux drops (< 0.01%).
-2. **Instrumental & Cosmic Noise**: Spacecraft jitter, thermal drift, and stellar crowding introduce systemic artifacts.
-3. **Astrophysical False Positives**: Eclipsing binaries, stellar variability, and starspots frequently mimic transit signals.
+- Frontend: Next.js 15 App Router, React 19, TypeScript, and Tailwind CSS
+- Backend: Python 3.11+, FastAPI, Uvicorn, and Pydantic
+- Testing and quality: Pytest, Ruff, and ESLint
 
-ExoVision AI addresses these challenges by combining robust astronomical signal processing (Box Least Squares, polynomial detrending, light-curve phase folding) with deep learning architectures to automate transit candidate identification and disambiguate false positives.
+Scientific Python dependencies will be selected when their corresponding AI
+features are implemented; they are intentionally not part of the Phase 1.1
+backend runtime.
 
----
+## Repository structure
 
-## 🛠 Technology Stack
-
-- **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS
-- **Backend**: Python 3.11, FastAPI, Uvicorn, Pydantic
-- **AI & Data Processing**: NumPy, Pandas, SciPy, Astropy, Lightkurve, scikit-learn, Matplotlib
-- **Testing**: Pytest & TestClient (Backend), ESLint (Frontend)
-- **Code Quality**: Ruff (Python linting & formatting), ESLint (Next.js)
-
----
-
-## 📁 Repository Structure
-
-```
-ExoVision/
-├── frontend/                  # Next.js 15 App Router Frontend
-├── backend/                   # FastAPI Python Microservice
+```text
+ExoVision-AI/
+├── frontend/          # Next.js App Router application
+├── backend/
 │   ├── app/
-│   │   ├── api/               # API Router & Versioned Handlers
-│   │   │   └── v1/            # API v1 Endpoint Implementations
-│   │   ├── config/            # Application Configuration
-│   │   ├── core/              # Core App Mechanics & CORS
-│   │   ├── models/            # Domain Data Models
-│   │   ├── schemas/           # Pydantic Schemas
-│   │   ├── services/          # Business Logic Layer
-│   │   ├── utils/             # Backend Utilities
-│   │   └── main.py            # FastAPI Entry Point
-│   ├── tests/                 # Pytest Test Suite
-│   ├── requirements.txt       # Production Dependencies
-│   ├── requirements-dev.txt   # Dev & Testing Dependencies
-│   └── pyproject.toml         # Ruff & Pytest Config
-├── ai/                        # AI & Astronomical Data Science Package
-│   ├── preprocessing/         # Light Curve Detrending & Outlier Removal
-│   ├── features/              # Periodograms & Transit Metrics
-│   ├── detection/             # Transit Signal Detectors
-│   ├── experiments/           # Training & Experimentation
-│   ├── evaluation/            # Model Evaluation Metrics
-│   ├── visualization/         # Light Curve Plotting & Diagnostics
-│   ├── utils/                 # AI Utilities
-│   └── tests/                 # AI Package Unit Tests
-├── data/                      # Data Storage (Git Ignored except .gitkeep)
-│   ├── raw/                   # Unprocessed FITS Light Curves
-│   ├── interim/               # Flattened & Detrended Data
-│   ├── processed/             # Folded & Feature Matrix Data
-│   ├── samples/               # Sample Light Curves
-│   └── metadata/              # Stellar Catalogs & Label Maps
-├── notebooks/                 # Exploratory Jupyter Notebooks
-├── models/                    # Serialized Model Artifacts
-├── scripts/                   # Utility Scripts
-├── docs/                      # Technical Documentation & Specs
-│   ├── architecture.md        # System Architecture
-│   ├── problem-statement.md   # Problem Domain & AI Solution
-│   ├── api.md                 # API Specifications
-│   ├── dataset.md             # Dataset Descriptions
-│   └── ml-roadmap.md          # AI & ML Pipeline Roadmap
-├── tests/                     # System-wide Tests
-├── .gitignore                 # Environment & Build Ignore Rules
-├── .env.example               # Example Environment Configurations
-├── README.md                  # Project Root Documentation
-└── LICENSE                    # MIT License
+│   │   ├── api/v1/    # Versioned API routes
+│   │   ├── config/    # Runtime settings
+│   │   ├── schemas/   # Pydantic API contracts
+│   │   └── main.py    # FastAPI application factory and entry point
+│   ├── tests/         # Backend HTTP tests
+│   ├── requirements.txt
+│   └── requirements-dev.txt
+├── ai/                # Empty, importable namespaces for future AI work
+├── data/              # Ignored raw/interim/processed/sample data locations
+├── models/            # Ignored future model artifacts
+├── docs/              # Phase 1 documentation and future roadmap
+├── notebooks/         # Future exploration workspace
+├── scripts/           # Future project utilities
+├── tests/             # Future cross-component tests
+└── pyproject.toml     # Repository-wide Pytest and Ruff configuration
 ```
 
----
+All current Python package directories contain `__init__.py`. Empty future
+workspaces are retained intentionally to support modular growth without
+claiming functionality that does not yet exist.
 
-## 🚀 Local Setup Instructions
+## Local setup
 
-### Prerequisites
-- Node.js 18.x or 20.x and `npm`
-- Python 3.11+ and `pip`
-
-### 1. Backend Setup
+### Backend
 
 ```bash
-# Navigate to backend directory
 cd backend
-
-# Create and activate Python virtual environment
 python -m venv .venv
-# On Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# On Linux/macOS:
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt -r requirements-dev.txt
-
-# Run pytest unit tests
-pytest
-
-# Run Ruff linting check
-ruff check app/
-
-# Start FastAPI development server
+# PowerShell: .venv\Scripts\Activate.ps1
+# Linux/macOS: source .venv/bin/activate
+python -m pip install -r requirements-dev.txt
+cd ..
+python -m pytest backend/tests
+python -m ruff check backend/ ai/
+cd backend
 uvicorn app.main:app --reload --port 8000
 ```
 
-The backend server will be available at `http://localhost:8000`. You can inspect the health endpoint at `http://localhost:8000/api/v1/health`.
+The API is available at `http://localhost:8000`. Its implemented endpoints are
+`GET /` and `GET /api/v1/health`.
 
-### 2. Frontend Setup
+### Frontend
 
 ```bash
-# Navigate to frontend directory
 cd frontend
-
-# Install Node dependencies
-npm install
-
-# Run ESLint check
+npm ci
 npm run lint
-
-# Start Next.js development server
+npm run build
 npm run dev
 ```
 
-The frontend landing page will be available at `http://localhost:3000`.
+Set `NEXT_PUBLIC_API_URL` if the backend is not served from
+`http://localhost:8000`. The landing page is available at
+`http://localhost:3000`.
 
----
+## Configuration
 
-## 🎯 Phase 1 Scope
+Copy `.env.example` to an ignored local environment file as needed. The backend
+accepts `PROJECT_NAME`, `API_V1_STR`, and a JSON array in
+`BACKEND_CORS_ORIGINS`. The frontend uses `NEXT_PUBLIC_API_URL`.
 
-Phase 1 establishes the foundational architecture and repository structure:
-- Modern Next.js 15 landing page for ExoVision AI.
-- FastAPI backend application with status and health monitoring (`GET /api/v1/health`).
-- Decoupled modular AI data processing package structure.
-- Comprehensive technical documentation and automated test setup.
-- *Out of scope for Phase 1*: Database persistence, user authentication, deployment infrastructure, active ML model inference, and transit detection algorithms.
+## Phase 1.1 scope
+
+Phase 1.1 is limited to repository structure, application scaffolding,
+health/status connectivity, local configuration, tests, linting, build
+validation, documentation, and Git safety. See
+[`docs/ml-roadmap.md`](docs/ml-roadmap.md) for planned work beyond this phase.

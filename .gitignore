@@ -38,6 +38,7 @@ npm-debug.log*
 .env.test.local
 .env.production.local
 *.env
+!.env.example
 
 # Generated datasets (preserve .gitkeep)
 data/raw/*
@@ -55,10 +56,22 @@ data/metadata/*
 models/*
 !models/.gitkeep
 *.pkl
+*.pickle
+*.joblib
 *.h5
+*.keras
 *.pt
 *.pth
 *.onnx
+*.safetensors
+
+# Common astronomy and generated array/table formats
+*.fits
+*.fits.gz
+*.npy
+*.npz
+*.parquet
+*.feather
 
 # Jupyter notebooks & IDEs
 .ipynb_checkpoints/
