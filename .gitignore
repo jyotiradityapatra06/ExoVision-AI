@@ -1,0 +1,70 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python caches and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.manifest
+*.spec
+
+# Node modules & Next.js
+frontend/node_modules/
+node_modules/
+frontend/.next/
+.next/
+frontend/out/
+out/
+frontend/.vercel/
+frontend/build/
+.pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Generated datasets (preserve .gitkeep)
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/samples/*
+!data/samples/.gitkeep
+data/metadata/*
+!data/metadata/.gitkeep
+
+# Trained model files (preserve .gitkeep)
+models/*
+!models/.gitkeep
+*.pkl
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# Jupyter notebooks & IDEs
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
