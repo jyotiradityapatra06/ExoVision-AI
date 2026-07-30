@@ -7,8 +7,8 @@ TESS missions using Astropy and Lightkurve.
 from pathlib import Path
 from typing import Any, Dict
 
-from astropy.io import fits
 import numpy as np
+from astropy.io import fits
 
 
 def validate_lightcurve(data: Dict[str, Any]) -> bool:

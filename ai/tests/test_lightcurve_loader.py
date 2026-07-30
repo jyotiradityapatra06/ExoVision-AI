@@ -1,8 +1,8 @@
 """Unit tests for light curve loader and validation utilities."""
 
-from astropy.io import fits
 import numpy as np
 import pytest
+from astropy.io import fits
 
 from ai.utils.lightcurve_loader import load_lightcurve_fits, validate_lightcurve
 
