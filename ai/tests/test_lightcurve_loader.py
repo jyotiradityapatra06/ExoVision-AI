@@ -152,9 +152,9 @@ def test_load_lightcurve_fits_empty_table(tmp_path):
             ),
         ]
     )
-    fits.HDUList(
-        [fits.PrimaryHDU(), fits.BinTableHDU.from_columns(columns)]
-    ).writeto(empty_path)
+    fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(columns)]).writeto(
+        empty_path
+    )
 
     with pytest.raises(ValueError, match="empty arrays"):
         load_lightcurve_fits(empty_path)
