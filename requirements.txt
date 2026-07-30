@@ -1,0 +1,9 @@
+# ExoVision AI Phase 1 runtime dependencies (Python 3.12)
+-r backend/requirements.txt
+
+astropy>=6.1,<8.0
+lightkurve>=2.5,<3.0
+matplotlib>=3.9,<4.0
+numpy>=2.0,<3.0
+pandas>=2.2,<4.0
+scipy>=1.14,<2.0

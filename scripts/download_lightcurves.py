@@ -6,13 +6,13 @@ and data/raw/tess/, updating metadata catalog in data/metadata/catalog.json.
 """
 
 import argparse
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import sys
+from datetime import datetime, timezone
+from pathlib import Path
 
-from astropy.io import fits
 import numpy as np
+from astropy.io import fits
 
 # Root project paths
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -128,7 +128,9 @@ def download_or_generate_sample_data(force: bool = False) -> None:
 def main() -> None:
     """Parse CLI args and execute dataset acquisition."""
     parser = argparse.ArgumentParser(
-        description="Download or generate sample Kepler and TESS datasets for ExoVision AI."
+        description=(
+            "Download or generate sample Kepler and TESS datasets for ExoVision AI."
+        )
     )
     parser.add_argument(
         "--force",
@@ -138,7 +140,9 @@ def main() -> None:
     args = parser.parse_args()
 
     if CATALOG_PATH.exists() and not args.force:
-        print(f"Metadata catalog already exists at {CATALOG_PATH.relative_to(ROOT_DIR)}.")
+        print(
+            f"Metadata catalog already exists at {CATALOG_PATH.relative_to(ROOT_DIR)}."
+        )
         print("Skipping download. Use '--force' to re-generate datasets.")
         sys.exit(0)
 

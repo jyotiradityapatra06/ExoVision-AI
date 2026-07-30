@@ -74,7 +74,12 @@ def load_lightcurve_fits(file_path: str | Path) -> Dict[str, np.ndarray]:
     if not path.exists():
         raise FileNotFoundError(f"FITS file not found at: {path}")
 
-    with fits.open(path) as hdul:
+    try:
+        hdul_context = fits.open(path)
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"Unable to open FITS file '{path}': {exc}") from exc
+
+    with hdul_context as hdul:
         # Find binary table extension (usually HDU 1)
         bintable_hdu = None
         for hdu in hdul:

@@ -100,3 +100,61 @@ def test_load_lightcurve_fits_file_not_found():
     """Test load_lightcurve_fits raises FileNotFoundError for missing paths."""
     with pytest.raises(FileNotFoundError):
         load_lightcurve_fits("non_existent_file.fits")
+
+
+@pytest.mark.parametrize(
+    ("mission", "flux_column", "error_column", "quality_column"),
+    [
+        ("Kepler", "PDCSAP_FLUX", "PDCSAP_FLUX_ERR", "SAP_QUALITY"),
+        ("TESS", "SAP_FLUX", "SAP_FLUX_ERR", "QUALITY"),
+    ],
+)
+def test_load_mission_samples(
+    tmp_path, mission, flux_column, error_column, quality_column
+):
+    """Load representative Kepler and TESS column variants."""
+    sample_path = tmp_path / f"{mission.lower()}_sample.fits"
+    columns = fits.ColDefs(
+        [
+            fits.Column(name="TIME", format="D", array=np.arange(8, dtype=float)),
+            fits.Column(name=flux_column, format="D", array=np.ones(8)),
+            fits.Column(name=error_column, format="D", array=np.full(8, 0.01)),
+            fits.Column(name=quality_column, format="J", array=np.zeros(8, dtype=int)),
+        ]
+    )
+    table = fits.BinTableHDU.from_columns(columns)
+    table.header["TELESCOP"] = mission
+    fits.HDUList([fits.PrimaryHDU(), table]).writeto(sample_path)
+
+    loaded = load_lightcurve_fits(sample_path)
+
+    assert validate_lightcurve(loaded)
+    assert len(loaded["time"]) == 8
+
+
+def test_load_lightcurve_fits_invalid_file(tmp_path):
+    """Reject a non-FITS payload with a contextual error."""
+    invalid_path = tmp_path / "invalid.fits"
+    invalid_path.write_text("not a FITS file", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Unable to open FITS file"):
+        load_lightcurve_fits(invalid_path)
+
+
+def test_load_lightcurve_fits_empty_table(tmp_path):
+    """Reject a structurally valid FITS table containing no samples."""
+    empty_path = tmp_path / "empty.fits"
+    columns = fits.ColDefs(
+        [
+            fits.Column(name="TIME", format="D", array=np.array([], dtype=float)),
+            fits.Column(
+                name="PDCSAP_FLUX", format="D", array=np.array([], dtype=float)
+            ),
+        ]
+    )
+    fits.HDUList(
+        [fits.PrimaryHDU(), fits.BinTableHDU.from_columns(columns)]
+    ).writeto(empty_path)
+
+    with pytest.raises(ValueError, match="empty arrays"):
+        load_lightcurve_fits(empty_path)

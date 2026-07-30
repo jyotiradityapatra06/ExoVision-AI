@@ -1,12 +1,17 @@
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = ["-ra", "--strict-config", "--strict-markers"]
+addopts = [
+    "-ra",
+    "--strict-config",
+    "--strict-markers",
+    "--basetemp=.pytest_tmp",
+]
 testpaths = ["backend/tests", "ai/tests"]
 pythonpath = ["backend", "."]
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py312"
 extend-exclude = ["backend/.venv"]
 
 [tool.ruff.lint]

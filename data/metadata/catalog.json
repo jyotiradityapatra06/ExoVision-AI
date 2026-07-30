@@ -4,15 +4,15 @@
     "target": "Kepler-8",
     "target_id": "KIC 6922244",
     "quarter_or_sector": "Quarter 1",
-    "download_date": "2026-07-29T17:14:51.675593+00:00",
-    "file": "data/raw/kepler/mastDownload/Kepler/kplr006922244_lc_Q111111111111111111/kplr006922244-2009166043257_llc.fits"
+    "download_date": "2026-07-30T04:01:13.747155+00:00",
+    "file": "data/raw/kepler/sample_kepler_kepler8.fits"
   },
   {
     "mission": "TESS",
     "target": "TOI-700",
     "target_id": "TIC 150428135",
     "quarter_or_sector": "Sector 1",
-    "download_date": "2026-07-29T17:15:42.541616+00:00",
-    "file": "data/raw/tess/mastDownload/TESS/tess2018206045859-s0001-0000000150428135-0120-s/tess2018206045859-s0001-0000000150428135-0120-s_lc.fits"
+    "download_date": "2026-07-30T04:01:13.753157+00:00",
+    "file": "data/raw/tess/sample_tess_toi700.fits"
   }
 ]

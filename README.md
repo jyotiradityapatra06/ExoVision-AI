@@ -1,129 +1,123 @@
-# ExoVision AI 🌌🪐
+# ExoVision AI
 
-**ExoVision AI** is an advanced full-stack platform designed for detecting exoplanet transit signals from astronomical light-curve time-series data captured by space missions such as NASA's Kepler, K2, and TESS.
+ExoVision AI is an exoplanet light-curve processing system for NASA Kepler,
+K2, and TESS photometry. Phase 1 provides a reproducible foundation for FITS
+acquisition, validation, preprocessing, visualization, and tabular export.
+Transit detection and machine-learning models are intentionally outside the
+Phase 1 scope.
 
----
+## Current Pipeline
 
-## 📌 Problem Statement
-
-Space telescopes collect high-precision stellar photometry across millions of stars to discover transiting exoplanets. However, transit detection is severely challenged by:
-1. **Low Signal-to-Noise Ratio**: Earth-sized planets produce tiny fractional flux drops (< 0.01%).
-2. **Instrumental & Cosmic Noise**: Spacecraft jitter, thermal drift, and stellar crowding introduce systemic artifacts.
-3. **Astrophysical False Positives**: Eclipsing binaries, stellar variability, and starspots frequently mimic transit signals.
-
-ExoVision AI addresses these challenges by combining robust astronomical signal processing (Box Least Squares, polynomial detrending, light-curve phase folding) with deep learning architectures to automate transit candidate identification and disambiguate false positives.
-
----
-
-## 🛠 Technology Stack
-
-- **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS
-- **Backend**: Python 3.11, FastAPI, Uvicorn, Pydantic
-- **AI & Data Processing**: NumPy, Pandas, SciPy, Astropy, Lightkurve, scikit-learn, Matplotlib
-- **Testing**: Pytest & TestClient (Backend & AI Utilities), ESLint (Frontend)
-- **Code Quality**: Ruff (Python linting & formatting), ESLint (Next.js)
-
----
-
-## 📁 Repository Structure
-
-```
-ExoVision/
-├── frontend/                  # Next.js 15 App Router Frontend
-├── backend/                   # FastAPI Python Microservice
-│   ├── app/
-│   │   ├── api/               # API Router & Versioned Handlers
-│   │   │   └── v1/            # API v1 Endpoint Implementations
-│   │   ├── config/            # Application Configuration
-│   │   ├── core/              # Core App Mechanics & CORS
-│   │   ├── models/            # Domain Data Models
-│   │   ├── schemas/           # Pydantic Schemas
-│   │   ├── services/          # Business Logic Layer
-│   │   ├── utils/             # Backend Utilities
-│   │   └── main.py            # FastAPI Entry Point
-│   ├── tests/                 # Pytest Test Suite
-│   ├── requirements.txt       # Production Dependencies
-│   ├── requirements-dev.txt   # Dev & Testing Dependencies
-│   └── pyproject.toml         # Ruff & Pytest Config
-├── ai/                        # AI & Astronomical Data Science Package
-│   ├── preprocessing/         # Light Curve Detrending & Outlier Removal
-│   ├── features/              # Periodograms & Transit Metrics
-│   ├── detection/             # Transit Signal Detectors
-│   ├── experiments/           # Training & Experimentation
-│   ├── evaluation/            # Model Evaluation Metrics
-│   ├── visualization/         # Light Curve Plotting & Diagnostics
-│   ├── utils/                 # Light curve loader & validation utilities
-│   └── tests/                 # AI Package Unit Tests
-├── data/                      # Data Storage (Git Ignored except .gitkeep and catalog.json)
-│   ├── raw/                   # Unprocessed FITS Light Curves (kepler/ and tess/)
-│   ├── interim/               # Flattened & Detrended Data
-│   ├── processed/             # Folded & Feature Matrix Data
-│   ├── samples/               # Sample Light Curves
-│   └── metadata/              # Catalog metadata (catalog.json) & Stellar Catalogs
-├── notebooks/                 # Exploratory Jupyter Notebooks (01_lightcurve_exploration.ipynb)
-├── models/                    # Serialized Model Artifacts
-├── scripts/                   # Utility Scripts (download_lightcurves.py)
-├── docs/                      # Technical Documentation & Specs
-│   ├── architecture.md        # System Architecture
-│   ├── problem-statement.md   # Problem Domain & AI Solution
-│   ├── api.md                 # API Specifications
-│   ├── dataset.md             # Dataset Descriptions & FITS Specifications
-│   └── ml-roadmap.md          # AI & ML Pipeline Roadmap
-├── tests/                     # System-wide Tests
-├── .gitignore                 # Environment & Build Ignore Rules
-├── .env.example               # Example Environment Configurations
-├── README.md                  # Project Root Documentation
-└── LICENSE                    # MIT License
+```text
+Data Acquisition (FITS)
+          |
+          v
+Loader and Validation
+          |
+          v
+Preprocessing
+  clean -> normalize -> transit-safe outlier removal -> detrend
+          |
+          v
+Visualization
+  raw -> processed -> comparison
+          |
+          v
+CSV Export
 ```
 
----
+The preprocessing defaults live in `ai/preprocessing/pipeline.py` as
+`DEFAULT_CONFIG`. Callers may override individual values through the
+`preprocess_lightcurve(..., config={...})` argument.
 
-## 🚀 Local Setup Instructions
+## Requirements
 
-### Prerequisites
-- Node.js 18.x or 20.x and `npm`
-- Python 3.11+ and `pip`
+- Python 3.12
+- Node.js 20 or later (only for the optional web frontend)
+- Git
 
-### 1. Backend & AI Setup
+## Installation
 
-```bash
-# Activate Python virtual environment
-.venv\Scripts\Activate.ps1   # On Windows
-source .venv/bin/activate    # On Linux/macOS
+Create and activate a virtual environment, then install runtime and development
+dependencies:
 
-# Run Pytest unit tests across backend and AI package
-pytest
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip install -r backend/requirements-dev.txt
+```
 
-# Run Ruff linting check on AI and backend modules
-ruff check ai/ backend/
+On Linux or macOS, activate with `source .venv/bin/activate`.
 
-# Execute dataset download & catalog metadata generation script
+## Data Acquisition
+
+Generate deterministic sample Kepler and TESS FITS files and update the
+metadata catalog:
+
+```powershell
 python scripts/download_lightcurves.py
-
-# Start FastAPI development server
-uvicorn backend.app.main:app --reload --port 8000
 ```
 
-### 2. Frontend Setup
+Use `--force` to regenerate existing samples. Generated FITS files are stored
+under `data/raw/kepler/` and `data/raw/tess/` and are excluded from Git.
 
-```bash
-cd frontend
-npm install
-npm run lint
-npm run dev
+## Run the Phase 1 Pipeline
+
+Process FITS files, create raw/processed/comparison plots, and export CSV files:
+
+```powershell
+python scripts/preprocess_dataset.py
 ```
 
----
+Generated artifacts are written beneath `outputs/`, which is excluded from
+Git. The script logs per-file failures and continues processing the remaining
+dataset.
 
-## 🎯 Phase Progress & Scope
+## Tests and Quality Checks
 
-### Phase 1.1 — Foundation & Web Architecture
-- Next.js 15 landing page & FastAPI backend structure (`GET /api/v1/health`).
-- Decoupled modular AI subpackage layout.
+```powershell
+python -m pytest -v
+python -m ruff check ai scripts
+```
 
-### Phase 1.2 — Astronomy Data Acquisition & Exploration Foundation (Completed)
-- Created FITS light curve loading & schema validation utilities (`ai/utils/lightcurve_loader.py`).
-- Implemented dataset acquisition script (`scripts/download_lightcurves.py`) with metadata cataloging (`data/metadata/catalog.json`).
-- Built research-quality exploratory analysis notebook (`notebooks/01_lightcurve_exploration.ipynb`).
-- Documented FITS specifications and space photometry data schemas (`docs/dataset.md`).
-- Synthetic FITS unit test suite (`ai/tests/test_lightcurve_loader.py`).
+The test suite uses synthetic FITS fixtures and does not require network access.
+It covers Kepler and TESS column conventions, malformed and empty FITS inputs,
+preprocessing stages, plotting, CSV export, and the complete integration path.
+
+## Repository Layout
+
+```text
+ai/
+  preprocessing/       cleaning, normalization, clipping, detrending, pipeline
+  utils/               FITS loading and validation
+  visualization/       raw, processed, and comparison plots
+  export/              CSV export
+  tests/               AI and pipeline tests
+backend/               FastAPI service and tests
+frontend/              Next.js application
+data/
+  raw/                 generated/downloaded FITS files
+  metadata/            dataset catalog
+  processed/           reserved processed datasets
+scripts/
+  download_lightcurves.py
+  preprocess_dataset.py
+docs/                  architecture, dataset, roadmap, and audit documentation
+```
+
+## Roadmap
+
+- Phase 1 — Foundation and astronomical data pipeline: complete
+- Phase 2 — BLS/TLS exoplanet transit detection engine
+- Phase 3 — Candidate features, validation, and false-positive analysis
+- Phase 4 — Model experimentation and evaluation
+- Phase 5 — API and user-interface integration
+
+Phase 2 should begin only after the Phase 1 audit gate documented in
+`docs/phase1-final-audit.md` remains green in continuous integration.
+
+## License
+
+MIT. See `LICENSE`.
