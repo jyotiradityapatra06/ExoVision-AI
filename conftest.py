@@ -1,0 +1,2 @@
+"""Repository-wide pytest configuration."""
+

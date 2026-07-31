@@ -4,8 +4,8 @@ addopts = [
     "-ra",
     "--strict-config",
     "--strict-markers",
-    "--basetemp=.pytest_tmp",
 ]
+tmp_path_retention_policy = "none"
 testpaths = ["backend/tests", "ai/tests"]
 pythonpath = ["backend", "."]
 

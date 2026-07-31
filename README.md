@@ -132,6 +132,43 @@ See [Phase 2 Transit Detection](docs/phase-2-transit-detection.md) for public
 APIs, configuration, status semantics, serialization, and scientific
 limitations.
 
+## Phase 3.1 ML Dataset Foundation
+
+`ai.ml` converts existing Phase 2 candidates into deterministic, validated
+tabular records without recomputing BLS or transit measurements. Model inputs
+include period, duration, depth, SNR, BLS power, event count, epoch, phase
+coverage, residual scatter, odd/even measurements, optional secondary-eclipse
+measurements, candidate score, and optional synthetic-recovery errors.
+
+Missing optional measurements use `None` in feature records and blank CSV
+cells. Binary labels are canonical integers: `1` for planet-like/positive and
+`0` for false-positive/negative. Documented string aliases are normalized;
+unknown labels are rejected. Identifiers, mission metadata, label provenance,
+and the label itself are excluded from the model matrix to prevent leakage.
+
+```python
+from ai.ml import CandidateDatasetBuilder
+
+dataset = CandidateDatasetBuilder()
+dataset.add(
+    phase2_candidate,
+    metadata={
+        "mission": "TESS",
+        "sector_or_quarter": 42,
+        "label": "planet",
+        "label_source": "validated_catalog",
+    },
+)
+
+dataset.export_csv("outputs/ml/candidates.csv")
+X = dataset.model_matrix()
+y = dataset.target_vector()
+print(dataset.summary())
+```
+
+Phase 3.1 only prepares ML-ready datasets. Model selection, training, and
+evaluation begin in the next subphase.
+
 ## Tests and Quality Checks
 
 ```powershell
@@ -176,6 +213,8 @@ docs/                  architecture, dataset, roadmap, and audit documentation
 
 - Phase 1 — Foundation and astronomical data pipeline: complete
 - Phase 2 — Transit detection and candidate analysis: release-ready
+- Phase 3.1 — ML feature engineering and dataset foundation: implemented
+- Phase 3.2 — Baseline classifier training and evaluation
 - Phase 3 — Astrophysical vetting and false-positive validation
 - Phase 4 — Model experimentation and evaluation
 - Phase 5 — API and user-interface integration

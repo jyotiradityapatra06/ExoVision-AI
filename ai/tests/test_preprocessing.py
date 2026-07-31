@@ -59,8 +59,8 @@ def synthetic_fits_file(tmp_path: Path, synthetic_raw_lightcurve):
     bintable_hdu = fits.BinTableHDU.from_columns(cols)
     primary_hdu = fits.PrimaryHDU()
 
-    hdul = fits.HDUList([primary_hdu, bintable_hdu])
-    hdul.writeto(fits_path, overwrite=True)
+    with fits.HDUList([primary_hdu, bintable_hdu]) as hdul:
+        hdul.writeto(fits_path, overwrite=True)
 
     return fits_path
 

@@ -30,8 +30,8 @@ def synthetic_fits_file(tmp_path):
     bintable_hdu = fits.BinTableHDU.from_columns(cols)
     primary_hdu = fits.PrimaryHDU()
 
-    hdul = fits.HDUList([primary_hdu, bintable_hdu])
-    hdul.writeto(fits_path, overwrite=True)
+    with fits.HDUList([primary_hdu, bintable_hdu]) as hdul:
+        hdul.writeto(fits_path, overwrite=True)
 
     return fits_path
 
@@ -124,7 +124,8 @@ def test_load_mission_samples(
     )
     table = fits.BinTableHDU.from_columns(columns)
     table.header["TELESCOP"] = mission
-    fits.HDUList([fits.PrimaryHDU(), table]).writeto(sample_path)
+    with fits.HDUList([fits.PrimaryHDU(), table]) as hdul:
+        hdul.writeto(sample_path)
 
     loaded = load_lightcurve_fits(sample_path)
 
@@ -152,9 +153,10 @@ def test_load_lightcurve_fits_empty_table(tmp_path):
             ),
         ]
     )
-    fits.HDUList([fits.PrimaryHDU(), fits.BinTableHDU.from_columns(columns)]).writeto(
-        empty_path
-    )
+    with fits.HDUList(
+        [fits.PrimaryHDU(), fits.BinTableHDU.from_columns(columns)]
+    ) as hdul:
+        hdul.writeto(empty_path)
 
     with pytest.raises(ValueError, match="empty arrays"):
         load_lightcurve_fits(empty_path)
