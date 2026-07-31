@@ -1,7 +1,5 @@
 """Unit tests for Box Least Squares (BLS) transit detection engine (Phase 2.1)."""
 
-from typing import Dict
-
 import numpy as np
 import pytest
 
@@ -11,39 +9,7 @@ from ai.detection import (
     calculate_transit_snr,
     detect_transit_bls,
 )
-
-
-def generate_synthetic_transit_lightcurve(
-    period: float = 3.5,
-    duration: float = 0.15,
-    transit_time: float = 101.2,
-    depth: float = 0.015,
-    noise_std: float = 0.001,
-    n_points: int = 1200,
-    time_span: float = 20.0,
-    seed: int = 42,
-) -> Dict[str, np.ndarray]:
-    """Generate a deterministic synthetic light curve with periodic box transits."""
-    np.random.seed(seed)
-    time = np.linspace(100.0, 100.0 + time_span, n_points)
-    flux = np.ones(n_points, dtype=np.float64)
-
-    # Inject box transits using build_transit_mask
-    mask = build_transit_mask(time, period, duration, transit_time)
-    flux[mask] -= depth
-
-    # Add Gaussian noise
-    flux += np.random.normal(0.0, noise_std, size=n_points)
-    flux_err = np.full(n_points, noise_std, dtype=np.float64)
-    quality = np.zeros(n_points, dtype=np.int32)
-
-    return {
-        "time": time,
-        "flux": flux,
-        "flux_error": flux_err,
-        "quality": quality,
-    }
-
+from ai.simulation import generate_synthetic_transit
 
 # -----------------------------------------------------------------------------
 # 1. Transit Mask Tests
@@ -152,13 +118,16 @@ def test_bls_detects_strong_synthetic_transit():
     target_duration = 0.15
     target_depth = 0.015  # 1.5% depth
 
-    lc = generate_synthetic_transit_lightcurve(
+    lc = generate_synthetic_transit(
+        start_time=100.0,
+        end_time=120.0,
+        cadence=20.0 / 1199,
         period=target_period,
-        duration=target_duration,
-        depth=target_depth,
+        transit_duration=target_duration,
+        transit_epoch=101.2,
+        transit_depth=target_depth,
         noise_std=0.001,
-        n_points=1200,
-        time_span=20.0,
+        random_seed=42,
     )
 
     result = detect_transit_bls(
@@ -178,13 +147,16 @@ def test_bls_detects_strong_synthetic_transit():
 def test_bls_weak_signal_not_detected():
     """Test detect_transit_bls marks detected=False for noisy/weak signal."""
     # Very shallow transit with high noise
-    lc = generate_synthetic_transit_lightcurve(
+    lc = generate_synthetic_transit(
+        start_time=100.0,
+        end_time=110.0,
+        cadence=10.0 / 499,
         period=3.5,
-        duration=0.15,
-        depth=0.0001,
+        transit_duration=0.15,
+        transit_epoch=101.2,
+        transit_depth=0.0001,
         noise_std=0.01,
-        n_points=500,
-        time_span=10.0,
+        random_seed=42,
     )
 
     result = detect_transit_bls(
@@ -197,8 +169,15 @@ def test_bls_weak_signal_not_detected():
 
 def test_bls_handles_non_finite_samples():
     """Test detect_transit_bls filters NaNs and Infs without failing."""
-    lc = generate_synthetic_transit_lightcurve(
-        period=2.5, depth=0.02, noise_std=0.001, n_points=500
+    lc = generate_synthetic_transit(
+        start_time=100.0,
+        end_time=120.0,
+        cadence=20.0 / 499,
+        period=2.5,
+        transit_epoch=101.2,
+        transit_depth=0.02,
+        noise_std=0.001,
+        random_seed=42,
     )
 
     # Inject NaNs and Infs into series
@@ -216,7 +195,15 @@ def test_bls_handles_non_finite_samples():
 
 def test_bls_input_validation_errors():
     """Test detect_transit_bls raises ValueError for invalid inputs."""
-    valid_lc = generate_synthetic_transit_lightcurve()
+    valid_lc = generate_synthetic_transit(
+        start_time=100.0,
+        end_time=120.0,
+        period=3.5,
+        transit_epoch=101.2,
+        transit_duration=0.15,
+        transit_depth=0.015,
+        random_seed=42,
+    )
 
     # Missing required key
     incomplete_lc = {"time": valid_lc["time"], "flux": valid_lc["flux"]}
