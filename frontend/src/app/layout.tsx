@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { SiteLayout } from "@/components/layout";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 import "./globals.css";
 
@@ -44,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-astro-dark antialiased selection:bg-sky-300 selection:text-slate-950">
-        <SiteLayout>{children}</SiteLayout>
+        <AuthProvider><SiteLayout>{children}</SiteLayout></AuthProvider>
       </body>
     </html>
   );

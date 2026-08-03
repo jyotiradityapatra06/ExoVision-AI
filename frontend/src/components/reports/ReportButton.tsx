@@ -22,12 +22,27 @@ export function ReportButton({ analysisId }: { analysisId: string }) {
     }
   }
 
+  async function download() {
+    try {
+      const blob = await api.downloadReport(analysisId);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${analysisId}.pdf`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch (caught) {
+      setStatus("error");
+      setError(caught instanceof ApiError ? caught.message : "The report could not be downloaded.");
+    }
+  }
+
   if (status === "generated") {
     return (
-      <a className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300" download href={api.reportDownloadUrl(analysisId)}>
+      <button className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300" onClick={download} type="button">
         <Download className="h-4 w-4" aria-hidden="true" />
         Download report
-      </a>
+      </button>
     );
   }
 

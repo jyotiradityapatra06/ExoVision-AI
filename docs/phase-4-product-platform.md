@@ -146,4 +146,24 @@ astronomy or ML calculations are repeated during export.
 
 The results dashboard exposes generation as an explicit user action. It shows
 generating and error states, then provides a direct download link after success.
-Reports remain local and unauthenticated as required for this phase.
+Reports remain local.
+
+## Authentication and User Management
+
+Phase 4.5 adds account-scoped research workspaces while preserving the existing
+astronomy and machine-learning pipeline. Users register or sign in through the
+versioned authentication API and receive a time-limited bearer token. Passwords
+are stored exclusively as Argon2id hashes; signed JWT access tokens identify the
+current user on subsequent requests.
+
+User profiles and analysis ownership metadata are stored in local SQLite. The
+schema is migration-ready under `backend/migrations`, while uploaded light curves,
+scientific results, and PDF reports remain in their existing local file stores.
+Every upload, analysis, result, and report route validates authentication and
+ownership server-side. Cross-user resource requests use a not-found response to
+avoid revealing whether another user's analysis exists.
+
+Frontend authentication is coordinated through `AuthContext`. Login and signup
+establish a session, protected research routes redirect anonymous visitors, and
+the dashboard presents account identity plus owned analysis history. Logout
+clears the locally stored access token.

@@ -1,4 +1,5 @@
-import type { AnalysisResponse, AnalysisResult, AnalysisStatus, ApiErrorPayload, ApiHealth, ModelInfo, ReportResponse, UploadResponse } from "@/types/api";
+import { getStoredToken } from "@/lib/auth";
+import type { AnalysisHistoryItem, AnalysisResponse, AnalysisResult, AnalysisStatus, ApiErrorPayload, ApiHealth, AuthResponse, AuthUser, ModelInfo, ReportResponse, UploadResponse } from "@/types/api";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
@@ -11,9 +12,10 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const isFormData = init?.body instanceof FormData;
+  const token = getStoredToken();
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
-    headers: { ...(isFormData ? {} : { "Content-Type": "application/json" }), ...init?.headers },
+    headers: { ...(isFormData ? {} : { "Content-Type": "application/json" }), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
   });
 
   if (!response.ok) {
@@ -38,4 +40,14 @@ export const api = {
   getAnalysisResult: (analysisId: string) => request<AnalysisResult>(`/api/v1/results/${encodeURIComponent(analysisId)}`, { cache: "no-store" }),
   generateReport: (analysisId: string) => request<ReportResponse>(`/api/v1/reports/${encodeURIComponent(analysisId)}`, { method: "POST" }),
   reportDownloadUrl: (analysisId: string) => `${API_URL}/api/v1/reports/${encodeURIComponent(analysisId)}/download`,
+  register: (email: string, displayName: string, password: string) => request<AuthResponse>("/api/v1/auth/register", { method: "POST", body: JSON.stringify({ email, display_name: displayName, password }) }),
+  login: (email: string, password: string) => request<AuthResponse>("/api/v1/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+  me: () => request<AuthUser>("/api/v1/auth/me", { cache: "no-store" }),
+  analysisHistory: () => request<AnalysisHistoryItem[]>("/api/v1/analyze", { cache: "no-store" }),
+  downloadReport: async (analysisId: string) => {
+    const token = getStoredToken();
+    const response = await fetch(`${API_URL}/api/v1/reports/${encodeURIComponent(analysisId)}/download`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    if (!response.ok) throw new ApiError(response.status, "The scientific report could not be downloaded.");
+    return response.blob();
+  },
 };

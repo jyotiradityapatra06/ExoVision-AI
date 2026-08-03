@@ -1,45 +1,39 @@
-import { Activity, ArrowUpRight, CircleDot, Clock3, Upload } from "lucide-react";
+"use client";
 
+import { Activity, CircleDot, Clock3, FileText, Upload } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
-
-const stats = [
-  { label: "Total analyses", value: "—", note: "Awaiting first upload", icon: Activity },
-  { label: "Planet candidates", value: "—", note: "No classifications yet", icon: CircleDot },
-  { label: "Median confidence", value: "—", note: "Available after analysis", icon: ArrowUpRight },
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import type { AnalysisHistoryItem } from "@/types/api";
 
 export default function DashboardPage() {
-  return (
-    <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-      <PageHeader eyebrow="Mission control" title="Analysis dashboard" description="A central view for light-curve investigations, classification outcomes, and recent scientific work." action={<Button href="/upload"><Upload className="h-4 w-4" />Upload light curve</Button>} />
-      <section className="mt-8 grid gap-4 md:grid-cols-3" aria-label="Analysis statistics">
-        {stats.map((stat) => (
-          <Card key={stat.label} className="p-6">
-            <div className="flex items-start justify-between">
-              <p className="text-sm font-medium text-slate-400">{stat.label}</p>
-              <stat.icon className="h-5 w-5 text-sky-300" aria-hidden="true" />
-            </div>
-            <p className="mt-5 text-4xl font-semibold tracking-tight text-white">{stat.value}</p>
-            <p className="mt-2 text-xs text-slate-500">{stat.note}</p>
-          </Card>
-        ))}
-      </section>
-      <section className="mt-8">
-        <Card className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-5">
-            <div><h2 className="font-semibold text-white">Recent analyses</h2><p className="mt-1 text-sm text-slate-500">Your latest light-curve investigations</p></div>
-            <Clock3 className="h-5 w-5 text-slate-500" aria-hidden="true" />
-          </div>
-          <div className="flex min-h-64 flex-col items-center justify-center px-6 py-12 text-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-400"><Activity className="h-5 w-5" /></span>
-            <h3 className="mt-4 font-medium text-slate-200">No analyses yet</h3>
-            <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">Upload your first Kepler or TESS light curve to begin building your research history.</p>
-            <Button href="/upload" variant="secondary" className="mt-6">Prepare an upload</Button>
-          </div>
-        </Card>
-      </section>
-    </div>
-  );
+  return <ProtectedRoute><Dashboard /></ProtectedRoute>;
+}
+
+function Dashboard() {
+  const { user } = useAuth();
+  const [history, setHistory] = useState<AnalysisHistoryItem[]>([]);
+  useEffect(() => { api.analysisHistory().then(setHistory).catch(() => setHistory([])); }, []);
+  const completed = history.filter((item) => item.status === "completed").length;
+  return <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+    <PageHeader action={<Button href="/upload"><Upload className="h-4 w-4" />Upload light curve</Button>} description={`Welcome back, ${user?.display_name}. Review your private analysis workspace and scientific exports.`} eyebrow="Mission control" title="Analysis dashboard" />
+    <section aria-label="Analysis statistics" className="mt-8 grid gap-4 md:grid-cols-3">
+      <Stat icon={Activity} label="Total analyses" value={String(history.length)} />
+      <Stat icon={CircleDot} label="Completed" value={String(completed)} />
+      <Stat icon={FileText} label="Reports" value="On demand" />
+    </section>
+    <section className="mt-8"><Card className="overflow-hidden"><div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-5"><div><h2 className="font-semibold text-white">Recent analyses</h2><p className="mt-1 text-sm text-slate-500">Your latest light-curve investigations</p></div><Clock3 className="h-5 w-5 text-slate-500" /></div>
+      {history.length ? <div className="divide-y divide-white/[0.07]">{history.map((item) => <Link className="flex items-center justify-between gap-4 px-6 py-5 transition hover:bg-white/[0.03]" href={`/results/${item.id}`} key={item.id}><div><p className="font-medium text-slate-200">{item.filename}</p><p className="mt-1 text-xs text-slate-500">{new Date(item.created_at).toLocaleString()}</p></div><span className="rounded-full bg-sky-300/10 px-3 py-1 text-xs font-medium text-sky-300">{item.status}</span></Link>)}</div> : <div className="flex min-h-56 flex-col items-center justify-center px-6 py-12 text-center"><Activity className="h-7 w-7 text-slate-500" /><h3 className="mt-4 font-medium text-slate-200">No analyses yet</h3><p className="mt-2 text-sm text-slate-500">Upload your first light curve to begin.</p></div>}
+    </Card></section>
+  </div>;
+}
+
+function Stat({ icon: Icon, label, value }: { icon: typeof Activity; label: string; value: string }) {
+  return <Card className="p-6"><div className="flex items-start justify-between"><p className="text-sm font-medium text-slate-400">{label}</p><Icon className="h-5 w-5 text-sky-300" /></div><p className="mt-5 text-3xl font-semibold text-white">{value}</p></Card>;
 }

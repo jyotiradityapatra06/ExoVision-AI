@@ -86,3 +86,24 @@ export type ReportResponse = {
   filename: string;
   download_url: string;
 };
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  display_name: string;
+  created_at: string;
+};
+
+export type AuthResponse = {
+  access_token: string;
+  token_type: "bearer";
+  expires_in: number;
+  user: AuthUser;
+};
+
+export type AnalysisHistoryItem = {
+  id: string;
+  filename: string;
+  status: string;
+  created_at: string;
+};

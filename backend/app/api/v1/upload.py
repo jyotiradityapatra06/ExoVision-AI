@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
+from app.api.dependencies import AnalysisRepositoryDependency, CurrentUser
 from app.config.settings import settings
 from app.schemas.analysis import UploadResponse
 from app.services.upload_service import UploadService, UploadValidationError
@@ -26,6 +27,8 @@ UploadServiceDependency = Annotated[UploadService, Depends(get_upload_service)]
 )
 async def upload_lightcurve(
     service: UploadServiceDependency,
+    user: CurrentUser,
+    analyses: AnalysisRepositoryDependency,
     file: Annotated[UploadFile, File(description="CSV, FITS, or TXT light curve")],
 ) -> UploadResponse:
     """Validate and store one light-curve file for later analysis."""
@@ -36,4 +39,5 @@ async def upload_lightcurve(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(error),
         ) from error
+    analyses.create(result["analysis_id"], user.id, result["filename"])
     return UploadResponse(**result)

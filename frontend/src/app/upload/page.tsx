@@ -3,10 +3,11 @@ import { CheckCircle2, FileText, ShieldCheck } from "lucide-react";
 import { Card } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
 import { UploadDropzone } from "@/components/upload-dropzone";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 export default function UploadPage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12 lg:px-8">
+    <ProtectedRoute><div className="mx-auto max-w-6xl px-6 py-12 lg:px-8">
       <PageHeader eyebrow="New analysis" title="Upload a light curve" description="Prepare a photometric time series for the ExoVision transit-analysis workflow." />
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_320px]">
         <UploadDropzone />
@@ -19,6 +20,6 @@ export default function UploadPage() {
           </ul>
         </Card>
       </div>
-    </div>
+    </div></ProtectedRoute>
   );
 }

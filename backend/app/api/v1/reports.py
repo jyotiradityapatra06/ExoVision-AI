@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 
+from app.api.dependencies import OwnedAnalysisUser
 from app.config.settings import settings
 from app.schemas.report import ReportResponse
 from app.services.report_service import ReportNotFoundError, ReportService
@@ -24,6 +25,7 @@ ReportServiceDependency = Annotated[ReportService, Depends(get_report_service)]
 def generate_report(
     analysis_id: str,
     service: ReportServiceDependency,
+    _user: OwnedAnalysisUser,
 ) -> ReportResponse:
     """Generate a professional PDF from one completed analysis."""
     try:
@@ -44,6 +46,7 @@ def generate_report(
 def download_report(
     analysis_id: str,
     service: ReportServiceDependency,
+    _user: OwnedAnalysisUser,
 ) -> FileResponse:
     """Download a previously generated scientific PDF."""
     try:

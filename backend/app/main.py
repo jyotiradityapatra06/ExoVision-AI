@@ -5,10 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import router as api_v1_router
 from app.config.settings import settings
+from app.models.database import initialize_database
 
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
+    initialize_database(settings.database_path)
     application = FastAPI(
         title=settings.project_name,
         description=(

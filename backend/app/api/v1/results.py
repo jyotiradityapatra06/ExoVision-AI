@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.api.dependencies import OwnedAnalysisUser
 from app.config.settings import settings
 from app.schemas.results import ResultResponse
 from app.services.result_service import ResultNotFoundError, ResultService
@@ -23,6 +24,7 @@ ResultServiceDependency = Annotated[ResultService, Depends(get_result_service)]
 def get_analysis_result(
     analysis_id: str,
     service: ResultServiceDependency,
+    _user: OwnedAnalysisUser,
 ) -> ResultResponse:
     """Return visualization-ready output for one completed analysis."""
     try:
