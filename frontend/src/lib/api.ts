@@ -1,0 +1,41 @@
+import type { AnalysisResponse, AnalysisResult, AnalysisStatus, ApiErrorPayload, ApiHealth, ModelInfo, ReportResponse, UploadResponse } from "@/types/api";
+
+const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+
+export class ApiError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const isFormData = init?.body instanceof FormData;
+  const response = await fetch(`${API_URL}${path}`, {
+    ...init,
+    headers: { ...(isFormData ? {} : { "Content-Type": "application/json" }), ...init?.headers },
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
+    const detail = typeof payload?.detail === "string" ? payload.detail : "The ExoVision API request failed.";
+    throw new ApiError(response.status, detail);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+export const api = {
+  health: (init?: RequestInit) => request<ApiHealth>("/api/v1/health", { ...init, cache: "no-store" }),
+  modelInfo: () => request<ModelInfo>("/api/v1/ml/info", { cache: "no-store" }),
+  uploadLightcurve: (file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return request<UploadResponse>("/api/v1/upload/lightcurve", { method: "POST", body });
+  },
+  startAnalysis: (analysisId: string) => request<AnalysisResponse>(`/api/v1/analyze/${encodeURIComponent(analysisId)}`, { method: "POST" }),
+  analysisStatus: (analysisId: string) => request<AnalysisStatus>(`/api/v1/analyze/${encodeURIComponent(analysisId)}/status`, { cache: "no-store" }),
+  getAnalysisResult: (analysisId: string) => request<AnalysisResult>(`/api/v1/results/${encodeURIComponent(analysisId)}`, { cache: "no-store" }),
+  generateReport: (analysisId: string) => request<ReportResponse>(`/api/v1/reports/${encodeURIComponent(analysisId)}`, { method: "POST" }),
+  reportDownloadUrl: (analysisId: string) => `${API_URL}/api/v1/reports/${encodeURIComponent(analysisId)}/download`,
+};

@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
+
+import { SiteLayout } from "@/components/layout";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ExoVision AI - AI-Powered Exoplanet Transit Detection",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  title: {
+    default: "ExoVision AI — Explainable exoplanet discovery",
+    template: "%s | ExoVision AI",
+  },
   description:
-    "Detect exoplanet transit signals from astronomical light-curve time-series data using artificial intelligence and deep learning.",
+    "Detect, classify, and understand exoplanet transit candidates with an explainable astronomy workflow.",
   keywords: [
     "Exoplanets",
     "Astronomy",
@@ -15,6 +22,18 @@ export const metadata: Metadata = {
     "Machine Learning",
     "FastAPI",
   ],
+  openGraph: {
+    title: "ExoVision AI",
+    description: "Turn starlight into planetary evidence.",
+    images: [{ url: "/og.png", width: 1536, height: 1024, alt: "ExoVision AI exoplanet transit platform" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ExoVision AI",
+    description: "Turn starlight into planetary evidence.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({
@@ -24,8 +43,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="antialiased bg-astro-dark min-h-screen selection:bg-sky-500 selection:text-white">
-        {children}
+      <body className="min-h-screen bg-astro-dark antialiased selection:bg-sky-300 selection:text-slate-950">
+        <SiteLayout>{children}</SiteLayout>
       </body>
     </html>
   );

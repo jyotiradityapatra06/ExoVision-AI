@@ -10,12 +10,15 @@ venv.bak/
 __pycache__/
 *.py[cod]
 *$py.class
+*.tsbuildinfo
 .pytest_cache/
 .pytest_tmp/
 .ruff_cache/
 .coverage
 htmlcov/
 outputs/
+data/uploads/
+data/reports/
 *.manifest
 *.spec
 

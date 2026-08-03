@@ -3,38 +3,70 @@
 @tailwind utilities;
 
 :root {
-  --background: #090d16;
-  --foreground: #f3f4f6;
+  --background: #070b12;
+  --foreground: #eef4ff;
 }
+
+* { box-sizing: border-box; }
+
+html { background: var(--background); scroll-behavior: smooth; }
 
 body {
+  min-width: 320px;
   color: var(--foreground);
-  background: var(--background);
+  background:
+    radial-gradient(circle at 12% -8%, rgba(14, 165, 233, 0.12), transparent 34rem),
+    radial-gradient(circle at 96% 20%, rgba(45, 212, 191, 0.07), transparent 28rem),
+    var(--background);
   font-family: Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
 }
 
-/* Custom Utilities for Premium Space Theme */
-.bg-space-gradient {
-  background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15), transparent 70%),
-              radial-gradient(circle at 80% 60%, rgba(139, 92, 246, 0.12), transparent 50%),
-              radial-gradient(circle at 10% 90%, rgba(16, 185, 129, 0.08), transparent 40%);
+::selection { background: #7dd3fc; color: #07111f; }
+
+@layer components {
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-sky-300/15 bg-sky-300/[0.06] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-sky-200;
+  }
+
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-[0.22em] text-sky-300;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-white/[0.08] bg-slate-900/60 shadow-2xl shadow-black/10 backdrop-blur-sm transition duration-300;
+  }
+
+  .surface-card:hover { @apply -translate-y-0.5 border-sky-300/20 bg-slate-900/80; }
+
+  .status-dot { @apply h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_12px_#6ee7b7]; }
 }
 
-.glass-card {
-  background: rgba(17, 24, 39, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
-.glass-card:hover {
-  border-color: rgba(56, 189, 248, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 20px 0 rgba(56, 189, 248, 0.1);
+.orbital-stage { position: relative; min-height: 480px; }
+.star {
+  position: absolute; left: 50%; top: 43%; width: 88px; height: 88px;
+  transform: translate(-50%, -50%); border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, #fff 0 5%, #bae6fd 18%, #38bdf8 45%, #075985 100%);
+  box-shadow: 0 0 40px rgba(56,189,248,.65), 0 0 120px rgba(14,165,233,.25);
 }
+.orbit { position: absolute; left: 50%; top: 43%; border: 1px solid rgba(125,211,252,.25); border-radius: 50%; transform: translate(-50%,-50%) rotate(-18deg); }
+.orbit-one { width: 280px; height: 140px; }
+.orbit-two { width: 430px; height: 220px; opacity: .65; }
+.orbit span { position: absolute; display: block; width: 13px; height: 13px; border-radius: 50%; background: #e2e8f0; box-shadow: 0 0 18px rgba(226,232,240,.7); }
+.orbit-one span { right: 34px; top: 18px; }
+.orbit-two span { left: 48px; bottom: 22px; width: 9px; height: 9px; }
+.signal-panel { position: absolute; right: 0; bottom: 12px; width: min(100%, 310px); padding: 20px; border: 1px solid rgba(255,255,255,.1); border-radius: 18px; background: rgba(8,15,27,.88); box-shadow: 0 28px 70px rgba(0,0,0,.45); backdrop-filter: blur(18px); }
+.light-curve { position: relative; height: 70px; overflow: hidden; border-block: 1px solid rgba(148,163,184,.12); background: repeating-linear-gradient(90deg, transparent 0 38px, rgba(148,163,184,.06) 39px 40px); }
+.light-curve::before { content: ""; position: absolute; left: -4%; top: 31px; width: 108%; height: 2px; background: #7dd3fc; box-shadow: 0 0 12px rgba(125,211,252,.55); }
+.light-curve span { position: absolute; left: 45%; top: 31px; width: 42px; height: 23px; border: 2px solid #7dd3fc; border-top: 0; border-radius: 0 0 9px 9px; background: #08101d; }
+.metric { display: flex; flex-direction: column; gap: 5px; border-radius: 10px; background: rgba(30,41,59,.5); padding: 10px; color: #64748b; }
+.metric strong { color: #e2e8f0; font-size: .875rem; }
 
-.text-gradient {
-  background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 50%, #8b5cf6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+@media (max-width: 1023px) { .orbital-stage { min-height: 390px; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition-duration: 0.01ms !important; } }

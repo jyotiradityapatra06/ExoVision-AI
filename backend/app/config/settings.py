@@ -3,6 +3,7 @@
 import json
 from dataclasses import dataclass
 from os import getenv
+from pathlib import Path
 
 
 def _cors_origins() -> tuple[str, ...]:
@@ -30,6 +31,18 @@ class Settings:
     project_name: str = getenv("PROJECT_NAME", "ExoVision API")
     api_v1_prefix: str = getenv("API_V1_STR", "/api/v1")
     cors_origins: tuple[str, ...] = _cors_origins()
+    upload_root: Path = Path(
+        getenv(
+            "UPLOAD_ROOT",
+            str(Path(__file__).resolve().parents[3] / "data" / "uploads"),
+        )
+    )
+    report_root: Path = Path(
+        getenv(
+            "REPORT_ROOT",
+            str(Path(__file__).resolve().parents[3] / "data" / "reports"),
+        )
+    )
 
 
 settings = Settings()
