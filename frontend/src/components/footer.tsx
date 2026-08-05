@@ -1,14 +1,22 @@
-import Link from "next/link";
-
 export function Footer() {
   return (
-    <footer className="border-t border-white/[0.07]">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-        <p>© {new Date().getFullYear()} ExoVision AI · Built for open astronomy.</p>
-        <div className="flex gap-6">
-          <Link className="transition hover:text-slate-300" href="/dashboard">Dashboard</Link>
-          <Link className="transition hover:text-slate-300" href="/upload">Analyze</Link>
-        </div>
+    <footer className="w-full px-panel-padding py-4 flex flex-col md:flex-row justify-between items-center gap-4 bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant/20 docked full-width bottom-0 z-40 mt-auto cursor-crosshair relative">
+      <span className="font-label-caps text-on-surface-variant text-label-caps">
+        © 2024 EXOVision AI. MISSION STATUS: NOMINAL.
+      </span>
+      <div className="flex gap-6">
+        <a className="font-data-mono text-data-mono uppercase text-secondary hover:text-secondary-fixed-dim transition-colors" href="#">
+          Coordinates
+        </a>
+        <a className="font-data-mono text-data-mono uppercase text-secondary hover:text-secondary-fixed-dim transition-colors" href="#">
+          Server Status
+        </a>
+        <a className="font-data-mono text-data-mono uppercase text-secondary hover:text-secondary-fixed-dim transition-colors" href="#">
+          System Health
+        </a>
+        <a className="font-data-mono text-data-mono uppercase text-secondary hover:text-secondary-fixed-dim transition-colors" href="#">
+          Legal
+        </a>
       </div>
     </footer>
   );

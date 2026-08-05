@@ -5,14 +5,47 @@ import type { AnalysisResult } from "@/types/api";
 
 export function AnalysisSummary({ result }: { result: AnalysisResult }) {
   const items = [
-    { label: "Pipeline status", value: result.summary.pipeline_status ?? result.summary.status ?? "Unknown", icon: Activity },
-    { label: "Samples analyzed", value: (result.summary.sample_count ?? result.lightcurve.sample_count).toLocaleString(), icon: Database },
-    { label: "Candidates", value: String(result.candidates.length), icon: ScanSearch },
-    { label: "Transit detected", value: result.transit.detected ? "Yes" : "No", icon: Orbit },
+    {
+      label: "PIPELINE STATUS",
+      value: result.summary.pipeline_status ?? result.summary.status ?? "Completed",
+      icon: Activity,
+      accent: "cyan",
+    },
+    {
+      label: "DATA POINTS ANALYZED",
+      value: (result.summary.sample_count ?? result.lightcurve.sample_count).toLocaleString(),
+      icon: Database,
+      accent: "cyan",
+    },
+    {
+      label: "CANDIDATES RANKED",
+      value: String(result.candidates.length),
+      icon: ScanSearch,
+      accent: "orange",
+    },
+    {
+      label: "TRANSIT SIGNAL DETECTED",
+      value: result.transit.detected ? "CONFIRMED YES" : "NO TRANSIT",
+      icon: Orbit,
+      accent: result.transit.detected ? "emerald" : "orange",
+    },
   ];
+
   return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Analysis summary">
-      {items.map((item) => <Card className="p-5" key={item.label}><div className="flex items-center justify-between"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{item.label}</p><item.icon className="h-4 w-4 text-sky-300" /></div><p className="mt-4 capitalize text-2xl font-semibold text-white">{item.value}</p></Card>)}
+    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Analysis summary">
+      {items.map((item) => (
+        <Card key={item.label} className="p-5" hudCorners glow={item.accent === "orange" ? "orange" : "cyan"}>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              {item.label}
+            </p>
+            <item.icon className="h-4 w-4 text-cyan-400" />
+          </div>
+          <p className="mt-4 font-mono text-2xl font-bold text-white tracking-tight">
+            {item.value}
+          </p>
+        </Card>
+      ))}
     </section>
   );
 }
