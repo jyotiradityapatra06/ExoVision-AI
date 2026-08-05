@@ -26,7 +26,11 @@ def search_datasets(
         return MastService().search(target, ("KEPLER", "K2", "TESS"))
     except MastServiceError as error:
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY, detail=str(error)
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "NASA MAST archive is temporarily unavailable. "
+                "Please retry the search."
+            ),
         ) from error
 
 
@@ -40,7 +44,11 @@ def download_dataset(
         filename, content = MastService().download(data_uri)
     except MastServiceError as error:
         raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY, detail=str(error)
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "NASA MAST archive is temporarily unavailable. "
+                "Please retry the search."
+            ),
         ) from error
     return Response(
         content,

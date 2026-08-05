@@ -154,6 +154,23 @@ def test_ml_inference_rejects_anonymous_requests(auth_client):
     assert response.status_code == 401
 
 
+def test_dataset_search_accepts_valid_jwt(auth_client, monkeypatch):
+    client, _, _ = auth_client
+    token = _register(client)["access_token"]
+    monkeypatch.setattr(
+        "app.services.nasa.mast_service.MastService.search",
+        lambda *_args, **_kwargs: [],
+    )
+
+    response = client.get(
+        "/api/v1/datasets/search?target=Kepler-10&mission=all",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_user_cannot_access_another_users_analysis(auth_client):
     client, service, analyses = auth_client
     first = service.register(

@@ -13,6 +13,7 @@ __pycache__/
 *.tsbuildinfo
 .pytest_cache/
 .pytest_tmp/
+tmp_pytest/
 .ruff_cache/
 .coverage
 htmlcov/
