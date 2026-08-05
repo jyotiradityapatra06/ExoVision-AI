@@ -49,7 +49,7 @@ function ResultsContent({ id }: { id: string }) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
         <LoaderCircle className="h-10 w-10 animate-spin text-primary" />
-        <p className="font-mono text-xs text-outline tracking-wider uppercase">Loading Candidate Report {id}...</p>
+        <p className="text-sm text-slate-400">Loading analysis results…</p>
       </div>
     );
   }
@@ -57,12 +57,12 @@ function ResultsContent({ id }: { id: string }) {
   if (error || !analysis) {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center space-y-6">
-        <div className="hud-border p-8 rounded-xl bg-surface-container/60">
-          <h2 className="text-xl font-bold text-rose-400 font-mono mb-2">TELEMETRY FETCH ERROR</h2>
-          <p className="text-sm text-outline font-mono mb-6">{error || "Observation dataset record not found."}</p>
+        <div className="rounded-2xl border border-rose-300/20 bg-rose-300/[0.05] p-8">
+          <h2 className="mb-2 text-xl font-semibold text-white">Analysis results unavailable</h2>
+          <p className="mb-6 text-sm text-slate-400">{error || "The requested analysis could not be found."}</p>
           <Button href="/dashboard" variant="secondary" size="md">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            <span>Return to Mission Dashboard</span>
+            <span>Return to dashboard</span>
           </Button>
         </div>
       </div>

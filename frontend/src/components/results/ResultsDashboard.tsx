@@ -1,218 +1,64 @@
 "use client";
 
-import {
-  BadgeCheck,
-  Download,
-  Sparkles,
-} from "lucide-react";
-import { useState } from "react";
-
-import { FeatureImportanceChart } from "@/components/results/FeatureImportanceChart";
-import { api } from "@/lib/api";
+import { ArrowLeft, CircleCheck, Orbit, Telescope } from "lucide-react";
+import Link from "next/link";
+import { FoldedCurveChart } from "@/components/charts/FoldedCurveChart";
+import { LightCurveChart } from "@/components/charts/LightCurveChart";
+import { ReportButton } from "@/components/reports/ReportButton";
+import { CandidateCard } from "@/components/results/CandidateCard";
+import { ExplanationPanel } from "@/components/results/ExplanationPanel";
 import type { AnalysisResult } from "@/types/api";
 
+function measurement(value: number | null, unit: string, digits = 3) {
+  return value === null ? "Not available" : `${value.toFixed(digits)}${unit ? ` ${unit}` : ""}`;
+}
+
 export function ResultsDashboard({ analysis }: { analysis: AnalysisResult }) {
-  const [downloading, setDownloading] = useState(false);
-  const [simulating, setSimulating] = useState(false);
-
-  const primaryCandidate = analysis.candidates?.[0];
-  const confidenceScore = primaryCandidate?.confidence
-    ? Math.round(primaryCandidate.confidence * 100)
-    : 98.4;
-
-  const period = analysis.transit?.period ?? primaryCandidate?.period ?? 3.52;
-  const depth = analysis.transit?.depth ?? primaryCandidate?.depth ?? 0.0084;
-  const duration = analysis.transit?.duration ?? 2.4;
-  const snr = analysis.transit?.snr ?? primaryCandidate?.snr ?? 24.8;
-
-  async function handlePdfDownload() {
-    try {
-      setDownloading(true);
-      const blob = await api.downloadReport(analysis.analysis_id);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${analysis.analysis_id}_report.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      alert("Failed to generate PDF report.");
-    } finally {
-      setDownloading(false);
-    }
-  }
-
-  function handleRunSimulation() {
-    setSimulating(true);
-    setTimeout(() => {
-      setSimulating(false);
-      alert("N-body orbital stability simulation completed: System exhibits stable resonance for >10^8 orbits.");
-    }, 1200);
-  }
+  const candidate = analysis.candidates[0];
+  const overview = [
+    { label: "Classification", value: candidate?.classification ?? "No candidate detected" },
+    { label: "Model confidence", value: candidate ? `${(candidate.confidence * 100).toFixed(1)}%` : "Not classified" },
+    { label: "Orbital period", value: measurement(analysis.transit.period, "days") },
+    { label: "Transit SNR", value: measurement(analysis.transit.snr, "", 2) },
+  ];
+  const parameters = [
+    ["Epoch", measurement(analysis.transit.epoch, "days")],
+    ["Duration", measurement(analysis.transit.duration, "days")],
+    ["Depth", analysis.transit.depth === null ? "Not available" : `${(analysis.transit.depth * 100).toFixed(4)}%`],
+    ["Detected", analysis.transit.detected ? "Yes" : "No"],
+  ];
 
   return (
-    <main className="relative z-10 pt-24 pb-32 px-gutter md:px-margin max-w-max-width mx-auto">
-      {/* Header Section */}
-      <header className="mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-outline-variant/30 pb-6">
+    <main className="mx-auto w-full max-w-7xl px-5 pb-24 pt-28 sm:px-8 lg:px-10">
+      <header className="flex flex-col gap-6 border-b border-white/[0.08] pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="inline-flex items-center px-2 py-1 rounded bg-inverse-primary/20 border border-inverse-primary text-primary font-label-caps text-label-caps shimmer">
-              <BadgeCheck className="h-3.5 w-3.5 mr-1 text-primary" /> Confirmed Earth-like
-            </span>
-            <span className="font-data-mono text-data-mono text-outline">
-              SYS: {analysis.analysis_id.slice(0, 8).toUpperCase()}
-            </span>
-          </div>
-          <h1 className="font-headline-lg-mobile md:font-headline-lg text-primary-fixed-dim">
-            Research-Grade Candidate Report: {analysis.analysis_id.slice(0, 12).toUpperCase()}
-          </h1>
+          <Link className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-cyan-200" href="/dashboard"><ArrowLeft className="h-4 w-4" /> Back to dashboard</Link>
+          <div className="mt-6 flex items-center gap-2 text-sm text-emerald-300"><CircleCheck className="h-4 w-4" /> Analysis completed</div>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">Candidate analysis</h1>
+          <p className="mt-3 break-all font-mono text-xs text-slate-500">Analysis ID: {analysis.analysis_id}</p>
         </div>
-
-        <div className="flex gap-4 font-label-caps text-label-caps">
-          <button
-            onClick={handlePdfDownload}
-            disabled={downloading}
-            className="px-4 py-2 border border-primary text-primary hover:bg-primary/10 transition-all flex items-center gap-2 hud-corner hud-corner-tl hud-corner-br"
-            type="button"
-          >
-            <Download className="h-4 w-4" /> EXPORT DATA
-          </button>
-          <button
-            onClick={handleRunSimulation}
-            disabled={simulating}
-            className="px-4 py-2 bg-primary text-on-primary hover:bg-primary-fixed transition-all flex items-center gap-2 font-bold"
-            type="button"
-          >
-            <Sparkles className="h-4 w-4" /> RUN SIMULATION
-          </button>
-        </div>
+        <ReportButton analysisId={analysis.analysis_id} />
       </header>
-
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Left Column (Telemetry & AI) */}
-        <div className="md:col-span-4 flex flex-col gap-6">
-          {/* Confidence Gauge */}
-          <div className="hud-border p-6 hud-corner hud-corner-tl hud-corner-tr hud-corner-bl hud-corner-br flex flex-col items-center justify-center relative hud-glow-active">
-            <h2 className="font-label-caps text-label-caps text-on-surface-variant absolute top-4 left-4">
-              AI CONFIDENCE SCORE
-            </h2>
-            <div className="relative w-48 h-48 mt-8 flex items-center justify-center">
-              <svg className="w-full h-full absolute transform -rotate-90" viewBox="0 0 100 100">
-                <circle className="text-surface-variant" cx="50" cy="50" fill="none" r="45" stroke="currentColor" strokeWidth="2" />
-                <circle
-                  className="text-primary-container"
-                  cx="50"
-                  cy="50"
-                  fill="none"
-                  r="45"
-                  stroke="currentColor"
-                  strokeDasharray="282.7"
-                  strokeDashoffset={282.7 - (confidenceScore / 100) * 282.7}
-                  strokeWidth="4"
-                  style={{ filter: "drop-shadow(0 0 8px rgba(0,229,255,0.8))" }}
-                />
-              </svg>
-              <div className="text-center z-10">
-                <span className="block font-hero-lg text-[48px] leading-none text-primary-fixed-dim">
-                  {confidenceScore}<span className="text-[24px] text-outline">%</span>
-                </span>
-                <span className="font-data-mono text-data-mono text-[#8B5CF6] shimmer">HIGH CERTAINTY</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Transit Parameters */}
-          <div className="hud-border p-6 hud-corner hud-corner-tl hud-corner-br">
-            <h2 className="font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant/30 pb-2 mb-4">
-              TRANSIT PARAMETERS
-            </h2>
-            <ul className="space-y-4 font-data-mono">
-              <li className="flex justify-between items-center border-b border-outline-variant/10 pb-2">
-                <span className="font-body-md text-on-surface">Orbital Period</span>
-                <span className="font-data-mono text-data-mono text-primary font-bold">{period.toFixed(2)} Days</span>
-              </li>
-              <li className="flex justify-between items-center border-b border-outline-variant/10 pb-2">
-                <span className="font-body-md text-on-surface">Transit Depth</span>
-                <span className="font-data-mono text-data-mono text-secondary font-bold">{(depth * 100).toFixed(2)}%</span>
-              </li>
-              <li className="flex justify-between items-center border-b border-outline-variant/10 pb-2">
-                <span className="font-body-md text-on-surface">Duration</span>
-                <span className="font-data-mono text-data-mono text-primary font-bold">{duration.toFixed(1)}h</span>
-              </li>
-              <li className="flex justify-between items-center border-b border-outline-variant/10 pb-2">
-                <span className="font-body-md text-on-surface">SNR</span>
-                <span className="font-data-mono text-data-mono text-primary font-bold">{snr.toFixed(1)}</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* AI Explanation (SHAP) */}
-          <FeatureImportanceChart />
+      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Candidate overview">
+        {overview.map((item) => <div className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-5" key={item.label}><p className="text-xs font-medium uppercase tracking-wider text-slate-500">{item.label}</p><p className="mt-3 break-words text-lg font-semibold text-white">{item.value}</p></div>)}
+      </section>
+      <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-6">
+          <article className="overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-950/45">
+            <div className="flex flex-col gap-2 border-b border-white/[0.08] px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold text-white">Observed light curve</h2><p className="mt-1 text-sm text-slate-500">Normalized flux measured over observation time.</p></div><span className="text-xs text-slate-500">{analysis.lightcurve.sample_count.toLocaleString()} samples</span></div>
+            <div className="p-3 sm:p-5"><LightCurveChart flux={analysis.lightcurve.flux} time={analysis.lightcurve.time} /></div>
+          </article>
+          <article className="overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-950/45">
+            <div className="border-b border-white/[0.08] px-5 py-4"><h2 className="font-semibold text-white">Phase-folded transit</h2><p className="mt-1 text-sm text-slate-500">Measurements aligned by the detected orbital period to reveal the repeated transit profile.</p></div>
+            <div className="p-3 sm:p-5"><FoldedCurveChart flux={analysis.transit.flux} phase={analysis.transit.phase} /></div>
+          </article>
         </div>
-
-        {/* Right Column (Charts) */}
-        <div className="md:col-span-8 flex flex-col gap-6">
-          {/* Main Light Curve Chart */}
-          <div className="hud-border p-1 hud-corner hud-corner-tl hud-corner-tr flex-grow flex flex-col h-[400px]">
-            <div className="flex justify-between items-center px-4 py-3 border-b border-outline-variant/30 bg-surface-container/50 font-label-caps text-label-caps">
-              <h2 className="text-on-surface-variant">RAW LIGHT CURVE (FLUX VS TIME)</h2>
-              <div className="flex gap-2">
-                <button type="button" className="px-2 py-1 text-[10px] font-data-mono border border-primary/50 text-primary bg-primary/10">
-                  1D
-                </button>
-                <button type="button" className="px-2 py-1 text-[10px] font-data-mono border border-outline-variant text-outline hover:text-primary">
-                  5D
-                </button>
-                <button type="button" className="px-2 py-1 text-[10px] font-data-mono border border-outline-variant text-outline hover:text-primary">
-                  ALL
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-grow relative overflow-hidden flex items-center justify-center p-6 bg-surface-container-lowest/50">
-              <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
-                <line stroke="rgba(132, 147, 150, 0.2)" strokeDasharray="4 4" strokeWidth="1" x1="0" x2="1000" y1="150" y2="150" />
-                <path
-                  d="M 0 145 C 100 148, 200 142, 300 145 C 400 145, 420 145, 450 250 C 480 280, 520 280, 550 250 C 580 145, 600 145, 700 145 C 800 142, 900 148, 1000 145"
-                  fill="none"
-                  stroke="#00daf3"
-                  strokeWidth="3"
-                  style={{ filter: "drop-shadow(0 0 8px rgba(0,218,243,0.8))" }}
-                />
-                <rect fill="rgba(0,218,243,0.05)" height="200" stroke="rgba(0,218,243,0.3)" strokeDasharray="2 2" strokeWidth="1" width="160" x="420" y="50" />
-                <text fill="#00daf3" fontFamily="JetBrains Mono" fontSize="10" x="430" y="70">
-                  TRANSIT DETECTED
-                </text>
-              </svg>
-            </div>
-          </div>
-
-          {/* Phase Folded Transit */}
-          <div className="hud-border p-1 hud-corner hud-corner-bl hud-corner-br flex-grow flex flex-col h-[300px]">
-            <div className="flex justify-between items-center px-4 py-3 border-b border-outline-variant/30 bg-surface-container/50">
-              <h2 className="font-label-caps text-label-caps text-on-surface-variant">
-                PHASE FOLDED TRANSIT (PERIOD: {period.toFixed(2)}d)
-              </h2>
-            </div>
-            <div className="flex-grow relative overflow-hidden flex items-center justify-center bg-surface-container-lowest/50 p-6">
-              <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 500 200">
-                <path
-                  d="M 50 50 Q 150 50 200 50 Q 220 50 250 150 Q 280 50 300 50 Q 350 50 450 50"
-                  fill="none"
-                  stroke="#c3f5ff"
-                  strokeWidth="4"
-                  style={{ filter: "drop-shadow(0 0 8px rgba(195,245,255,0.6))" }}
-                />
-                <line stroke="rgba(255,182,142,0.5)" strokeDasharray="4 4" strokeWidth="1" x1="250" x2="250" y1="20" y2="180" />
-                <text fill="#ffb68e" fontFamily="JetBrains Mono" fontSize="10" x="260" y="30">
-                  PHASE 0.0
-                </text>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
+        <aside className="space-y-6">
+          {candidate ? <CandidateCard candidate={candidate} /> : <div className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-7 text-center"><Telescope className="mx-auto h-8 w-8 text-slate-500" /><h2 className="mt-4 font-semibold text-white">No ranked candidate</h2><p className="mt-2 text-sm leading-6 text-slate-400">The pipeline did not identify a signal suitable for ML classification in this light curve.</p></div>}
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-6"><div className="flex items-center gap-2"><Orbit className="h-4 w-4 text-cyan-200" /><h2 className="font-semibold text-white">Transit parameters</h2></div><dl className="mt-5 divide-y divide-white/[0.07] text-sm">{parameters.map(([label, value]) => <div className="flex items-center justify-between gap-4 py-3" key={label}><dt className="text-slate-500">{label}</dt><dd className="text-right font-mono text-xs text-slate-200">{value}</dd></div>)}</dl></div>
+        </aside>
+      </section>
+      <section className="mt-6"><ExplanationPanel candidate={candidate} /></section>
     </main>
   );
 }

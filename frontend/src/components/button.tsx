@@ -35,7 +35,7 @@ export function Button({
       : "min-h-10 px-5 py-2 text-xs tracking-wider uppercase";
 
   const classes = [
-    "inline-flex items-center justify-center gap-2 rounded-DEFAULT font-mono transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] cursor-crosshair",
+    "inline-flex items-center justify-center gap-2 rounded-lg font-mono transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
     sizeClasses,
     styles[variant],
     className,

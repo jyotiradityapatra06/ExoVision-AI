@@ -5,13 +5,7 @@ export function FeatureImportanceChart({
 }: {
   attributions?: Array<{ feature: string; importance: number; direction: string }>;
 }) {
-  const defaultAttributions = [
-    { feature: "Symmetry (U-Shape)", importance: 0.42, direction: "positive" },
-    { feature: "Periodicity", importance: 0.38, direction: "positive" },
-    { feature: "Secondary Eclipse Absence", importance: 0.15, direction: "positive" },
-  ];
-
-  const items = attributions?.length ? attributions : defaultAttributions;
+  const items = attributions ?? [];
 
   return (
     <div className="hud-border p-6 hud-corner hud-corner-tr hud-corner-bl rounded-xl bg-surface-container/60 backdrop-blur-md">
@@ -20,6 +14,7 @@ export function FeatureImportanceChart({
         AI FEATURE IMPORTANCE
       </h2>
       <div className="space-y-4 font-data-mono text-xs">
+        {!items.length && <p className="font-sans text-sm leading-6 text-slate-400">Feature attribution data was not provided for this candidate.</p>}
         {items.map((item) => (
           <div key={item.feature}>
             <div className="flex justify-between text-xs mb-1 font-mono">
