@@ -16,14 +16,14 @@ def test_read_root() -> None:
 
 
 def test_health_check() -> None:
-    """The versioned health endpoint returns Phase 1.1 status."""
+    """The versioned health endpoint returns release status."""
     response = client.get("/api/v1/health")
 
     assert response.status_code == 200
     assert response.json() == {
         "status": "healthy",
         "service": "ExoVision API",
-        "phase": "1.1",
+        "phase": "1.0",
     }
 
 

@@ -1,7 +1,11 @@
 {
   "name": "exovision-frontend",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "AI-powered exoplanet detection and explainable astronomy platform",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

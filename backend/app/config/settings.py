@@ -27,9 +27,9 @@ def _cors_origins() -> tuple[str, ...]:
 
 @dataclass(frozen=True)
 class Settings:
-    """Runtime configuration for the Phase 1 API."""
+    """Runtime configuration for the ExoVision 1.0 API."""
 
-    project_name: str = getenv("PROJECT_NAME", "ExoVision API")
+    project_name: str = getenv("PROJECT_NAME", "ExoVision AI API")
     api_v1_prefix: str = getenv("API_V1_STR", "/api/v1")
     cors_origins: tuple[str, ...] = _cors_origins()
     upload_root: Path = Path(

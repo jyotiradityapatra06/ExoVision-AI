@@ -14,9 +14,12 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title=settings.project_name,
         description=(
-            "Foundation API for the future ExoVision light-curve analysis platform"
+            "AI-powered exoplanet detection platform for Kepler and TESS light curves."
         ),
-        version="0.1.0",
+        version="1.0.0",
+        docs_url="/docs",
+        redoc_url="/redoc",
+        openapi_url="/openapi.json",
     )
     application.add_middleware(
         CORSMiddleware,

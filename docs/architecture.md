@@ -1,55 +1,63 @@
-# ExoVision AI system architecture (Phase 1.1)
+# ExoVision AI architecture
 
-## Current architecture
+ExoVision AI is a three-layer application: a Next.js client, a versioned FastAPI service, and a reusable scientific Python pipeline. API services orchestrate scientific modules; they do not duplicate detection or classification logic.
 
-Phase 1.1 establishes independently testable frontend and backend applications
-plus empty package boundaries for future scientific work.
+![ExoVision architecture](assets/architecture-diagram.png)
 
-```mermaid
-flowchart LR
-    Browser["Next.js 15 landing page"]
-    API["FastAPI foundation API"]
-    FutureAI["ai/ namespaces (not implemented)"]
-    FutureData["data/ directories (empty and ignored)"]
+## Frontend
 
-    Browser -->|"GET /api/v1/health"| API
-    API -. "future integration" .-> FutureAI
-    FutureAI -. "future local data flow" .-> FutureData
+The `frontend/` application uses Next.js 15 App Router, strict TypeScript, Tailwind CSS, Framer Motion, and client-side chart components. `AuthContext` stores the bearer token and resolves the active user. `frontend/src/lib/api.ts` is the single HTTP boundary for authentication, upload, analysis, results, reports, demo data, and NASA datasets.
+
+Public routes are `/`, `/auth/login`, and `/auth/signup`. Product routes use `ProtectedRoute`: `/dashboard`, `/upload`, `/demo`, `/datasets`, `/results/[id]`, and `/reports`.
+
+## Backend
+
+The `backend/app/` FastAPI application exposes `/api/v1` endpoints and OpenAPI documentation at `/docs`, `/redoc`, and `/openapi.json`. Route modules validate HTTP contracts; service modules own orchestration; repositories own persistence and authorization lookups.
+
+Uploads and generated reports are stored outside the source tree using `UPLOAD_ROOT` and `REPORT_ROOT`. Each analysis directory contains an immutable source light curve, status metadata, and the completed scientific result.
+
+## AI pipeline
+
+```text
+NASA Kepler/TESS data or user upload
+                  ↓
+          FITS/CSV/TXT loader
+                  ↓
+       validation and preprocessing
+                  ↓
+        Box Least Squares search
+                  ↓
+   phase folding + candidate extraction
+                  ↓
+          ML feature engineering
+                  ↓
+       Random Forest classification
+                  ↓
+ evidence explanation + scientific PDF
 ```
 
-## Components
+The `ai/` package is framework-independent. `AnalysisService` loads observations and invokes `analyze_lightcurve`; `MLInferenceService` applies the trained classifier and domain-direction explanation rules. Detection parameters and algorithms remain isolated from the web layer.
 
-### Frontend (`frontend/`)
+## Database
 
-- Next.js 15 App Router under `src/app`
-- Strict TypeScript configuration
-- Tailwind CSS responsive landing page
-- Client-side API health indicator using `NEXT_PUBLIC_API_URL`
+SQLite is the supported local and single-instance deployment database. Embedded migrations run at API startup and create `users`, `datasets`, `analyses`, `candidates`, and `reports` plus query-oriented indexes. Foreign keys enforce ownership and cascade cleanup from users to analyses and from analyses to candidates and reports.
 
-The cards describe planned product capabilities; there are no upload,
-detection, or candidate-analysis flows in Phase 1.1.
+`backend/migrations/postgresql/0001_initial.sql` provides the production PostgreSQL schema with equivalent relationships, UTC-aware timestamps, indexes, and confidence constraints. Moving the runtime repositories to PostgreSQL requires a PostgreSQL driver or ORM adapter; SQLite remains active until that adapter is configured. Binary FITS and PDF data should remain in persistent object/disk storage, with only metadata in PostgreSQL.
 
-### Backend (`backend/`)
+## Data flow
 
-- Application factory and FastAPI entry point in `app/main.py`
-- Versioned router in `app/api/v1/router.py`
-- Environment-backed settings in `app/config/settings.py`
-- Pydantic response contract in `app/schemas/health.py`
-- CORS restricted by default to `http://localhost:3000`
-- Only read-only system endpoints are implemented
+1. A user authenticates and uploads a local file, starts the bundled demo, or selects a MAST product.
+2. External datasets are proxied as FITS and submitted through the normal upload contract.
+3. The backend creates an owned analysis record and stores the source safely.
+4. The existing preprocessing, BLS, candidate, ML, and explainability pipeline runs synchronously.
+5. Results are projected into bounded visualization arrays for the browser.
+6. The report service renders the same persisted result into an authenticated PDF download.
 
-FastAPI's standard validation and HTTP error responses are sufficient for the
-two current endpoints. Domain-specific exception handlers should be added only
-when domain operations exist.
+## Security and operational boundaries
 
-### AI workspace (`ai/`)
-
-Importable namespaces reserve boundaries for preprocessing, feature extraction,
-detection, evaluation, experiments, visualization, utilities, and tests. They
-contain no algorithms, dependencies, datasets, or models in Phase 1.1.
-
-### Data and model workspaces
-
-`data/` contains empty raw, interim, processed, sample, and metadata locations.
-`models/` is an empty artifact location. Git tracks only placeholder files in
-these directories; generated content is ignored.
+- Passwords are Argon2-hashed; API sessions use signed, expiring JWTs.
+- Every analysis, result, and report request verifies resource ownership.
+- Upload extensions, names, sizes, and identifiers are validated.
+- CORS is allowlisted through `BACKEND_CORS_ORIGINS`.
+- NASA traffic is limited to public MAST endpoints and validated `mast:` product identifiers.
+- A BLS/ML candidate is screening evidence, not scientific confirmation.

@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: exovision-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: PROJECT_NAME
+        value: ExoVision AI API
+      - key: BACKEND_CORS_ORIGINS
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_PATH
+        value: /var/data/exovision.db
+      - key: UPLOAD_ROOT
+        value: /var/data/uploads
+      - key: REPORT_ROOT
+        value: /var/data/reports
+    disk:
+      name: exovision-data
+      mountPath: /var/data
+      sizeGB: 2

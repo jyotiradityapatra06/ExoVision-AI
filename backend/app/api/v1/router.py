@@ -23,9 +23,9 @@ router.include_router(reports_router)
 
 @router.get("/health", response_model=HealthResponse, tags=["system"])
 def get_health() -> HealthResponse:
-    """Report whether the Phase 1 API process is available."""
+    """Report whether the production API process is available."""
     return HealthResponse(
         status="healthy",
         service="ExoVision API",
-        phase="1.1",
+        phase="1.0",
     )
