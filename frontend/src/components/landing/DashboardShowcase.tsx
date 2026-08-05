@@ -95,7 +95,7 @@ export function DashboardShowcase() {
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-950/40 px-3 py-1 text-[11px] font-mono text-emerald-300">
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                CANDIDATE CONFIRMED
+                ILLUSTRATIVE CANDIDATE
               </span>
             </div>
           </div>
@@ -112,9 +112,9 @@ export function DashboardShowcase() {
                 className="grid grid-cols-1 md:grid-cols-3 gap-6"
               >
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-                  <span className="text-xs font-mono text-slate-400">PLANET RADIUS</span>
-                  <p className="mt-2 text-3xl font-extrabold text-white">1.34 R<sub>⊕</sub></p>
-                  <p className="mt-1 text-xs text-cyan-300">Super-Earth Class Candidate</p>
+                  <span className="text-xs font-mono text-slate-400">CLASSIFICATION</span>
+                  <p className="mt-2 text-3xl font-extrabold text-white">Candidate</p>
+                  <p className="mt-1 text-xs text-cyan-300">Illustrative dashboard preview</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
                   <span className="text-xs font-mono text-slate-400">ORBITAL PERIOD</span>
@@ -170,7 +170,7 @@ export function DashboardShowcase() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-sm font-mono text-violet-300 font-bold">PHASE FOLDED TRANSIT DENSITY</h4>
-                  <span className="text-xs font-mono text-emerald-400">SYMMETRIC U-SHAPE VALIDATED</span>
+                  <span className="text-xs font-mono text-emerald-400">U-SHAPE EVIDENCE</span>
                 </div>
                 <div className="h-48 w-full flex items-center justify-center">
                   <svg className="h-full w-full" viewBox="0 0 500 150">
@@ -197,20 +197,20 @@ export function DashboardShowcase() {
                 <div className="rounded-2xl border border-cyan-400/30 bg-cyan-950/30 p-6">
                   <span className="text-xs font-mono text-cyan-300">OVERALL CLASSIFICATION CONFIDENCE</span>
                   <p className="mt-2 text-5xl font-extrabold text-white">98.4%</p>
-                  <p className="mt-2 text-xs text-slate-300">99.1% True Positive Ensemble Probability</p>
+                  <p className="mt-2 text-xs text-slate-300">Illustrative Random Forest candidate probability</p>
                 </div>
                 <div className="space-y-3 font-mono text-xs">
                   <div className="flex justify-between text-slate-300">
-                    <span>CNN Deep Transit Net</span>
-                    <span className="text-cyan-300">99.2%</span>
+                    <span>Transit shape evidence</span>
+                    <span className="text-cyan-300">Strong</span>
                   </div>
                   <div className="flex justify-between text-slate-300">
-                    <span>Gradient Boosted Trees</span>
-                    <span className="text-violet-300">97.8%</span>
+                    <span>BLS signal evidence</span>
+                    <span className="text-violet-300">Strong</span>
                   </div>
                   <div className="flex justify-between text-slate-300">
-                    <span>Random Forest Baseline</span>
-                    <span className="text-emerald-300">98.1%</span>
+                    <span>Random Forest score</span>
+                    <span className="text-emerald-300">98.4%</span>
                   </div>
                 </div>
               </motion.div>
@@ -230,7 +230,7 @@ export function DashboardShowcase() {
                   <span>AUTOMATED SCIENTIFIC REPORT PREVIEW</span>
                 </div>
                 <p className="text-slate-300 text-sm leading-relaxed">
-                  Exportable PDF report generated containing Kepler light curve ID KIC-8462852, transit period, transit depth, stellar radius estimate, SHAP explainability matrices, and classification summary.
+                  Exportable PDF report containing the dataset identifier, transit period, transit depth, signal-to-noise ratio, model feature importance, and classification summary.
                 </p>
               </motion.div>
             )}

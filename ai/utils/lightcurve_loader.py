@@ -119,7 +119,15 @@ def load_lightcurve_fits(file_path: str | Path) -> Dict[str, np.ndarray]:
         elif "FLUX_ERROR" in colnames:
             raw_flux_err = np.array(data["FLUX_ERROR"], dtype=np.float64)
         else:
-            raw_flux_err = np.zeros_like(raw_flux)
+            finite_flux = raw_flux[np.isfinite(raw_flux)]
+            if finite_flux.size > 1:
+                scatter = float(
+                    np.median(np.abs(np.diff(finite_flux))) / np.sqrt(2.0)
+                )
+            else:
+                scatter = 0.0
+            fallback_error = max(scatter, np.finfo(np.float64).eps)
+            raw_flux_err = np.full_like(raw_flux, fallback_error)
 
         # Extract QUALITY flags
         if "SAP_QUALITY" in colnames:

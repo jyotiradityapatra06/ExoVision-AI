@@ -58,15 +58,11 @@ class CandidateDatasetBuilder:
         self._require_nonempty(allow_empty)
         return pd.DataFrame(self._records, columns=RECORD_COLUMNS)
 
-    def export_csv(
-        self, path: str | Path, *, allow_empty: bool = False
-    ) -> Path:
+    def export_csv(self, path: str | Path, *, allow_empty: bool = False) -> Path:
         """Write a stable CSV without an index column."""
         destination = Path(path)
         destination.parent.mkdir(parents=True, exist_ok=True)
-        self.to_dataframe(allow_empty=allow_empty).to_csv(
-            destination, index=False
-        )
+        self.to_dataframe(allow_empty=allow_empty).to_csv(destination, index=False)
         return destination
 
     @classmethod
@@ -79,8 +75,7 @@ class CandidateDatasetBuilder:
         builder = cls()
         for raw in frame.loc[:, RECORD_COLUMNS].to_dict(orient="records"):
             record = {
-                key: None if pd.isna(value) else value
-                for key, value in raw.items()
+                key: None if pd.isna(value) else value for key, value in raw.items()
             }
             record["transit_count"] = int(record["transit_count"])
             if record[TARGET_FIELD] is not None:
@@ -133,12 +128,8 @@ class CandidateDatasetBuilder:
             },
             "duplicate_count": self._duplicate_count,
             "class_balance": {
-                "positive_fraction": (
-                    positive / labelled if labelled else None
-                ),
-                "negative_fraction": (
-                    negative / labelled if labelled else None
-                ),
+                "positive_fraction": (positive / labelled if labelled else None),
+                "negative_fraction": (negative / labelled if labelled else None),
             },
             "metadata_fields": list(METADATA_FIELDS),
         }

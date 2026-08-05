@@ -27,7 +27,16 @@ function Dashboard() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { void loadHistory(); }, [loadHistory]);
+  useEffect(() => {
+    let active = true;
+    api.analysisHistory()
+      .then((items) => { if (active) setHistory(items); })
+      .catch((caught) => {
+        if (active) setError(caught instanceof ApiError ? caught.message : "Analysis history could not be loaded.");
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   const completed = history.filter((item) => item.status === "completed").length;
   const inProgress = history.filter((item) => item.status === "uploaded" || item.status === "processing").length;

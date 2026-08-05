@@ -46,20 +46,16 @@ export function UploadDropzone() {
     selectFile(event.dataTransfer.files[0]);
   }
 
-  function loadDemoLightCurve() {
-    const timePoints: string[] = ["time,flux"];
-    for (let t = 0; t <= 10; t += 0.02) {
-      let flux = 1.0 + (Math.random() - 0.5) * 0.0015;
-      if (t >= 4.5 && t <= 5.5) {
-        flux -= 0.012 * Math.sin(((t - 4.5) / 1.0) * Math.PI);
-      }
-      timePoints.push(`${t.toFixed(4)},${flux.toFixed(6)}`);
+  async function loadDemoLightCurve() {
+    setError(null);
+    setPipelineStage("uploading");
+    try {
+      selectFile(await api.downloadDemoDataset());
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "The demo dataset could not be loaded.");
+    } finally {
+      setPipelineStage("idle");
     }
-    const demoContent = timePoints.join("\n");
-    const demoFile = new File([demoContent], "Kepler_Demo_Transit_K00842.csv", {
-      type: "text/csv",
-    });
-    selectFile(demoFile);
   }
 
   async function submit() {
@@ -69,17 +65,10 @@ export function UploadDropzone() {
       setPipelineStage("uploading");
       const upload = await api.uploadLightcurve(file);
 
-      setPipelineStage("fits");
-      await new Promise((r) => setTimeout(r, 600));
-
       setPipelineStage("detecting");
-      await new Promise((r) => setTimeout(r, 600));
-
-      setPipelineStage("classifying");
       await api.startAnalysis(upload.analysis_id);
 
-      setPipelineStage("reporting");
-      await new Promise((r) => setTimeout(r, 500));
+      setPipelineStage("finalizing");
 
       router.push(`/results/${upload.analysis_id}`);
     } catch (caught) {
@@ -182,32 +171,17 @@ export function UploadDropzone() {
           {busy && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
           {pipelineStage === "uploading"
             ? "1/5 Uploading Dataset..."
-            : pipelineStage === "fits"
-            ? "2/5 Processing FITS Header..."
+            : pipelineStage === "preprocessing"
+            ? "2/5 Preprocessing Light Curve..."
             : pipelineStage === "detecting"
             ? "3/5 Detecting Transit Signal..."
             : pipelineStage === "classifying"
             ? "4/5 Classifying AI Model..."
-            : pipelineStage === "reporting"
-            ? "5/5 Generating Report..."
+            : pipelineStage === "finalizing"
+            ? "5/5 Finalizing Results..."
             : "INITIALIZE PIPELINE SEQUENCE"}
         </Button>
 
-        {/* Quick Stats / Telemetry Info beneath upload */}
-        <div className="grid grid-cols-3 gap-4 font-data-mono text-xs text-center pt-2">
-          <div className="bg-surface-container-low border border-outline-variant/30 p-3 rounded">
-            <span className="block font-label-caps text-[10px] text-outline mb-1">Server Status</span>
-            <span className="text-secondary font-bold">NOMINAL</span>
-          </div>
-          <div className="bg-surface-container-low border border-outline-variant/30 p-3 rounded">
-            <span className="block font-label-caps text-[10px] text-outline mb-1">Available Storage</span>
-            <span className="text-primary font-bold">124.5 TB</span>
-          </div>
-          <div className="bg-surface-container-low border border-outline-variant/30 p-3 rounded">
-            <span className="block font-label-caps text-[10px] text-outline mb-1">Active Pipelines</span>
-            <span className="text-on-surface font-bold">03</span>
-          </div>
-        </div>
       </div>
 
       {/* Pipeline HUD / Terminal Panel (Spans 5) */}

@@ -5,6 +5,7 @@ from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
+from app.api.dependencies import CurrentUser
 from app.services.nasa import KeplerService, MastService, MastServiceError, TessService
 
 router = APIRouter(prefix="/datasets", tags=["datasets"])
@@ -12,6 +13,7 @@ router = APIRouter(prefix="/datasets", tags=["datasets"])
 
 @router.get("/search")
 def search_datasets(
+    _user: CurrentUser,
     target: str = Query(min_length=1, max_length=120),
     mission: Literal["all", "kepler", "tess"] = "all",
 ):
@@ -29,7 +31,10 @@ def search_datasets(
 
 
 @router.get("/download")
-def download_dataset(data_uri: str = Query(min_length=6, max_length=500)) -> Response:
+def download_dataset(
+    _user: CurrentUser,
+    data_uri: str = Query(min_length=6, max_length=500),
+) -> Response:
     """Proxy one validated MAST FITS product so it can enter the upload API."""
     try:
         filename, content = MastService().download(data_uri)
@@ -45,7 +50,7 @@ def download_dataset(data_uri: str = Query(min_length=6, max_length=500)) -> Res
 
 
 @router.get("/demo")
-def download_demo_dataset() -> Response:
+def download_demo_dataset(_user: CurrentUser) -> Response:
     """Return the repository's deterministic transit sample."""
     sample = (
         Path(__file__).resolve().parents[4]

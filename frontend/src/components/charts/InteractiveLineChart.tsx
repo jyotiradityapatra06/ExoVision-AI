@@ -29,6 +29,7 @@ export function InteractiveLineChart({
   const [size, setSize] = useState({ width: 700, height: 320 });
   const [domain, setDomain] = useState<[number, number]>([0, 1]);
   const [tooltip, setTooltip] = useState<Tooltip | null>(null);
+  const pairedLength = Math.min(x.length, y.length);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -42,7 +43,7 @@ export function InteractiveLineChart({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || x.length < 2 || y.length < 2) return;
+    if (!canvas || pairedLength < 2) return;
     const ratio = window.devicePixelRatio || 1;
     canvas.width = size.width * ratio;
     canvas.height = size.height * ratio;
@@ -53,9 +54,10 @@ export function InteractiveLineChart({
     context.scale(ratio, ratio);
     context.clearRect(0, 0, size.width, size.height);
 
-    const xMinimum = x[0] + (x[x.length - 1] - x[0]) * domain[0];
-    const xMaximum = x[0] + (x[x.length - 1] - x[0]) * domain[1];
+    const xMinimum = x[0] + (x[pairedLength - 1] - x[0]) * domain[0];
+    const xMaximum = x[0] + (x[pairedLength - 1] - x[0]) * domain[1];
     const points = x
+      .slice(0, pairedLength)
       .map((value, index) => ({ x: value, y: y[index] }))
       .filter((point) => point.x >= xMinimum && point.x <= xMaximum && Number.isFinite(point.y));
 
@@ -121,10 +123,10 @@ export function InteractiveLineChart({
     context.rotate(-Math.PI / 2);
     context.fillText(yLabel, 0, 0);
     context.restore();
-  }, [accent, domain, size, x, xLabel, y, yLabel]);
+  }, [accent, domain, pairedLength, size, x, xLabel, y, yLabel]);
 
   function move(event: PointerEvent<HTMLCanvasElement>) {
-    if (x.length === 0) return;
+    if (pairedLength === 0) return;
     const bounds = event.currentTarget.getBoundingClientRect();
     const position = Math.max(
       0,
@@ -135,7 +137,7 @@ export function InteractiveLineChart({
       )
     );
     const fraction = domain[0] + position * (domain[1] - domain[0]);
-    const index = Math.min(x.length - 1, Math.max(0, Math.round(fraction * (x.length - 1))));
+    const index = Math.min(pairedLength - 1, Math.max(0, Math.round(fraction * (pairedLength - 1))));
     setTooltip({
       left: event.clientX - bounds.left,
       top: event.clientY - bounds.top,
@@ -157,7 +159,7 @@ export function InteractiveLineChart({
     setDomain([start, start + nextWidth]);
   }
 
-  if (x.length < 2 || y.length < 2) {
+  if (pairedLength < 2) {
     return (
       <div className="flex h-[320px] items-center justify-center font-mono text-xs text-slate-500">
         Photometric telemetry data unavailable for plotting.

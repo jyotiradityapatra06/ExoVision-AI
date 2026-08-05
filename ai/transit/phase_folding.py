@@ -113,9 +113,7 @@ class TransitWindow:
             "in_transit_original_indices": _json_array(
                 self.in_transit_original_indices
             ),
-            "baseline_original_indices": _json_array(
-                self.baseline_original_indices
-            ),
+            "baseline_original_indices": _json_array(self.baseline_original_indices),
             "in_transit_phase": _json_array(self.in_transit_phase),
             "baseline_phase": _json_array(self.baseline_phase),
             "in_transit_flux": _json_array(self.in_transit_flux),
@@ -141,9 +139,7 @@ def fold_lightcurve(
     time_arr = _numeric_array("time", time)
     flux_arr = _numeric_array("flux", flux)
     arrays: dict[str, np.ndarray] = {"time": time_arr, "flux": flux_arr}
-    error_arr = (
-        None if flux_error is None else _numeric_array("flux_error", flux_error)
-    )
+    error_arr = None if flux_error is None else _numeric_array("flux_error", flux_error)
     quality_arr = None if quality is None else np.asarray(quality)
     if quality_arr is not None and quality_arr.ndim != 1:
         raise ValueError("quality must be one-dimensional.")
@@ -180,8 +176,7 @@ def fold_lightcurve(
     rejected = int(np.count_nonzero(~valid_mask))
     if rejected and not remove_invalid:
         raise ValueError(
-            "Light-curve arrays contain non-finite values and "
-            "remove_invalid is False."
+            "Light-curve arrays contain non-finite values and remove_invalid is False."
         )
     if remove_invalid:
         selected = valid_mask
@@ -198,8 +193,7 @@ def fold_lightcurve(
 
     time_delta = valid_time - epoch
     relative_time = (
-        np.remainder(time_delta + 0.5 * valid_period, valid_period)
-        - 0.5 * valid_period
+        np.remainder(time_delta + 0.5 * valid_period, valid_period) - 0.5 * valid_period
     )
     centered_phase = relative_time / valid_period
     phase = (centered_phase - lower) % 1.0 + lower
@@ -350,9 +344,7 @@ def extract_transit_window(
     if not isinstance(folded, FoldedLightCurve):
         raise ValueError("folded must be a FoldedLightCurve instance.")
     if (transit_duration is None) == (phase_half_width is None):
-        raise ValueError(
-            "Specify exactly one of transit_duration or phase_half_width."
-        )
+        raise ValueError("Specify exactly one of transit_duration or phase_half_width.")
     if transit_duration is not None:
         duration = _finite_float("transit_duration", transit_duration)
         if duration <= 0 or duration >= folded.period_days:
@@ -374,9 +366,7 @@ def extract_transit_window(
     centered_phase = (folded.phase + 0.5) % 1.0 - 0.5
     absolute_phase = np.abs(centered_phase)
     in_transit_mask = absolute_phase <= half_width
-    baseline_mask = (absolute_phase > half_width) & (
-        absolute_phase <= outer_width
-    )
+    baseline_mask = (absolute_phase > half_width) & (absolute_phase <= outer_width)
     transit_indices = np.flatnonzero(in_transit_mask)
     baseline_indices = np.flatnonzero(baseline_mask)
 

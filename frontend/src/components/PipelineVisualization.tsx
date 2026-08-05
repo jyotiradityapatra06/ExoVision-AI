@@ -2,7 +2,7 @@
 
 import { Activity, BrainCircuit, CheckCircle2, Cpu, Database, Filter, LoaderCircle, Sparkles } from "lucide-react";
 
-export type PipelineStage = "idle" | "uploading" | "fits" | "detecting" | "classifying" | "reporting";
+export type PipelineStage = "idle" | "uploading" | "preprocessing" | "detecting" | "classifying" | "finalizing";
 
 const stages = [
   {
@@ -12,9 +12,9 @@ const stages = [
     icon: Database,
   },
   {
-    id: "fits",
-    title: "Processing FITS Header",
-    detail: "Parsing metadata, cadence & flux normalization",
+    id: "preprocessing",
+    title: "Preprocessing Light Curve",
+    detail: "Validating, cleaning, normalizing & detrending",
     icon: Filter,
   },
   {
@@ -26,24 +26,24 @@ const stages = [
   {
     id: "classifying",
     title: "Classifying AI Model",
-    detail: "Deep 1D Convolutional Neural Network prediction",
+    detail: "Random Forest candidate classification",
     icon: Cpu,
   },
   {
-    id: "reporting",
-    title: "Generating Report",
-    detail: "SHAP feature attributions & AAS report compilation",
+    id: "finalizing",
+    title: "Finalizing Results",
+    detail: "Model evidence, charts & result persistence",
     icon: Sparkles,
   },
 ];
 
 export function PipelineVisualization({ currentStage }: { currentStage: PipelineStage }) {
   const getStageStatus = (stageId: string) => {
-    const order = ["idle", "uploading", "fits", "detecting", "classifying", "reporting"];
+    const order = ["idle", "uploading", "preprocessing", "detecting", "classifying", "finalizing"];
     const currentIndex = order.indexOf(currentStage);
     const targetIndex = order.indexOf(stageId);
 
-    if (currentIndex > targetIndex || currentStage === "reporting") return "done";
+    if (currentIndex > targetIndex || currentStage === "finalizing") return "done";
     if (currentIndex === targetIndex) return "active";
     return "pending";
   };
@@ -51,10 +51,10 @@ export function PipelineVisualization({ currentStage }: { currentStage: Pipeline
   const getProgressPercent = () => {
     switch (currentStage) {
       case "uploading": return 20;
-      case "fits": return 45;
+      case "preprocessing": return 45;
       case "detecting": return 70;
       case "classifying": return 88;
-      case "reporting": return 100;
+      case "finalizing": return 100;
       default: return 0;
     }
   };

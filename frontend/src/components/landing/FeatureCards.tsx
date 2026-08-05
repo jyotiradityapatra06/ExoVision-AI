@@ -7,7 +7,7 @@ export function FeatureCards() {
   const features = [
     {
       title: "AI Transit Detection",
-      description: "Automated period search, phase folding and transit detection using Box-Least-Squares & Fourier algorithms.",
+      description: "Automated period search, phase folding, and transit detection using Box Least Squares.",
       icon: Activity,
       gradient: "from-cyan-500/20 to-blue-500/10",
       accentColor: "text-cyan-300",
@@ -16,16 +16,16 @@ export function FeatureCards() {
     },
     {
       title: "Machine Learning Classification",
-      description: "Candidate scoring using extracted astronomical features trained on thousands of validated exoplanets.",
+      description: "Candidate scoring with the deployed Random Forest model and extracted astronomical features.",
       icon: Cpu,
       gradient: "from-violet-500/20 to-indigo-500/10",
       accentColor: "text-violet-300",
       borderColor: "group-hover:border-violet-400/50",
-      tag: "DEEP LEARNING",
+      tag: "RANDOM FOREST",
     },
     {
       title: "Explainable AI",
-      description: "Understand why a candidate receives its confidence score through feature contribution & SHAP analysis.",
+      description: "Understand a confidence score through model feature importance and measured transit evidence.",
       icon: Sparkles,
       gradient: "from-purple-500/20 to-pink-500/10",
       accentColor: "text-purple-300",
@@ -72,7 +72,7 @@ export function FeatureCards() {
             viewport={{ once: true }}
             className="max-w-md text-slate-400 text-sm leading-relaxed"
           >
-            A end-to-end scientific pipeline transforming raw photometric light flux into rigorous exoplanetary candidate classifications.
+            An end-to-end scientific pipeline transforming raw photometric flux into reproducible exoplanet candidate classifications.
           </motion.p>
         </div>
 

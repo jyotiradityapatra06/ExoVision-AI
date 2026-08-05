@@ -2,7 +2,7 @@
 
 ## Local setup
 
-From the repository root, create Python 3.12 and Node.js 20 environments:
+From the repository root, create Python 3.12 and Node.js 20.9+ environments:
 
 ```powershell
 py -3.12 -m venv .venv
@@ -77,8 +77,10 @@ For horizontally scaled production, provision PostgreSQL and apply `backend/migr
 
 ```powershell
 python -m pytest
-python -m ruff check ai backend scripts
+python -m ruff check .
 Set-Location frontend
+npm audit
+npm run lint
 npm run typecheck
 npm run build
 ```

@@ -20,7 +20,7 @@ Returns the current authenticated user.
 
 ### `POST /api/v1/upload/lightcurve`
 
-Accepts multipart field `file` containing `.fits`, `.csv`, or `.txt` data up to 25 MB. CSV/TXT input requires `time` and `flux`; `flux_error` and `quality` are optional. Returns `analysis_id`, filename, and `uploaded` status.
+Accepts multipart field `file` containing `.fits`, `.csv`, or `.txt` data up to 25 MB. CSV/TXT input requires `time` and `flux`; `flux_error` and `quality` are optional. Scientific processing is limited to 250,000 light-curve samples per analysis. Returns `analysis_id`, filename, and `uploaded` status.
 
 ## Analysis APIs
 
@@ -56,15 +56,15 @@ Downloads the generated PDF after ownership verification.
 
 ### `GET /api/v1/datasets/search?target={name}&mission={all|kepler|tess}`
 
-Resolves an astronomical target through NASA MAST and returns compatible Kepler, K2, or TESS light-curve product metadata.
+Resolves an astronomical target through NASA MAST and returns compatible Kepler, K2, or TESS light-curve product metadata. Authentication is required.
 
 ### `GET /api/v1/datasets/download?data_uri={mast_uri}`
 
-Downloads a validated public MAST product through the API so the browser can submit it to the standard upload workflow.
+Downloads a validated public MAST FITS product through the API so the browser can submit it to the standard upload workflow. Authentication is required.
 
 ### `GET /api/v1/datasets/demo`
 
-Returns the bundled deterministic FITS sample used by `/demo`.
+Returns the bundled deterministic FITS sample used by `/demo`. Authentication is required.
 
 ## System and model APIs
 

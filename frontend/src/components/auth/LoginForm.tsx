@@ -33,12 +33,14 @@ export function LoginForm() {
   return (
     <form className="space-y-5" onSubmit={submit}>
       <div>
-        <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
+        <label htmlFor="login-email" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
           Researcher Email Address
         </label>
         <div className="relative">
           <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
           <input
+            id="login-email"
+            maxLength={254}
             autoComplete="email"
             className="w-full rounded-xl border border-cyan-900/40 bg-[#04091a]/90 pl-10 pr-4 py-3 font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400 focus:shadow-cyan-sm"
             name="email"
@@ -51,13 +53,15 @@ export function LoginForm() {
 
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+          <label htmlFor="login-password" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
             Access Key / Password
           </label>
         </div>
         <div className="relative">
           <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
           <input
+            id="login-password"
+            maxLength={128}
             autoComplete="current-password"
             className="w-full rounded-xl border border-cyan-900/40 bg-[#04091a]/90 pl-10 pr-10 py-3 font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400 focus:shadow-cyan-sm"
             name="password"
@@ -66,6 +70,7 @@ export function LoginForm() {
             type={showPassword ? "text" : "password"}
           />
           <button
+            aria-label={showPassword ? "Hide password" : "Show password"}
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3.5 top-3.5 text-slate-400 hover:text-cyan-300"

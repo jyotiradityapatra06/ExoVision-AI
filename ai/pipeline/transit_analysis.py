@@ -121,12 +121,8 @@ class TransitAnalysisConfig:
     candidate_thresholds: CandidateThresholds = field(
         default_factory=CandidateThresholds
     )
-    scoring: CandidateScoringConfig = field(
-        default_factory=CandidateScoringConfig
-    )
-    recovery_thresholds: RecoveryThresholds = field(
-        default_factory=RecoveryThresholds
-    )
+    scoring: CandidateScoringConfig = field(default_factory=CandidateScoringConfig)
+    recovery_thresholds: RecoveryThresholds = field(default_factory=RecoveryThresholds)
     optional_failure_mode: Literal["partial", "failed"] = "partial"
     retain_intermediate_arrays: bool = False
 
@@ -138,9 +134,7 @@ class TransitAnalysisConfig:
         if not isinstance(self.bls, BLSAnalysisConfig):
             raise ValueError("bls must be a BLSAnalysisConfig instance.")
         if not isinstance(self.phase_binning, PhaseBinningConfig):
-            raise ValueError(
-                "phase_binning must be a PhaseBinningConfig instance."
-            )
+            raise ValueError("phase_binning must be a PhaseBinningConfig instance.")
         if not isinstance(self.candidate_thresholds, CandidateThresholds):
             raise ValueError(
                 "candidate_thresholds must be a CandidateThresholds instance."
@@ -222,9 +216,7 @@ class TransitAnalysisResult:
             "recovery": (
                 None if self.recovery is None else _json_safe(self.recovery.to_dict())
             ),
-            "candidate": (
-                None if self.candidate is None else self.candidate.to_dict()
-            ),
+            "candidate": (None if self.candidate is None else self.candidate.to_dict()),
             "confidence": (
                 None if self.confidence is None else self.confidence.to_dict()
             ),
@@ -263,9 +255,7 @@ class BatchTransitAnalysisResult:
         return {
             "results": [result.to_dict() for result in self.results],
             "status_counts": dict(self.status_counts),
-            "ranked_candidates": [
-                score.to_dict() for score in self.ranked_candidates
-            ],
+            "ranked_candidates": [score.to_dict() for score in self.ranked_candidates],
             "metadata": _json_safe(self.metadata),
         }
 
@@ -835,11 +825,7 @@ def _numeric_array(name: str, values: np.ndarray) -> np.ndarray:
 
 
 def _finite_float(name: str, value: Real) -> float:
-    if (
-        isinstance(value, bool)
-        or not isinstance(value, Real)
-        or not np.isfinite(value)
-    ):
+    if isinstance(value, bool) or not isinstance(value, Real) or not np.isfinite(value):
         raise ValueError(f"{name} must be a finite number.")
     return float(value)
 

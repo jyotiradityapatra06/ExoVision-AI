@@ -149,13 +149,14 @@ class CandidateScoringConfig:
             object.__setattr__(self, name, value)
 
         if not (
-            100.0 >= self.high_score_threshold > self.moderate_score_threshold
+            100.0
+            >= self.high_score_threshold
+            > self.moderate_score_threshold
             > self.low_score_threshold
             >= 0.0
         ):
             raise ValueError(
-                "Category thresholds must satisfy "
-                "100 >= high > moderate > low >= 0."
+                "Category thresholds must satisfy 100 >= high > moderate > low >= 0."
             )
         if self.minimum_transit_snr > self.target_transit_snr:
             raise ValueError("minimum_transit_snr cannot exceed target_transit_snr.")
@@ -164,9 +165,7 @@ class CandidateScoringConfig:
                 "minimum_phase_coverage cannot exceed target_phase_coverage."
             )
         if self.minimum_valid_sample_fraction > self.target_valid_sample_fraction:
-            raise ValueError(
-                "minimum_valid_sample_fraction cannot exceed its target."
-            )
+            raise ValueError("minimum_valid_sample_fraction cannot exceed its target.")
         for target_name in (
             "target_transit_snr",
             "target_robust_snr",
@@ -194,8 +193,7 @@ class CandidateScoringConfig:
             < 1
         ):
             raise ValueError(
-                "Geometry ratios must satisfy 0 <= minimum < preferred < "
-                "maximum < 1."
+                "Geometry ratios must satisfy 0 <= minimum < preferred < maximum < 1."
             )
 
         integer_names = (
@@ -217,13 +215,9 @@ class CandidateScoringConfig:
                 raise ValueError(f"{name} must be a positive integer.")
             object.__setattr__(self, name, int(value))
         if self.minimum_observed_transits > self.target_observed_transits:
-            raise ValueError(
-                "minimum_observed_transits cannot exceed its target."
-            )
+            raise ValueError("minimum_observed_transits cannot exceed its target.")
         if self.minimum_in_transit_samples > self.target_in_transit_samples:
-            raise ValueError(
-                "minimum_in_transit_samples cannot exceed its target."
-            )
+            raise ValueError("minimum_in_transit_samples cannot exceed its target.")
         if self.minimum_baseline_samples > self.target_baseline_samples:
             raise ValueError("minimum_baseline_samples cannot exceed its target.")
 
@@ -387,9 +381,7 @@ def score_transit_candidate(
             else 0.0
         )
         points = (
-            100.0 * normalized * normalized_weight
-            if normalized is not None
-            else 0.0
+            100.0 * normalized * normalized_weight if normalized is not None else 0.0
         )
         base_score += points
         components.append(
@@ -415,19 +407,13 @@ def score_transit_candidate(
     total_score = float(np.clip(base_score - deducted, 0.0, 100.0))
     category = _score_category(total_score, bool(hard_failures), scoring)
     warnings = list(candidate.warnings)
-    warnings.extend(
-        penalty.name for penalty in penalties if penalty.applied
-    )
+    warnings.extend(penalty.name for penalty in penalties if penalty.applied)
     if candidate.recovery is None:
         warnings.append("recovery_metadata_unavailable")
     if available_weight == 0:
         warnings.append("no_available_weighted_components")
-    reasons = [
-        f"{component.name}: {component.explanation}" for component in components
-    ]
-    reasons.extend(
-        penalty.explanation for penalty in penalties if penalty.applied
-    )
+    reasons = [f"{component.name}: {component.explanation}" for component in components]
+    reasons.extend(penalty.explanation for penalty in penalties if penalty.applied)
     reasons.extend(f"Hard rejection: {flag}." for flag in hard_failures)
     if category is ScoreCategory.REJECTED and not hard_failures:
         reasons.append("Score is below the configured low-category threshold.")
@@ -482,9 +468,7 @@ def _component_inputs(
     depth_consistency = (
         None
         if depth_ratio is None or not np.isfinite(depth_ratio)
-        else _clamp01(
-            1.0 - abs(depth_ratio - 1.0) / config.depth_ratio_tolerance
-        )
+        else _clamp01(1.0 - abs(depth_ratio - 1.0) / config.depth_ratio_tolerance)
     )
     ratio = _safe_number(candidate.duration_period_ratio)
     geometry_score = _clamp01(
@@ -567,9 +551,7 @@ def _component_inputs(
         ),
         "phase_coverage": (
             quality.phase_coverage,
-            _ratio_score(
-                quality.phase_coverage, config.target_phase_coverage
-            ),
+            _ratio_score(quality.phase_coverage, config.target_phase_coverage),
             "Phase coverage divided by its configured target, capped at 1.",
         ),
         "phase_bin_coverage": (
@@ -667,8 +649,7 @@ def _score_penalties(
         ),
         (
             "poor_phase_coverage",
-            _safe_number(quality.phase_coverage)
-            < config.minimum_phase_coverage,
+            _safe_number(quality.phase_coverage) < config.minimum_phase_coverage,
             config.poor_phase_coverage_penalty,
             "Phase coverage is below the configured minimum.",
         ),
@@ -780,11 +761,7 @@ def _ratio_score(value: Real, target: Real) -> float:
 
 
 def _safe_number(value: Any) -> float:
-    if (
-        isinstance(value, bool)
-        or not isinstance(value, Real)
-        or not np.isfinite(value)
-    ):
+    if isinstance(value, bool) or not isinstance(value, Real) or not np.isfinite(value):
         return 0.0
     return float(value)
 
@@ -794,10 +771,6 @@ def _clamp01(value: float) -> float:
 
 
 def _finite_float(name: str, value: Real) -> float:
-    if (
-        isinstance(value, bool)
-        or not isinstance(value, Real)
-        or not np.isfinite(value)
-    ):
+    if isinstance(value, bool) or not isinstance(value, Real) or not np.isfinite(value):
         raise ValueError(f"{name} must be a finite number.")
     return float(value)

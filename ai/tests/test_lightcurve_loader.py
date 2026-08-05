@@ -160,3 +160,24 @@ def test_load_lightcurve_fits_empty_table(tmp_path):
 
     with pytest.raises(ValueError, match="empty arrays"):
         load_lightcurve_fits(empty_path)
+
+
+def test_missing_flux_error_uses_positive_fallback(tmp_path):
+    """FITS files without uncertainty columns remain usable by BLS."""
+    sample_path = tmp_path / "missing_error.fits"
+    columns = fits.ColDefs(
+        [
+            fits.Column(name="TIME", format="D", array=np.arange(30, dtype=float)),
+            fits.Column(
+                name="FLUX",
+                format="D",
+                array=1.0 + np.linspace(-0.001, 0.001, 30),
+            ),
+        ]
+    )
+    fits.BinTableHDU.from_columns(columns).writeto(sample_path)
+
+    loaded = load_lightcurve_fits(sample_path)
+
+    assert np.all(np.isfinite(loaded["flux_error"]))
+    assert np.all(loaded["flux_error"] > 0)

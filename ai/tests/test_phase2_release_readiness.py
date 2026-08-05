@@ -49,9 +49,7 @@ def test_demo_recovers_injected_transit(
     assert result.detection is not None
     assert result.recovery is not None
     assert result.recovery.recovered
-    assert result.detection.period_days == pytest.approx(
-        injected.period_days, rel=0.02
-    )
+    assert result.detection.period_days == pytest.approx(injected.period_days, rel=0.02)
     assert result.candidate is not None
     assert result.confidence is not None
 

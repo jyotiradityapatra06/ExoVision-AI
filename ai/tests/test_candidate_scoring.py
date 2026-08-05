@@ -155,9 +155,7 @@ def test_configurable_weights_and_invalid_weights():
     candidate = make_candidate()
     detector_only = score_transit_candidate(
         candidate,
-        no_penalty_config(
-            weights=only_weights(detector_significance=1.0)
-        ),
+        no_penalty_config(weights=only_weights(detector_significance=1.0)),
     )
     snr_only = score_transit_candidate(
         replace(candidate, detection=replace(candidate.detection, snr=0.0)),
@@ -220,9 +218,7 @@ def test_quality_and_phase_coverage_penalties():
 
 def test_geometry_and_depth_consistency_behaviors():
     candidate = make_candidate()
-    implausible = score_transit_candidate(
-        replace(candidate, duration_period_ratio=0.5)
-    )
+    implausible = score_transit_candidate(replace(candidate, duration_period_ratio=0.5))
     inconsistent_stats = replace(
         candidate.folded_statistics,
         measured_to_detector_depth_ratio=2.0,

@@ -6,7 +6,7 @@ ExoVision AI is a three-layer application: a Next.js client, a versioned FastAPI
 
 ## Frontend
 
-The `frontend/` application uses Next.js 15 App Router, strict TypeScript, Tailwind CSS, Framer Motion, and client-side chart components. `AuthContext` stores the bearer token and resolves the active user. `frontend/src/lib/api.ts` is the single HTTP boundary for authentication, upload, analysis, results, reports, demo data, and NASA datasets.
+The `frontend/` application uses Next.js 16 App Router, strict TypeScript, Tailwind CSS, Framer Motion, and client-side chart components. `AuthContext` stores the bearer token and resolves the active user. `frontend/src/lib/api.ts` is the single HTTP boundary for authentication, upload, analysis, results, reports, demo data, and NASA datasets.
 
 Public routes are `/`, `/auth/login`, and `/auth/signup`. Product routes use `ProtectedRoute`: `/dashboard`, `/upload`, `/demo`, `/datasets`, `/results/[id]`, and `/reports`.
 

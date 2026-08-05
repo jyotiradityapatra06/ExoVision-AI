@@ -128,9 +128,7 @@ def test_harmonic_must_be_explicitly_accepted(injected):
 
 def test_wrapped_epoch_error_near_period_boundary(injected):
     error = calculate_wrapped_epoch_error(10.0, 13.95, 4.0)
-    result = evaluate_transit_recovery(
-        injected, make_detection(transit_time=13.95)
-    )
+    result = evaluate_transit_recovery(injected, make_detection(transit_time=13.95))
 
     assert error == pytest.approx(0.05)
     assert result.epoch_error_days == pytest.approx(0.05)
@@ -190,9 +188,7 @@ def test_configurable_tolerances(injected):
 
 
 def test_false_detector_flag_prevents_recovery(injected):
-    result = evaluate_transit_recovery(
-        injected, make_detection(detected=False)
-    )
+    result = evaluate_transit_recovery(injected, make_detection(detected=False))
 
     assert not result.recovered
     assert "Detector significance flag is false." in result.notes

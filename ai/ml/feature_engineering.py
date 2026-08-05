@@ -114,34 +114,24 @@ def extract_candidate_features(
 
     feature_sources = {
         "period_days": _first(core, detection, "period_days", "period"),
-        "duration_days": _first(
-            core, detection, "duration_days", "duration"
-        ),
+        "duration_days": _first(core, detection, "duration_days", "duration"),
         "depth": _first(core, detection, "depth"),
         "transit_snr": _first(core, detection, "transit_snr", "snr"),
         "bls_power": _first(core, detection, "bls_power", "power"),
-        "transit_count": _first(
-            core, None, "observed_transit_events", "transit_count"
-        ),
+        "transit_count": _first(core, None, "observed_transit_events", "transit_count"),
         "transit_epoch": _first(
             core, detection, "transit_epoch", "transit_time", "epoch"
         ),
         "phase_coverage": _first(quality, core, "phase_coverage"),
-        "residual_rms": _first(
-            statistics, core, "residual_rms", "baseline_std"
-        ),
+        "residual_rms": _first(statistics, core, "residual_rms", "baseline_std"),
         "odd_even_depth_difference": _first(
             odd_even, core, "absolute_depth_difference"
         ),
         "relative_odd_even_depth_difference": _first(
             odd_even, core, "relative_depth_difference"
         ),
-        "secondary_eclipse_depth": _first(
-            core, statistics, "secondary_eclipse_depth"
-        ),
-        "candidate_score": _first(
-            core, confidence, "candidate_score", "total_score"
-        ),
+        "secondary_eclipse_depth": _first(core, statistics, "secondary_eclipse_depth"),
+        "candidate_score": _first(core, confidence, "candidate_score", "total_score"),
         "recovery_period_error": _first(
             recovery, core, "absolute_period_error", "recovery_period_error"
         ),
@@ -162,18 +152,12 @@ def extract_candidate_features(
                 raise ValueError("transit_count must be a non-negative integer.")
             record[name] = int(raw_count)
             continue
-        record[name] = sanitize_optional_value(
-            feature_sources.get(name), name=name
-        )
-    explicit_ratio = _first(
-        core, statistics, "secondary_to_primary_depth_ratio"
-    )
+        record[name] = sanitize_optional_value(feature_sources.get(name), name=name)
+    explicit_ratio = _first(core, statistics, "secondary_to_primary_depth_ratio")
     record["secondary_to_primary_depth_ratio"] = (
         sanitize_optional_value(explicit_ratio, name="secondary_to_primary_depth_ratio")
         if explicit_ratio is not None
-        else _safe_ratio(
-            record["secondary_eclipse_depth"], record["depth"]
-        )
+        else _safe_ratio(record["secondary_eclipse_depth"], record["depth"])
     )
 
     raw_label = source_metadata.get(

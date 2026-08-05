@@ -1,4 +1,5 @@
 const TOKEN_KEY = "exovision_access_token";
+export const AUTH_INVALIDATED_EVENT = "exovision:auth-invalidated";
 
 export function getStoredToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -11,4 +12,5 @@ export function storeToken(token: string): void {
 
 export function clearToken(): void {
   window.localStorage.removeItem(TOKEN_KEY);
+  window.dispatchEvent(new Event(AUTH_INVALIDATED_EVENT));
 }

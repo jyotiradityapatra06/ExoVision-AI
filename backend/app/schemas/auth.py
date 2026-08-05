@@ -20,12 +20,21 @@ class RegisterRequest(BaseModel):
             raise ValueError("A valid email address is required.")
         return normalized
 
+    @field_validator("display_name")
+    @classmethod
+    def validate_display_name(cls, value: str) -> str:
+        """Reject names that become empty after normalization."""
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Display name cannot be blank.")
+        return normalized
+
 
 class LoginRequest(BaseModel):
     """Existing account credentials."""
 
-    email: str
-    password: str
+    email: str = Field(min_length=3, max_length=254)
+    password: str = Field(min_length=1, max_length=128)
 
 
 class UserResponse(BaseModel):

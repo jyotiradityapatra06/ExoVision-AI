@@ -81,9 +81,7 @@ def generate_synthetic_transit(
     if period <= 0:
         raise ValueError(f"period must be positive, got {period}.")
     if transit_duration <= 0:
-        raise ValueError(
-            f"transit_duration must be positive, got {transit_duration}."
-        )
+        raise ValueError(f"transit_duration must be positive, got {transit_duration}.")
     if transit_duration >= period:
         raise ValueError("transit_duration must be smaller than period.")
     if baseline_flux <= 0:

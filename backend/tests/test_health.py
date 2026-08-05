@@ -34,6 +34,4 @@ def test_cors_allows_local_frontend() -> None:
         headers={"Origin": "http://localhost:3000"},
     )
 
-    assert response.headers["access-control-allow-origin"] == (
-        "http://localhost:3000"
-    )
+    assert response.headers["access-control-allow-origin"] == ("http://localhost:3000")

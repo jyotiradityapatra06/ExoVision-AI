@@ -2,6 +2,7 @@
 
 from typing import Any
 
+import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
@@ -10,6 +11,7 @@ from app.main import app
 from app.services.analysis_service import (
     AnalysisExecutionError,
     AnalysisNotFoundError,
+    _ensure_sample_limit,
 )
 
 
@@ -87,3 +89,16 @@ def test_invalid_lightcurve_returns_422(client: TestClient):
 
     assert response.status_code == 422
     assert "time and flux" in response.json()["detail"]
+
+
+def test_analysis_rejects_excessive_sample_count(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr("app.services.analysis_service.MAX_LIGHTCURVE_SAMPLES", 2)
+    lightcurve = {
+        "time": np.array([0.0, 1.0, 2.0]),
+        "flux": np.ones(3),
+        "flux_error": np.full(3, 0.01),
+        "quality": np.zeros(3, dtype=int),
+    }
+
+    with pytest.raises(ValueError, match="production limit"):
+        _ensure_sample_limit(lightcurve)

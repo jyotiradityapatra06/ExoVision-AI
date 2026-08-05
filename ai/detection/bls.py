@@ -169,9 +169,7 @@ def detect_transit_bls(
     best_depth_err = max(0.0, best_depth_err)
 
     # Build transit mask and calculate signal-to-noise ratio
-    mask = build_transit_mask(
-        clean_time, best_period, best_duration, best_transit_time
-    )
+    mask = build_transit_mask(clean_time, best_period, best_duration, best_transit_time)
 
     if np.any(mask) and best_depth > 0:
         snr = calculate_transit_snr(best_depth, clean_err, mask)

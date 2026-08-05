@@ -39,12 +39,14 @@ export function SignupForm() {
   return (
     <form className="space-y-4" onSubmit={submit}>
       <div>
-        <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+        <label htmlFor="signup-name" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
           Full Name / Handle
         </label>
         <div className="relative">
           <User className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
           <input
+            id="signup-name"
+            maxLength={80}
             autoComplete="name"
             className="w-full rounded-xl border border-cyan-900/40 bg-[#04091a]/90 pl-10 pr-4 py-2.5 font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400 focus:shadow-cyan-sm"
             name="displayName"
@@ -56,12 +58,14 @@ export function SignupForm() {
       </div>
 
       <div>
-        <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+        <label htmlFor="signup-email" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
           Observatory Email Address
         </label>
         <div className="relative">
           <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
           <input
+            id="signup-email"
+            maxLength={254}
             autoComplete="email"
             className="w-full rounded-xl border border-cyan-900/40 bg-[#04091a]/90 pl-10 pr-4 py-2.5 font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400 focus:shadow-cyan-sm"
             name="email"
@@ -73,12 +77,14 @@ export function SignupForm() {
       </div>
 
       <div>
-        <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+        <label htmlFor="signup-password" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
           Access Password (Min 12 Chars)
         </label>
         <div className="relative">
           <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
           <input
+            id="signup-password"
+            maxLength={128}
             autoComplete="new-password"
             className="w-full rounded-xl border border-cyan-900/40 bg-[#04091a]/90 pl-10 pr-10 py-2.5 font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400 focus:shadow-cyan-sm"
             minLength={12}
@@ -88,6 +94,7 @@ export function SignupForm() {
             type={showPassword ? "text" : "password"}
           />
           <button
+            aria-label={showPassword ? "Hide password" : "Show password"}
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3.5 top-3.5 text-slate-400 hover:text-cyan-300"
@@ -98,12 +105,14 @@ export function SignupForm() {
       </div>
 
       <div>
-        <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+        <label htmlFor="signup-confirm" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
           Confirm Password
         </label>
         <div className="relative">
           <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
           <input
+            id="signup-confirm"
+            maxLength={128}
             autoComplete="new-password"
             className="w-full rounded-xl border border-cyan-900/40 bg-[#04091a]/90 pl-10 pr-4 py-2.5 font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400 focus:shadow-cyan-sm"
             minLength={12}

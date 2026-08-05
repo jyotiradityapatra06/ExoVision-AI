@@ -255,9 +255,7 @@ def test_missing_baseline_samples_adds_warning():
 def test_invalid_inputs_and_inconsistent_folded_result():
     lightcurve, detection = synthetic_series()
     with pytest.raises(ValueError, match="length mismatch"):
-        build_transit_candidate(
-            lightcurve["time"], lightcurve["flux"][:-1], detection
-        )
+        build_transit_candidate(lightcurve["time"], lightcurve["flux"][:-1], detection)
 
     invalid = make_detection()
     object.__setattr__(invalid, "period_days", np.nan)

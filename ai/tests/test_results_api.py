@@ -103,3 +103,15 @@ def test_corrupt_result_returns_controlled_500(results_client):
 
     assert response.status_code == 500
     assert response.json()["detail"] == "Stored analysis result is unavailable."
+
+
+def test_non_object_result_returns_controlled_500(results_client):
+    client, root = results_client
+    directory = root / "wrongshape"
+    directory.mkdir(parents=True)
+    (directory / "result.json").write_text("[]", encoding="utf-8")
+
+    response = client.get("/api/v1/results/wrongshape")
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Stored analysis result is unavailable."

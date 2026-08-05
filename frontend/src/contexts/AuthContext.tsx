@@ -3,7 +3,7 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 
 import { api } from "@/lib/api";
-import { clearToken, getStoredToken, storeToken } from "@/lib/auth";
+import { AUTH_INVALIDATED_EVENT, clearToken, getStoredToken, storeToken } from "@/lib/auth";
 import type { AuthUser } from "@/types/api";
 
 type AuthContextValue = {
@@ -21,11 +21,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!getStoredToken()) {
-      setLoading(false);
-      return;
-    }
-    api.me().then(setUser).catch(() => clearToken()).finally(() => setLoading(false));
+    const invalidate = () => setUser(null);
+    window.addEventListener(AUTH_INVALIDATED_EVENT, invalidate);
+
+    const restoreSession = async (): Promise<AuthUser | null> => {
+      if (!getStoredToken()) return null;
+      try {
+        return await api.me();
+      } catch {
+        clearToken();
+        return null;
+      }
+    };
+
+    let active = true;
+    void restoreSession().then((restoredUser) => {
+      if (active) {
+        setUser(restoredUser);
+        setLoading(false);
+      }
+    });
+    return () => {
+      active = false;
+      window.removeEventListener(AUTH_INVALIDATED_EVENT, invalidate);
+    };
   }, []);
 
   const value = useMemo<AuthContextValue>(() => ({

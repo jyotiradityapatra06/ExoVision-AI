@@ -8,6 +8,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ai.ml.service import MLInferenceService
+from app.api.dependencies import CurrentUser
 from app.schemas.ml import (
     CandidateAnalysisRequest,
     CandidateReportResponse,
@@ -37,6 +38,7 @@ MLServiceDependency = Annotated[MLInferenceService, Depends(get_ml_service)]
 @router.post("/predict", response_model=PredictionResponse)
 def predict_candidate(
     request: PredictionRequest,
+    _user: CurrentUser,
     service: MLServiceDependency,
 ) -> PredictionResponse:
     """Classify a prepared candidate and explain the result."""
@@ -55,6 +57,7 @@ def predict_candidate(
 @router.post("/analyze", response_model=CandidateReportResponse)
 def analyze_candidate(
     request: CandidateAnalysisRequest,
+    _user: CurrentUser,
     service: MLServiceDependency,
 ) -> CandidateReportResponse:
     """Run complete ML inference, explanation, and report generation."""

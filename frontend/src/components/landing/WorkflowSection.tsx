@@ -29,14 +29,14 @@ export function WorkflowSection() {
     {
       num: "04",
       title: "ML Classification",
-      desc: "Ensemble neural model evaluates exoplanet vs false positive probability.",
+      desc: "Random Forest model evaluates exoplanet versus false-positive probability.",
       icon: Brain,
       accent: "purple",
     },
     {
       num: "05",
       title: "Explainable Report",
-      desc: "SHAP feature attribution & downloadable scientific dossier.",
+      desc: "Feature-importance evidence and a downloadable scientific report.",
       icon: FileCheck,
       accent: "emerald",
     },

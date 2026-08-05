@@ -87,7 +87,7 @@ export function HeroSection() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-white">Explainable AI Analysis</p>
-                <p className="text-xs text-slate-400">SHAP & feature attribution overlays</p>
+                <p className="text-xs text-slate-400">Model importance and evidence overlays</p>
               </div>
             </div>
           </div>
@@ -112,7 +112,7 @@ export function HeroSection() {
                 <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping" />
                 <span>LIVE SYSTEM CONSOLE // MISSION-CONTROL</span>
               </div>
-              <span className="text-[10px] text-slate-400">LATENCY: 14ms</span>
+              <span className="text-[10px] text-slate-400">BLS + ML PIPELINE</span>
             </div>
 
             {/* Next.js Optimized Image */}
@@ -146,12 +146,12 @@ export function HeroSection() {
                 <Sparkles className="h-4 w-4 text-cyan-400" />
                 AI CONFIDENCE
               </span>
-              <span className="rounded bg-cyan-400/20 px-1.5 py-0.5 text-[10px] text-cyan-300">VALIDATED</span>
+              <span className="rounded bg-cyan-400/20 px-1.5 py-0.5 text-[10px] text-cyan-300">EXAMPLE</span>
             </div>
             <p className="mt-2 text-3xl font-extrabold text-white tracking-tight">98.4%</p>
             <p className="mt-1 text-xs text-slate-300 flex items-center gap-1">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-              Candidate classified as promising
+              Example candidate classified as planet-like
             </p>
           </motion.div>
 

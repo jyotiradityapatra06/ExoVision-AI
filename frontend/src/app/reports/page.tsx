@@ -4,7 +4,7 @@ import { Download, FileText, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import type { AnalysisHistoryItem } from "@/types/api";
 
 export default function ReportsPage() {
@@ -19,6 +19,8 @@ function ReportsContent() {
   const [history, setHistory] = useState<AnalysisHistoryItem[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     let isSubscribed = true;
@@ -30,9 +32,10 @@ function ReportsContent() {
           setLoading(false);
         }
       })
-      .catch(() => {
+      .catch((caught) => {
         if (isSubscribed) {
           setHistory([]);
+          setError(caught instanceof ApiError ? caught.message : "The report registry could not be loaded.");
           setLoading(false);
         }
       });
@@ -41,13 +44,18 @@ function ReportsContent() {
     };
   }, []);
 
-  const filteredHistory = history.filter((item) =>
-    item.filename.toLowerCase().includes(search.toLowerCase()) ||
-    item.id.toLowerCase().includes(search.toLowerCase())
+  const filteredHistory = history.filter(
+    (item) =>
+      item.status === "completed" &&
+      (item.filename.toLowerCase().includes(search.toLowerCase()) ||
+        item.id.toLowerCase().includes(search.toLowerCase()))
   );
 
   async function handleDownload(id: string, filename: string) {
+    setDownloadingId(id);
+    setError(null);
     try {
+      await api.generateReport(id);
       const blob = await api.downloadReport(id);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -55,18 +63,20 @@ function ReportsContent() {
       a.download = `${filename}_report.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch {
-      alert("Report PDF generation failed.");
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "Report PDF generation failed.");
+    } finally {
+      setDownloadingId(null);
     }
   }
 
   function handleBibtexExport(item: AnalysisHistoryItem) {
-    const bibtex = `@article{exovision_${item.id.slice(0, 8)},
+    const bibtex = `@misc{exovision_${item.id.slice(0, 8)},
   title={Candidate Analysis Report for Target ${item.filename}},
   author={ExoVision AI Autonomous Pipeline},
-  journal={ExoVision Scientific Telemetry},
   year={2026},
-  url={https://exovision.ai/results/${item.id}}
+  howpublished={ExoVision AI analysis platform},
+  url={${window.location.origin}/results/${item.id}}
 }`;
     const blob = new Blob([bibtex], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -86,7 +96,7 @@ function ReportsContent() {
             SCIENTIFIC REPORTS REGISTRY
           </h1>
           <p className="font-data-mono text-data-mono text-outline uppercase mt-1">
-            Publication-grade AAS formatted candidate documentation
+            Reproducible candidate analysis and evidence exports
           </p>
         </div>
 
@@ -103,11 +113,13 @@ function ReportsContent() {
         </div>
       </header>
 
+      {error && <p className="mb-6 rounded-lg border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-200" role="alert">{error}</p>}
+
       {/* Reports Table */}
       <div className="hud-border glass-panel corner-bracket-tl overflow-hidden">
         <div className="border-b border-outline-variant/30 p-4 bg-surface-dim/70 flex justify-between items-center font-data-mono text-data-mono">
-          <span className="font-bold text-on-surface uppercase">GENERATED CANDIDATE DOSSIERS</span>
-          <span className="text-primary font-bold">{filteredHistory.length} REPORTS REGISTERED</span>
+          <span className="font-bold text-on-surface uppercase">COMPLETED CANDIDATE ANALYSES</span>
+          <span className="text-primary font-bold">{filteredHistory.length} AVAILABLE FOR EXPORT</span>
         </div>
 
         <div className="overflow-x-auto p-4">
@@ -139,10 +151,11 @@ function ReportsContent() {
                       <div className="flex justify-end gap-2 font-label-caps text-label-caps">
                         <button
                           onClick={() => handleDownload(item.id, item.filename)}
+                          disabled={downloadingId !== null}
                           className="px-3 py-1 border border-primary/50 text-primary bg-primary/10 hover:bg-primary/20 transition-all flex items-center gap-1 font-bold"
                           type="button"
                         >
-                          <Download className="h-3.5 w-3.5" /> PDF
+                          <Download className="h-3.5 w-3.5" /> {downloadingId === item.id ? "Preparing…" : "PDF"}
                         </button>
                         <button
                           onClick={() => handleBibtexExport(item)}

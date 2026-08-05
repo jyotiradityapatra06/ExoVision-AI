@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,8 @@ import pandas as pd
 from ai.ml.service import MLInferenceService
 from ai.pipeline import PipelineStatus, TransitAnalysisConfig, analyze_lightcurve
 from ai.utils.lightcurve_loader import load_lightcurve_fits, validate_lightcurve
+
+MAX_LIGHTCURVE_SAMPLES = 250_000
 
 
 class AnalysisNotFoundError(FileNotFoundError):
@@ -40,6 +43,7 @@ class AnalysisService:
         self._set_state(directory, state, status="processing", progress=10)
         try:
             lightcurve = _load_lightcurve(directory / str(state["stored_filename"]))
+            _ensure_sample_limit(lightcurve)
             self._set_state(directory, state, status="processing", progress=35)
             pipeline_result = analyze_lightcurve(
                 lightcurve["time"],
@@ -59,7 +63,7 @@ class AnalysisService:
             candidate_count = int(pipeline_result.candidate is not None)
             ml_report = None
             if pipeline_result.candidate is not None:
-                service = self.ml_service or MLInferenceService()
+                service = self.ml_service or _default_ml_service()
                 ml_report = service.analyze_candidate(pipeline_result.candidate)
             result = {
                 "analysis_id": analysis_id,
@@ -170,3 +174,18 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
         json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8"
     )
     temporary.replace(path)
+
+
+def _ensure_sample_limit(lightcurve: dict[str, np.ndarray]) -> None:
+    sample_count = len(lightcurve["time"])
+    if sample_count > MAX_LIGHTCURVE_SAMPLES:
+        raise ValueError(
+            f"Light curve contains {sample_count:,} samples; the production limit is "
+            f"{MAX_LIGHTCURVE_SAMPLES:,}."
+        )
+
+
+@lru_cache(maxsize=1)
+def _default_ml_service() -> MLInferenceService:
+    """Load the classifier once per worker instead of once per analysis."""
+    return MLInferenceService()

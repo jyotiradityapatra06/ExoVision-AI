@@ -1,5 +1,6 @@
 """Authentication, JWT, and protected-route API tests."""
 
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -93,6 +94,25 @@ def test_duplicate_registration_and_invalid_credentials(auth_client):
     assert invalid.headers["www-authenticate"] == "Bearer"
 
 
+def test_auth_payload_limits_reject_blank_name_and_oversized_password(auth_client):
+    client, _, _ = auth_client
+    blank_name = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "blank@example.com",
+            "display_name": "   ",
+            "password": "correct-horse-orbit-42",
+        },
+    )
+    oversized_login = client.post(
+        "/api/v1/auth/login",
+        json={"email": "astro@example.com", "password": "x" * 129},
+    )
+
+    assert blank_name.status_code == 422
+    assert oversized_login.status_code == 422
+
+
 @pytest.mark.parametrize(
     "method,path",
     [
@@ -101,6 +121,8 @@ def test_duplicate_registration_and_invalid_credentials(auth_client):
         ("get", "/api/v1/results/analysis123"),
         ("post", "/api/v1/reports/analysis123"),
         ("get", "/api/v1/reports/analysis123/download"),
+        ("get", "/api/v1/datasets/demo"),
+        ("get", "/api/v1/datasets/search?target=Kepler-452"),
     ],
 )
 def test_product_endpoints_reject_anonymous_requests(
@@ -117,6 +139,16 @@ def test_invalid_token_is_rejected(auth_client):
     client, _, _ = auth_client
     response = client.get(
         "/api/v1/auth/me", headers={"Authorization": "Bearer invalid-token"}
+    )
+
+    assert response.status_code == 401
+
+
+def test_ml_inference_rejects_anonymous_requests(auth_client):
+    client, _, _ = auth_client
+    response = client.post(
+        "/api/v1/ml/predict",
+        json={"candidate_id": "candidate-1", "features": {}},
     )
 
     assert response.status_code == 401
@@ -139,3 +171,10 @@ def test_user_cannot_access_another_users_analysis(auth_client):
     )
 
     assert response.status_code == 404
+
+
+def test_analysis_ownership_foreign_key_is_enforced(auth_client):
+    _, _, analyses = auth_client
+
+    with pytest.raises(sqlite3.IntegrityError):
+        analyses.create("orphaned", "missing-user", "orphaned.csv")

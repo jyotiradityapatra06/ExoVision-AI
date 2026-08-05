@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -35,9 +36,15 @@ class MastService:
         }
         lookup = self._invoke(request)
         resolved = lookup.get("resolvedCoordinate") or []
-        if not resolved:
+        if not isinstance(resolved, list) or not resolved:
             return []
         coordinate = resolved[0]
+        if (
+            not isinstance(coordinate, dict)
+            or not isinstance(coordinate.get("ra"), (int, float))
+            or not isinstance(coordinate.get("decl"), (int, float))
+        ):
+            raise MastServiceError("MAST returned invalid target coordinates.")
         request = {
             "service": "Mast.Caom.Cone",
             "params": {
@@ -56,7 +63,8 @@ class MastService:
             if str(row.get("obs_collection", "")).upper() in missions
         ]
         results: list[dict[str, Any]] = []
-        for observation in selected:
+        # Bound sequential product metadata calls for crowded target fields.
+        for observation in selected[:50]:
             products = self._products(str(observation.get("obsid", "")))
             for product in products:
                 filename = str(product.get("productFilename", ""))
@@ -70,7 +78,7 @@ class MastService:
                         "format": "FITS",
                         "filename": filename,
                         "data_uri": str(product.get("dataURI", "")),
-                        "size_bytes": int(product.get("size") or 0),
+                        "size_bytes": _safe_size(product.get("size")),
                     }
                 )
                 if len(results) >= limit:
@@ -91,7 +99,11 @@ class MastService:
             raise MastServiceError(f"MAST download failed: {error}") from error
         if len(content) > 25 * 1024 * 1024:
             raise MastServiceError("MAST product exceeds the 25 MB import limit.")
-        filename = data_uri.rsplit("/", 1)[-1] or "mast-lightcurve.fits"
+        if not content.startswith(b"SIMPLE"):
+            raise MastServiceError("MAST did not return a valid FITS product.")
+        filename = Path(data_uri.rsplit("/", 1)[-1]).name
+        if not filename.lower().endswith(".fits"):
+            filename = "mast-lightcurve.fits"
         return filename, content
 
     def _products(self, observation_id: str) -> list[dict[str, Any]]:
@@ -117,9 +129,12 @@ class MastService:
                 ),
                 timeout=self.timeout,
             ) as response:
-                return json.loads(response.read().decode("utf-8"))
+                payload = json.loads(response.read().decode("utf-8"))
         except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as error:
             raise MastServiceError(f"MAST request failed: {error}") from error
+        if not isinstance(payload, dict):
+            raise MastServiceError("MAST returned an invalid response payload.")
+        return payload
 
 
 def _observation_period(observation: dict[str, Any]) -> str:
@@ -127,3 +142,10 @@ def _observation_period(observation: dict[str, Any]) -> str:
     if isinstance(start, (int, float)) and isinstance(end, (int, float)):
         return f"MJD {start:.2f}–{end:.2f}"
     return "Archive observation"
+
+
+def _safe_size(value: Any) -> int:
+    try:
+        return max(0, int(value or 0))
+    except (TypeError, ValueError):
+        return 0

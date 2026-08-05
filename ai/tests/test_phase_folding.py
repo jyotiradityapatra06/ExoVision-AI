@@ -139,9 +139,7 @@ def test_deterministic_mean_and_median_binning():
         sort_phase=False,
     )
     mean_result = bin_folded_lightcurve(folded, number_bins=4, aggregation="mean")
-    median_result = bin_folded_lightcurve(
-        folded, number_bins=4, aggregation="median"
-    )
+    median_result = bin_folded_lightcurve(folded, number_bins=4, aggregation="median")
     repeated = bin_folded_lightcurve(folded, number_bins=4, aggregation="mean")
 
     assert mean_result.flux[0] == pytest.approx(8.0)
@@ -159,9 +157,7 @@ def test_empty_bins_and_minimum_samples():
         0.0,
         phase_range=(0.0, 1.0),
     )
-    binned = bin_folded_lightcurve(
-        folded, bin_width=0.25, minimum_samples=2
-    )
+    binned = bin_folded_lightcurve(folded, bin_width=0.25, minimum_samples=2)
 
     np.testing.assert_array_equal(binned.sample_counts, [2, 1, 0, 0])
     np.testing.assert_array_equal(binned.valid_bins, [True, False, False, False])
@@ -181,14 +177,10 @@ def test_transit_window_extraction_by_duration_and_phase():
         folded, phase_half_width=0.05, baseline_outer_factor=3.0
     )
 
-    np.testing.assert_array_equal(
-        by_duration.in_transit_mask, by_phase.in_transit_mask
-    )
+    np.testing.assert_array_equal(by_duration.in_transit_mask, by_phase.in_transit_mask)
     assert len(by_duration.in_transit_indices) > 0
     assert len(by_duration.baseline_indices) > 0
-    assert np.median(by_duration.in_transit_flux) < np.median(
-        by_duration.baseline_flux
-    )
+    assert np.median(by_duration.in_transit_flux) < np.median(by_duration.baseline_flux)
 
 
 def test_alternate_phase_range_window_wraps_around_zero():

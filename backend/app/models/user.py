@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
+
+from app.models.database import connect_database
 
 
 @dataclass(frozen=True)
@@ -63,7 +64,5 @@ class UserRepository:
             row = connection.execute(query, parameters).fetchone()
         return User(**dict(row)) if row is not None else None
 
-    def _connect(self) -> sqlite3.Connection:
-        connection = sqlite3.connect(self.database_path)
-        connection.row_factory = sqlite3.Row
-        return connection
+    def _connect(self):
+        return connect_database(self.database_path)

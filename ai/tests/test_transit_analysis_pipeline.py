@@ -71,9 +71,7 @@ def test_normal_no_detection_is_not_an_error():
         time,
         flux,
         np.full(len(time), 0.002),
-        config=TransitAnalysisConfig(
-            bls=BLSAnalysisConfig(minimum_snr=20.0)
-        ),
+        config=TransitAnalysisConfig(bls=BLSAnalysisConfig(minimum_snr=20.0)),
     )
 
     assert result.status is PipelineStatus.NO_DETECTION
@@ -149,9 +147,7 @@ def test_missing_injected_parameters_skips_recovery():
     )
 
     assert result.recovery is None
-    recovery_stage = next(
-        stage for stage in result.stages if stage.stage == "recovery"
-    )
+    recovery_stage = next(stage for stage in result.stages if stage.stage == "recovery")
     assert recovery_stage.success
     assert "No injected parameters" in recovery_stage.warnings[0]
 
@@ -176,9 +172,7 @@ def test_optional_recovery_failure_policy(mode, expected):
 
     assert result.status is expected
     assert result.candidate is not None
-    recovery_stage = next(
-        stage for stage in result.stages if stage.stage == "recovery"
-    )
+    recovery_stage = next(stage for stage in result.stages if stage.stage == "recovery")
     assert not recovery_stage.success
     assert recovery_stage.error_type == "ValueError"
 
@@ -189,9 +183,7 @@ def test_required_stage_failure_returns_failed(monkeypatch):
     def fail_candidate(*args, **kwargs):
         raise RuntimeError("candidate construction unavailable")
 
-    monkeypatch.setattr(
-        pipeline_module, "build_transit_candidate", fail_candidate
-    )
+    monkeypatch.setattr(pipeline_module, "build_transit_candidate", fail_candidate)
     result = analyze_lightcurve(
         lightcurve["time"],
         lightcurve["flux"],

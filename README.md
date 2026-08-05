@@ -75,7 +75,7 @@ See [system architecture](docs/architecture.md) for component boundaries, owners
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | Next.js 15, React 19, TypeScript, Tailwind CSS, Framer Motion |
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS, Framer Motion |
 | Backend | FastAPI, Pydantic, Uvicorn, JWT, Argon2 |
 | Astronomy | Astropy, Lightkurve, NumPy, SciPy, Pandas |
 | Machine learning | scikit-learn Random Forest, Joblib |
@@ -106,7 +106,7 @@ After signing in, open `/demo` and select **Run sample analysis**. ExoVision dow
 
 ## Installation
 
-Requirements: Python 3.12 and Node.js 20 or newer.
+Requirements: Python 3.12 and Node.js 20.9 or newer.
 
 ```powershell
 git clone <repository-url>

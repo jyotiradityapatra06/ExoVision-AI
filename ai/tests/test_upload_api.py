@@ -5,8 +5,10 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from app.api.v1.analysis import get_analysis_service
 from app.api.v1.upload import get_upload_service
 from app.main import app
+from app.services.analysis_service import AnalysisService
 from app.services.upload_service import UploadService
 
 
@@ -15,6 +17,7 @@ def upload_client(tmp_path: Path):
     """Provide an API client storing uploads under a temporary root."""
     root = tmp_path / "uploads"
     app.dependency_overrides[get_upload_service] = lambda: UploadService(root)
+    app.dependency_overrides[get_analysis_service] = lambda: AnalysisService(root)
     with TestClient(app) as client:
         yield client, root
     app.dependency_overrides.clear()
@@ -53,3 +56,30 @@ def test_missing_upload_file_returns_422(upload_client):
     response = client.post("/api/v1/upload/lightcurve")
 
     assert response.status_code == 422
+
+
+def test_empty_upload_returns_422_without_leaving_artifacts(upload_client):
+    client, root = upload_client
+
+    response = client.post(
+        "/api/v1/upload/lightcurve",
+        files={"file": ("empty.fits", b"", "application/fits")},
+    )
+
+    assert response.status_code == 422
+    assert "empty" in response.json()["detail"].lower()
+    assert not root.exists() or not any(root.iterdir())
+
+
+def test_corrupt_fits_fails_analysis_with_controlled_error(upload_client):
+    client, _ = upload_client
+    uploaded = client.post(
+        "/api/v1/upload/lightcurve",
+        files={"file": ("corrupt.fits", b"not-fits", "application/fits")},
+    )
+    analysis_id = uploaded.json()["analysis_id"]
+
+    response = client.post(f"/api/v1/analyze/{analysis_id}")
+
+    assert response.status_code == 422
+    assert "Unable to open FITS" in response.json()["detail"]

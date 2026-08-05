@@ -15,11 +15,11 @@ export function AIInsightSection() {
     },
     {
       title: "Candidate Ranking",
-      desc: "Score transit signals using ensemble neural networks trained on Kepler & TESS false positive benchmarks.",
+      desc: "Score transit signals with the deployed Random Forest classifier and its trained feature set.",
     },
     {
       title: "Explainable Predictions",
-      desc: "Transparent SHAP feature attribution detailing exact transit depth, duration, and shape influence.",
+      desc: "Inspect model feature importance alongside transit depth, duration, shape, and signal evidence.",
     },
   ];
 
@@ -36,7 +36,7 @@ export function AIInsightSection() {
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-950/40 px-3.5 py-1.5 text-xs font-mono font-bold text-violet-300">
               <Brain className="h-3.5 w-3.5 text-violet-400" />
-              <span>INTERPRETABLE NEURAL ARCHITECTURE</span>
+              <span>INTERPRETABLE ML PIPELINE</span>
             </div>
 
             <h2 className="mt-6 text-3xl font-extrabold text-white sm:text-5xl leading-tight">
@@ -85,7 +85,7 @@ export function AIInsightSection() {
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div className="flex items-center gap-2 text-xs font-mono text-violet-300">
                   <Eye className="h-4 w-4 text-violet-400" />
-                  <span>EXPLAINABILITY MODEL ATTRIBUTION (SHAP)</span>
+                  <span>MODEL FEATURE IMPORTANCE</span>
                 </div>
                 <span className="rounded bg-violet-500/20 px-2 py-0.5 text-[10px] font-mono text-violet-300">
                   MODEL VERSION v2.4
@@ -97,7 +97,7 @@ export function AIInsightSection() {
                 <div>
                   <div className="flex justify-between text-slate-300 mb-1">
                     <span>Transit Depth (ppm)</span>
-                    <span className="text-cyan-300">+0.48 SHAP</span>
+                    <span className="text-cyan-300">0.48 WEIGHT</span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
                     <motion.div
@@ -113,7 +113,7 @@ export function AIInsightSection() {
                 <div>
                   <div className="flex justify-between text-slate-300 mb-1">
                     <span>Phase Shape Symmetry</span>
-                    <span className="text-violet-300">+0.32 SHAP</span>
+                    <span className="text-violet-300">0.32 WEIGHT</span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
                     <motion.div
@@ -129,7 +129,7 @@ export function AIInsightSection() {
                 <div>
                   <div className="flex justify-between text-slate-300 mb-1">
                     <span>Odd-Even Transit Consistency</span>
-                    <span className="text-emerald-300">+0.15 SHAP</span>
+                    <span className="text-emerald-300">0.15 WEIGHT</span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
                     <motion.div
@@ -145,7 +145,7 @@ export function AIInsightSection() {
                 <div>
                   <div className="flex justify-between text-slate-300 mb-1">
                     <span>Stellar Noise Ratio (SNR)</span>
-                    <span className="text-amber-300">+0.09 SHAP</span>
+                    <span className="text-amber-300">0.09 WEIGHT</span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
                     <motion.div

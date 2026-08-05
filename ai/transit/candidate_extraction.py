@@ -223,9 +223,7 @@ def extract_transit_events(
     if valid_period <= 0:
         raise ValueError("period must be positive.")
     if duration <= 0 or duration >= valid_period:
-        raise ValueError(
-            "transit_duration must be positive and smaller than period."
-        )
+        raise ValueError("transit_duration must be positive and smaller than period.")
 
     valid = np.isfinite(time_arr) & np.isfinite(flux_arr)
     if error_arr is not None:
@@ -256,9 +254,7 @@ def extract_transit_events(
         window_end = center + half_duration
         distance = np.abs(time_arr - center)
         transit_mask = distance <= half_duration
-        baseline_mask = (distance > half_duration) & (
-            distance <= 1.5 * duration
-        )
+        baseline_mask = (distance > half_duration) & (distance <= 1.5 * duration)
         transit_flux = flux_arr[transit_mask]
         baseline_flux = flux_arr[baseline_mask]
         warnings: list[str] = []
@@ -370,9 +366,7 @@ def evaluate_odd_even_consistency(
         even_median_depth=even_depth,
         absolute_depth_difference=difference,
         relative_depth_difference=relative_difference,
-        status=(
-            "consistent" if relative_difference <= tolerance else "inconsistent"
-        ),
+        status=("consistent" if relative_difference <= tolerance else "inconsistent"),
         usable_odd_events=len(odd),
         usable_even_events=len(even),
     )
@@ -623,9 +617,7 @@ def _validated_series(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
     time_arr = _numeric_array("time", time)
     flux_arr = _numeric_array("flux", flux)
-    error_arr = (
-        None if flux_error is None else _numeric_array("flux_error", flux_error)
-    )
+    error_arr = None if flux_error is None else _numeric_array("flux_error", flux_error)
     if len(time_arr) == 0:
         raise ValueError("Input arrays cannot be empty.")
     if len(flux_arr) != len(time_arr):
@@ -679,9 +671,7 @@ def _validate_folded_consistency(
     if not np.isclose(folded.period_days, detection.period_days, rtol=1e-9):
         raise ValueError("Supplied folded period is inconsistent with detection.")
     epoch_delta = (
-        folded.transit_epoch
-        - detection.transit_time
-        + 0.5 * detection.period_days
+        folded.transit_epoch - detection.transit_time + 0.5 * detection.period_days
     ) % detection.period_days - 0.5 * detection.period_days
     if not np.isclose(epoch_delta, 0.0, atol=1e-9 * detection.period_days):
         raise ValueError("Supplied folded epoch is inconsistent with detection.")
@@ -709,11 +699,7 @@ def _numeric_array(name: str, values: np.ndarray) -> np.ndarray:
 
 
 def _finite_float(name: str, value: Real) -> float:
-    if (
-        isinstance(value, bool)
-        or not isinstance(value, Real)
-        or not np.isfinite(value)
-    ):
+    if isinstance(value, bool) or not isinstance(value, Real) or not np.isfinite(value):
         raise ValueError(f"{name} must be a finite number.")
     return float(value)
 

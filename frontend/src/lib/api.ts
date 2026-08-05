@@ -1,4 +1,4 @@
-import { getStoredToken } from "@/lib/auth";
+import { clearToken, getStoredToken } from "@/lib/auth";
 import type { AnalysisHistoryItem, AnalysisResponse, AnalysisResult, AnalysisStatus, ApiErrorPayload, ApiHealth, AuthResponse, AuthUser, DatasetSearchResult, ModelInfo, ReportResponse, UploadResponse } from "@/types/api";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
@@ -19,6 +19,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
+    if (response.status === 401 && token) clearToken();
     const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
     const detail = typeof payload?.detail === "string" ? payload.detail : "The ExoVision API request failed.";
     throw new ApiError(response.status, detail);
@@ -28,8 +29,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 async function downloadFile(path: string, fallbackName: string): Promise<File> {
-  const response = await fetch(`${API_URL}${path}`);
+  const token = getStoredToken();
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   if (!response.ok) {
+    if (response.status === 401 && token) clearToken();
     const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
     throw new ApiError(response.status, typeof payload?.detail === "string" ? payload.detail : "Dataset download failed.");
   }
@@ -58,7 +63,10 @@ export const api = {
   downloadReport: async (analysisId: string) => {
     const token = getStoredToken();
     const response = await fetch(`${API_URL}/api/v1/reports/${encodeURIComponent(analysisId)}/download`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-    if (!response.ok) throw new ApiError(response.status, "The scientific report could not be downloaded.");
+    if (!response.ok) {
+      if (response.status === 401 && token) clearToken();
+      throw new ApiError(response.status, "The scientific report could not be downloaded.");
+    }
     return response.blob();
   },
   searchDatasets: (target: string, mission: "all" | "kepler" | "tess") => request<DatasetSearchResult[]>(`/api/v1/datasets/search?target=${encodeURIComponent(target)}&mission=${mission}`, { cache: "no-store" }),

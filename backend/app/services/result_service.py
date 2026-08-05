@@ -28,6 +28,8 @@ class ResultService:
             stored = json.loads(result_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as error:
             raise ValueError("Stored analysis result is unreadable.") from error
+        if not isinstance(stored, dict):
+            raise ValueError("Stored analysis result must be a JSON object.")
         return _project_result(analysis_id, stored)
 
 

@@ -12,7 +12,7 @@ pythonpath = ["backend", "."]
 [tool.ruff]
 line-length = 88
 target-version = "py312"
-extend-exclude = ["backend/.venv"]
+extend-exclude = ["backend/.venv", "notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W"]

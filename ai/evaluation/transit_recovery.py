@@ -182,9 +182,7 @@ def calculate_wrapped_epoch_error(
     return abs(wrapped - 0.5 * valid_period)
 
 
-def calculate_duration_error(
-    injected_duration: Real, detected_duration: Real
-) -> float:
+def calculate_duration_error(injected_duration: Real, detected_duration: Real) -> float:
     """Return the absolute transit-duration difference in days."""
     injected = _positive_value("injected_duration", injected_duration)
     detected = _positive_value("detected_duration", detected_duration)

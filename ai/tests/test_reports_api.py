@@ -109,3 +109,15 @@ def test_invalid_analysis_id_returns_404(report_client):
     client, _, _ = report_client
 
     assert client.post("/api/v1/reports/not-valid").status_code == 404
+
+
+def test_malformed_result_shape_returns_controlled_500(report_client):
+    client, uploads, _ = report_client
+    directory = uploads / "wrongshape"
+    directory.mkdir(parents=True)
+    (directory / "result.json").write_text("[]", encoding="utf-8")
+
+    response = client.post("/api/v1/reports/wrongshape")
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Scientific report generation failed."

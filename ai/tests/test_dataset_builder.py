@@ -27,9 +27,7 @@ def candidate(candidate_id: str, label=None, **updates):
 
 def test_add_many_dataframe_and_stable_columns():
     builder = CandidateDatasetBuilder()
-    builder.add_many(
-        [candidate("b", "planet"), candidate("a", "false_positive")]
-    )
+    builder.add_many([candidate("b", "planet"), candidate("a", "false_positive")])
 
     frame = builder.to_dataframe()
 
@@ -122,9 +120,7 @@ def test_summary_counts_classes_and_missing_features():
         "positive_fraction": 0.5,
         "negative_fraction": 0.5,
     }
-    assert summary["missing_value_count_by_feature"][
-        "secondary_eclipse_depth"
-    ] == 2
+    assert summary["missing_value_count_by_feature"]["secondary_eclipse_depth"] == 2
 
 
 def test_empty_dataset_behaviour(tmp_path):

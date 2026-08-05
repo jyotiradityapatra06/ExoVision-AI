@@ -10,7 +10,7 @@ scientific visualization logic.
 
 ## Frontend architecture
 
-The existing `frontend/` application uses Next.js 15, React 19, TypeScript, and
+The `frontend/` application now uses Next.js 16, React 19, TypeScript, and
 Tailwind CSS. Source code remains under `frontend/src`:
 
 ```text

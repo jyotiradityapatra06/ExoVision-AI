@@ -109,9 +109,7 @@ def test_positive_and_negative_outlier_injection():
     assert np.count_nonzero(outliers) == 20
     assert np.any(lightcurve["flux"][outliers] > 1.0)
     assert np.any(lightcurve["flux"][outliers] < 1.0)
-    np.testing.assert_allclose(
-        np.abs(lightcurve["flux"][outliers] - 1.0), amplitude
-    )
+    np.testing.assert_allclose(np.abs(lightcurve["flux"][outliers] - 1.0), amplitude)
 
 
 @pytest.mark.parametrize(

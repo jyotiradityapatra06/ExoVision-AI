@@ -62,12 +62,20 @@ MIGRATIONS = (
 )
 
 
+def connect_database(database_path: str | Path) -> sqlite3.Connection:
+    """Open a consistently configured SQLite connection."""
+    connection = sqlite3.connect(Path(database_path).resolve(), timeout=5.0)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys = ON")
+    connection.execute("PRAGMA busy_timeout = 5000")
+    return connection
+
+
 def initialize_database(database_path: str | Path) -> None:
     """Apply pending embedded SQLite migrations atomically."""
     path = Path(database_path).resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(path) as connection:
-        connection.execute("PRAGMA foreign_keys = ON")
+    with connect_database(path) as connection:
         connection.execute(
             "CREATE TABLE IF NOT EXISTS schema_migrations "
             "(version TEXT PRIMARY KEY, "
