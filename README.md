@@ -2,23 +2,23 @@
 
 ### AI-powered exoplanet detection platform
 
-ExoVision AI turns NASA and user-supplied stellar light curves into explainable exoplanet-candidate assessments. It combines production web workflows with a scientific Box Least Squares pipeline, Random Forest classification, interactive visualization, and exportable PDF reports.
+ExoVision AI turns NASA and user-supplied stellar light curves into explainable exoplanet-candidate assessments. It combines production web workflows with a scientific Box Least Squares pipeline, R[...]
 
 ![ExoVision AI landing page](docs/assets/landing-page.png)
 
 ## Overview
 
-ExoVision provides one coherent path from raw photometry to reviewable evidence. A user can create an account, upload a FITS/CSV/TXT light curve or select a public Kepler/TESS observation, run the scientific pipeline, inspect the detected signal and ML reasoning, and export a structured report.
+ExoVision provides one coherent path from raw photometry to reviewable evidence. A user can create an account, upload a FITS/CSV/TXT light curve or select a public Kepler/TESS observation, run the[...]
 
-The project is designed as a portfolio-ready scientific software system: the AI modules are framework-independent, the REST API enforces ownership, and the product interface exposes the analysis without hiding scientific limitations.
+The project is designed as a portfolio-ready scientific software system: the AI modules are framework-independent, the REST API enforces ownership, and the product interface exposes the analysis w[...]
 
 ## Problem Statement
 
-Transit surveys measure tiny, periodic drops in stellar brightness. Real observations contain instrument systematics, stellar variability, missing samples, noise, and astrophysical false positives. Candidate discovery therefore requires more than drawing a chart: data must be validated, preprocessed, searched for periodic box-shaped signals, converted into diagnostic features, classified, and explained to a human reviewer.
+Transit surveys measure tiny, periodic drops in stellar brightness. Real observations contain instrument systematics, stellar variability, missing samples, noise, and astrophysical false positives[...]
 
 ## Solution
 
-ExoVision connects NASA MAST and local observations to a reusable astronomy pipeline. Box Least Squares locates periodic transit-like signals; candidate diagnostics feed a trained Random Forest classifier; domain-aware feature contributions describe supporting and cautionary evidence. The same persisted result drives the dashboard and scientific PDF, keeping visual and exported conclusions consistent.
+ExoVision connects NASA MAST and local observations to a reusable astronomy pipeline. Box Least Squares locates periodic transit-like signals; candidate diagnostics feed a trained Random Forest cl[...]
 
 ## Features
 
@@ -96,13 +96,41 @@ NASA results are resolved and retrieved through the public MAST API. Archive fil
 
 ## Screenshots
 
-| Analysis workspace | Explainable result |
-| --- | --- |
-| ![ExoVision dashboard](docs/assets/dashboard.png) | ![ExoVision results](docs/assets/results.png) |
+Below are curated, production-style screenshots that showcase the ExoVision UI and the outputs it produces during a typical analysis.
+
+### Landing Page
+
+A welcoming, responsive landing experience that introduces the product and provides quick access to demo and sign-in flows.
+
+![ExoVision Landing Page](docs/assets/landing-page.png)
+
+### Dashboard
+
+The primary workspace shows owned analyses, quick actions (upload, demo, search MAST), and recent activity.
+
+![ExoVision Dashboard](docs/assets/dashboard.png)
+
+### Analysis Results
+
+Phase-folded and raw light-curve visualizations, detection metrics, and candidate summaries are presented together for rapid triage.
+
+![Analysis Results](docs/assets/results.png)
+
+### Explainable AI
+
+Feature importance, rule-based evidence, and annotated diagnostics that justify the model's classification for each candidate.
+
+![Explainable AI](docs/assets/explainable-ai.png)
+
+### PDF Report
+
+Automated, publication-quality PDF reports that compile measurements, plots, classifications, and caveats for sharing and archiving.
+
+![PDF Report](docs/assets/report.png)
 
 ## Demo
 
-After signing in, open `/demo` and select **Run sample analysis**. ExoVision downloads the repository's deterministic FITS sample, submits it to the standard upload endpoint, detects its known 5-day transit, classifies the candidate, and opens the full result. Generate a PDF from the result page to exercise the complete workflow without external data.
+After signing in, open `/demo` and select **Run sample analysis**. ExoVision downloads the repository's deterministic FITS sample, submits it to the standard upload endpoint, detects its known 5-[...]
 
 ## Installation
 
@@ -167,4 +195,4 @@ See [API documentation](docs/api.md) for all authentication, upload, analysis, r
 
 MIT. See [LICENSE](LICENSE).
 
-> **Scientific disclaimer:** ExoVision produces automated screening evidence, not confirmed discoveries. Validation requires independent review, systematics assessment, follow-up observations, and established astrophysical procedures.
+> **Scientific disclaimer:** ExoVision produces automated screening evidence, not confirmed discoveries. Validation requires independent review, systematics assessment, follow-up observations, an[...]
