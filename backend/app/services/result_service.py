@@ -54,6 +54,7 @@ def _project_result(analysis_id: str, stored: dict[str, Any]) -> dict[str, Any]:
     ml_report = _mapping(stored.get("ml_report"))
     classification = _mapping(ml_report.get("classification"))
     evidence = _mapping(ml_report.get("evidence"))
+    contributions = ml_report.get("feature_contributions")
 
     candidates: list[dict[str, Any]] = []
     if candidate:
@@ -70,6 +71,7 @@ def _project_result(analysis_id: str, stored: dict[str, Any]) -> dict[str, Any]:
                     "positive_factors": _strings(evidence.get("positive")),
                     "negative_factors": _strings(evidence.get("negative")),
                     "summary": str(ml_report.get("summary", "")),
+                    "feature_importance": _feature_importance(contributions),
                 },
             }
         )
@@ -139,3 +141,23 @@ def _probability(value: Any) -> float:
 
 def _strings(value: Any) -> list[str]:
     return [str(item) for item in value] if isinstance(value, list) else []
+
+
+def _feature_importance(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    output = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        importance = _number(item.get("importance"))
+        if importance is None:
+            continue
+        output.append(
+            {
+                "feature": str(item.get("feature", "feature")),
+                "importance": importance,
+                "direction": str(item.get("direction", "neutral")),
+            }
+        )
+    return output

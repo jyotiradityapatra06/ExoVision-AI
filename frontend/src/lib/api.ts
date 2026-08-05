@@ -1,5 +1,5 @@
 import { getStoredToken } from "@/lib/auth";
-import type { AnalysisHistoryItem, AnalysisResponse, AnalysisResult, AnalysisStatus, ApiErrorPayload, ApiHealth, AuthResponse, AuthUser, ModelInfo, ReportResponse, UploadResponse } from "@/types/api";
+import type { AnalysisHistoryItem, AnalysisResponse, AnalysisResult, AnalysisStatus, ApiErrorPayload, ApiHealth, AuthResponse, AuthUser, DatasetSearchResult, ModelInfo, ReportResponse, UploadResponse } from "@/types/api";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
@@ -27,6 +27,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function downloadFile(path: string, fallbackName: string): Promise<File> {
+  const response = await fetch(`${API_URL}${path}`);
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
+    throw new ApiError(response.status, typeof payload?.detail === "string" ? payload.detail : "Dataset download failed.");
+  }
+  const disposition = response.headers.get("content-disposition") ?? "";
+  const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1] ?? fallbackName;
+  return new File([await response.blob()], filename, { type: "application/fits" });
+}
+
 export const api = {
   health: (init?: RequestInit) => request<ApiHealth>("/api/v1/health", { ...init, cache: "no-store" }),
   modelInfo: () => request<ModelInfo>("/api/v1/ml/info", { cache: "no-store" }),
@@ -50,4 +61,7 @@ export const api = {
     if (!response.ok) throw new ApiError(response.status, "The scientific report could not be downloaded.");
     return response.blob();
   },
+  searchDatasets: (target: string, mission: "all" | "kepler" | "tess") => request<DatasetSearchResult[]>(`/api/v1/datasets/search?target=${encodeURIComponent(target)}&mission=${mission}`, { cache: "no-store" }),
+  downloadDataset: (dataUri: string, filename: string) => downloadFile(`/api/v1/datasets/download?data_uri=${encodeURIComponent(dataUri)}`, filename),
+  downloadDemoDataset: () => downloadFile("/api/v1/datasets/demo", "exoplanet_demo_transit.fits"),
 };

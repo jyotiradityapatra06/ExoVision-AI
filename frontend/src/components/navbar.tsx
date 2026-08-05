@@ -13,6 +13,8 @@ export function Navbar() {
   const links = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/upload", label: "Observatory" },
+    { href: "/datasets", label: "Datasets" },
+    { href: "/demo", label: "Demo" },
     { href: "/reports", label: "Reports" },
   ];
 

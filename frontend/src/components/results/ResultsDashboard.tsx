@@ -7,6 +7,8 @@ import { LightCurveChart } from "@/components/charts/LightCurveChart";
 import { ReportButton } from "@/components/reports/ReportButton";
 import { CandidateCard } from "@/components/results/CandidateCard";
 import { ExplanationPanel } from "@/components/results/ExplanationPanel";
+import { FeatureImportanceChart } from "@/components/results/FeatureImportanceChart";
+import { AnalysisSummary } from "@/components/results/AnalysisSummary";
 import type { AnalysisResult } from "@/types/api";
 
 function measurement(value: number | null, unit: string, digits = 3) {
@@ -39,6 +41,7 @@ export function ResultsDashboard({ analysis }: { analysis: AnalysisResult }) {
         </div>
         <ReportButton analysisId={analysis.analysis_id} />
       </header>
+      <section className="mt-8"><AnalysisSummary result={analysis} /></section>
       <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Candidate overview">
         {overview.map((item) => <div className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-5" key={item.label}><p className="text-xs font-medium uppercase tracking-wider text-slate-500">{item.label}</p><p className="mt-3 break-words text-lg font-semibold text-white">{item.value}</p></div>)}
       </section>
@@ -58,7 +61,7 @@ export function ResultsDashboard({ analysis }: { analysis: AnalysisResult }) {
           <div className="rounded-2xl border border-white/[0.08] bg-white/[0.035] p-6"><div className="flex items-center gap-2"><Orbit className="h-4 w-4 text-cyan-200" /><h2 className="font-semibold text-white">Transit parameters</h2></div><dl className="mt-5 divide-y divide-white/[0.07] text-sm">{parameters.map(([label, value]) => <div className="flex items-center justify-between gap-4 py-3" key={label}><dt className="text-slate-500">{label}</dt><dd className="text-right font-mono text-xs text-slate-200">{value}</dd></div>)}</dl></div>
         </aside>
       </section>
-      <section className="mt-6"><ExplanationPanel candidate={candidate} /></section>
+      <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]"><ExplanationPanel candidate={candidate} /><FeatureImportanceChart attributions={candidate?.explanation.feature_importance} /></section>
     </main>
   );
 }

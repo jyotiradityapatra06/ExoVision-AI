@@ -26,7 +26,7 @@ export function ExplanationPanel({ candidate }: { candidate?: CandidateResult })
         </div>
         <div>
           <h2 className="font-mono text-base font-bold text-white">AI Explainable Assessment</h2>
-          <p className="font-mono text-[10px] text-cyan-400 uppercase">SHAP FEATURE ATTRIBUTION SUMMARY</p>
+          <p className="font-mono text-[10px] text-cyan-400 uppercase">RANDOM FOREST EVIDENCE SUMMARY</p>
         </div>
       </div>
 

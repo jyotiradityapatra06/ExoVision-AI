@@ -64,7 +64,18 @@ export type CandidateResult = {
     positive_factors?: string[];
     negative_factors?: string[];
     summary?: string;
+    feature_importance?: Array<{ feature: string; importance: number; direction: string }>;
   };
+};
+
+export type DatasetSearchResult = {
+  target_name: string;
+  mission: string;
+  observation_period: string;
+  format: "FITS";
+  filename: string;
+  data_uri: string;
+  size_bytes: number;
 };
 
 export type AnalysisResult = {
