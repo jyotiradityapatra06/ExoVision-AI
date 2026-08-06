@@ -39,7 +39,7 @@ export function ExplanationPanel({ candidate }: { candidate?: CandidateResult })
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 font-mono text-xs">
           <h3 className="flex items-center gap-2 font-bold uppercase text-emerald-300">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            SUPPORTING EVIDENCE ({positive.length})
+            POSITIVE EVIDENCE ({positive.length})
           </h3>
           <ul className="mt-3 space-y-2 font-sans text-xs text-slate-300">
             {positive.length ? (
@@ -59,7 +59,7 @@ export function ExplanationPanel({ candidate }: { candidate?: CandidateResult })
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 font-mono text-xs">
           <h3 className="flex items-center gap-2 font-bold uppercase text-amber-300">
             <TriangleAlert className="h-4 w-4 text-amber-400" />
-            CAUTIONARY / RISK FACTORS ({negative.length})
+            NEGATIVE EVIDENCE ({negative.length})
           </h3>
           <ul className="mt-3 space-y-2 font-sans text-xs text-slate-300">
             {negative.length ? (

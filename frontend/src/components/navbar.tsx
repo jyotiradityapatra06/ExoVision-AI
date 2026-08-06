@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { BarChart3, Database, FileText, FlaskConical, LogOut, RadioTower, Telescope } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,19 +11,20 @@ export function Navbar() {
   const { user, logout } = useAuth();
 
   const links = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/upload", label: "Observatory" },
-    { href: "/datasets", label: "Datasets" },
-    { href: "/demo", label: "Demo" },
-    { href: "/reports", label: "Reports" },
+    { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
+    { href: "/upload", label: "Observatory", icon: Telescope },
+    { href: "/datasets", label: "Datasets", icon: Database },
+    { href: "/demo", label: "Demo", icon: FlaskConical },
+    { href: "/reports", label: "Reports", icon: FileText },
   ];
 
   return (
     <>
-    <nav className="flex justify-between items-center w-full px-gutter h-16 fixed top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_0_20px_rgba(0,218,243,0.15)]">
+    <nav className={`fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b px-4 backdrop-blur-2xl sm:px-6 lg:px-8 ${user ? "border-cyan-200/10 bg-[#030815]/90 shadow-[0_12px_40px_rgba(0,0,0,.35)]" : "border-outline-variant/30 bg-surface/80"}`}>
       <div className="flex items-center gap-8">
-        <Link href="/" className="font-hero-lg text-headline-md tracking-tighter text-primary">
-          ExoVision AI
+        <Link href="/" className="flex items-center gap-3 tracking-tight text-primary">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-300/25 bg-cyan-300/10 shadow-[0_0_18px_rgba(0,218,243,.12)]"><RadioTower className="h-4 w-4" /></span>
+          <span className="font-semibold">ExoVision <span className="text-cyan-300">AI</span></span>
         </Link>
         <div className="hidden md:flex gap-6 font-label-caps text-label-caps">
           {links.map((link) => {
@@ -32,13 +33,13 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`transition-colors hover:bg-primary/10 px-3 py-2 rounded-DEFAULT duration-300 ${
+                className={`group relative flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-all duration-300 ${
                   active
-                    ? "text-primary border-b-2 border-primary shadow-[0_4px_10px_-2px_rgba(0,218,243,0.5)]"
-                    : "text-on-surface-variant hover:text-primary"
+                    ? "bg-cyan-300/10 text-cyan-200 shadow-[inset_0_0_0_1px_rgba(103,232,249,.16)]"
+                    : "text-slate-500 hover:bg-white/[0.04] hover:text-slate-200"
                 }`}
               >
-                {link.label}
+                <link.icon className="h-3.5 w-3.5" />{link.label}
               </Link>
             );
           })}
@@ -48,7 +49,7 @@ export function Navbar() {
       <div className="flex items-center gap-4">
         {user ? (
           <div className="flex items-center gap-3 font-data-mono text-data-mono">
-            <span className="hidden lg:inline text-primary font-bold">{user.display_name}</span>
+            <span className="hidden lg:block text-right"><span className="block text-[9px] uppercase tracking-[.18em] text-slate-600">Researcher</span><span className="block text-xs font-semibold text-slate-200">{user.display_name}</span></span>
             <button
               onClick={logout}
               title="Sign Out"
@@ -68,7 +69,7 @@ export function Navbar() {
         )}
       </div>
     </nav>
-    {user && <nav aria-label="Mobile primary navigation" className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-outline-variant/40 bg-surface/95 px-1 py-2 backdrop-blur-xl md:hidden">{links.map((link) => <Link className={`px-2 py-2 font-mono text-[10px] uppercase tracking-tight ${pathname === link.href ? "text-primary" : "text-on-surface-variant"}`} href={link.href} key={link.href}>{link.label === "Observatory" ? "Upload" : link.label}</Link>)}</nav>}
+    {user && <nav aria-label="Mobile primary navigation" className="fixed inset-x-3 bottom-3 z-50 flex items-center justify-around rounded-2xl border border-cyan-200/10 bg-[#050a16]/95 px-1 py-2 shadow-2xl backdrop-blur-2xl md:hidden">{links.map((link) => <Link className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-1 font-mono text-[8px] uppercase tracking-tight ${pathname === link.href ? "text-cyan-200" : "text-slate-500"}`} href={link.href} key={link.href}><link.icon className="h-4 w-4" />{link.label === "Observatory" ? "Observe" : link.label}</Link>)}</nav>}
     </>
   );
 }

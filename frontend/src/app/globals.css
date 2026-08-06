@@ -138,6 +138,48 @@
     @apply relative rounded-xl border border-outline-variant/40 bg-[#101415]/70 shadow-hud backdrop-blur-xl transition-all duration-300 hover:border-primary/50 hover:bg-[#191c1e]/80 hover:shadow-cyan-sm;
   }
 
+  .app-workspace {
+    @apply relative mx-auto w-full max-w-[1480px] px-4 pb-28 pt-24 sm:px-6 lg:px-8 lg:pt-28;
+  }
+
+  .mission-panel {
+    @apply relative overflow-hidden rounded-2xl border border-cyan-200/[0.10] bg-slate-950/60 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl;
+  }
+
+  .mission-panel::before {
+    content: "";
+    @apply pointer-events-none absolute inset-x-0 top-0 h-px;
+    background: linear-gradient(90deg, transparent, rgba(103, 232, 249, .65), transparent);
+  }
+
+  .telemetry-card {
+    @apply relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.035] p-5 transition duration-300 hover:-translate-y-0.5 hover:border-cyan-200/20 hover:bg-cyan-200/[0.045];
+  }
+
+  .telemetry-label {
+    @apply font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500;
+  }
+
+  .workspace-kicker {
+    @apply flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-300;
+  }
+
+  .workspace-kicker::before {
+    content: "";
+    @apply h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,.9)];
+  }
+
+  .data-grid {
+    background-image: linear-gradient(rgba(103,232,249,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(103,232,249,.035) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .skeleton-line {
+    @apply animate-pulse rounded-lg bg-gradient-to-r from-white/[0.035] via-white/[0.08] to-white/[0.035];
+    background-size: 200% 100%;
+    animation: telemetry-sweep 1.8s ease-in-out infinite;
+  }
+
   .status-dot {
     @apply h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_#00e5ff] animate-pulse;
   }
@@ -182,6 +224,11 @@
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+@keyframes telemetry-sweep {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

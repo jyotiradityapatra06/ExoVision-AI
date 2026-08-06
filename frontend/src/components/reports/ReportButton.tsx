@@ -39,7 +39,7 @@ export function ReportButton({ analysisId }: { analysisId: string }) {
 
   if (status === "generated") {
     return (
-      <button className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300" onClick={download} type="button">
+      <button className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-300 px-6 text-sm font-semibold text-slate-950 shadow-[0_0_28px_rgba(110,231,183,.15)] transition hover:-translate-y-0.5 hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300" onClick={download} type="button">
         <Download className="h-4 w-4" aria-hidden="true" />
         Download report
       </button>
@@ -48,9 +48,9 @@ export function ReportButton({ analysisId }: { analysisId: string }) {
 
   return (
     <div className="relative">
-      <Button disabled={status === "generating"} onClick={generate}>
+      <Button className="min-h-12 px-6 shadow-[0_0_30px_rgba(103,232,249,.18)]" disabled={status === "generating"} onClick={generate} size="lg">
         {status === "generating" ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : status === "error" ? <FileText className="h-4 w-4" aria-hidden="true" /> : <CheckCircle2 className="h-4 w-4" aria-hidden="true" />}
-        {status === "generating" ? "Generating PDF…" : status === "error" ? "Retry report" : "Generate report"}
+        {status === "generating" ? "Generating Scientific Report…" : status === "error" ? "Retry Scientific Report" : "Generate Scientific Report"}
       </Button>
       {error && <p className="absolute right-0 top-12 w-64 rounded-lg border border-rose-400/20 bg-slate-950 p-3 text-xs leading-5 text-rose-200 shadow-xl" role="alert">{error}</p>}
     </div>

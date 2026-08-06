@@ -47,9 +47,8 @@ function ResultsContent({ id }: { id: string }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
-        <LoaderCircle className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-sm text-slate-400">Loading analysis results…</p>
+      <div className="app-workspace flex min-h-[70vh] flex-col items-center justify-center">
+        <div className="mission-panel w-full max-w-lg p-8 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/[0.06]"><LoaderCircle className="h-6 w-6 animate-spin text-cyan-300" /></span><p className="workspace-kicker mt-6 justify-center">Synchronizing evidence</p><h1 className="mt-3 text-xl font-semibold text-white">Loading analysis results</h1><p className="mt-2 text-sm text-slate-500">Retrieving photometry, candidate metrics, and model explanations.</p><div className="mt-6 h-1 overflow-hidden rounded-full bg-white/[0.05]"><div className="h-full w-1/2 animate-pulse rounded-full bg-cyan-300" /></div></div>
       </div>
     );
   }
