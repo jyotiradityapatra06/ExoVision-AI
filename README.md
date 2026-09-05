@@ -180,6 +180,8 @@ POST /api/v1/reports/{analysis_id}
 GET  /api/v1/reports/{analysis_id}/download
 ```
 
+Analysis startup is idempotent and returns promptly while the single-instance API processes the observation in the background. The results route polls persisted stages and can recover its view after a browser refresh. This lightweight executor is not a durable distributed queue; an API process restart can interrupt active work.
+
 See [API documentation](docs/api.md) for all authentication, upload, analysis, result, report, model, and dataset endpoints.
 
 ## Future Improvements

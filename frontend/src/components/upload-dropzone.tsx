@@ -78,9 +78,8 @@ export function UploadDropzone() {
     try {
       setPipelineStage("uploading");
       const upload = await api.uploadLightcurve(file);
-      setPipelineStage("detecting");
+      setPipelineStage("starting");
       await api.startAnalysis(upload.analysis_id);
-      setPipelineStage("finalizing");
       router.push(`/results/${upload.analysis_id}`);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "Analysis could not be started.");
@@ -125,7 +124,7 @@ export function UploadDropzone() {
 
           {file && <div className="mission-panel flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-300/15 bg-cyan-300/[0.06]"><FileText className="h-4 w-4 text-cyan-200" /></span><div className="min-w-0"><p className="truncate text-sm font-medium text-white">{file.name}</p><p className="mt-1 font-mono text-[9px] uppercase tracking-wider text-slate-600">{(file.size / 1024).toFixed(1)} KB · Ready for BLS pipeline</p></div></div><button aria-label="Remove selected file" className="rounded-lg border border-white/[0.07] p-2 text-slate-500 transition hover:border-rose-300/20 hover:text-rose-300" disabled={busy} onClick={() => setFile(null)} type="button"><X className="h-4 w-4" /></button></div>}
           {error && <p className="rounded-xl border border-rose-500/30 bg-rose-500/[0.08] px-4 py-3 font-mono text-xs text-rose-200" role="alert">{error}</p>}
-          <Button className="w-full py-3 text-xs font-bold shadow-[0_0_30px_rgba(103,232,249,.14)]" disabled={!file || busy} onClick={submit} size="lg">{busy && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}{pipelineStage === "uploading" ? "1/5 Uploading Dataset..." : pipelineStage === "preprocessing" ? "2/5 Preprocessing Light Curve..." : pipelineStage === "detecting" ? "3/5 Detecting Transit Signal..." : pipelineStage === "classifying" ? "4/5 Classifying AI Model..." : pipelineStage === "finalizing" ? "5/5 Finalizing Results..." : "Initialize Analysis Sequence"}</Button>
+          <Button className="w-full py-3 text-xs font-bold shadow-[0_0_30px_rgba(103,232,249,.14)]" disabled={!file || busy} onClick={submit} size="lg">{busy && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}{pipelineStage === "uploading" ? "Uploading observation…" : pipelineStage === "starting" ? "Starting backend analysis…" : "Initialize Analysis Sequence"}</Button>
         </div>
 
         <div className="xl:sticky xl:top-24 xl:self-start"><PipelineVisualization currentStage={pipelineStage} /></div>

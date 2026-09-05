@@ -71,6 +71,8 @@ Also set `JWT_SECRET`, `BACKEND_CORS_ORIGINS`, and `PROJECT_NAME`. Do not use an
 
 SQLite migrations execute automatically when FastAPI starts. Render's persistent-disk configuration is suitable for a single API instance.
 
+Analysis work runs after request acceptance through FastAPI's in-process background-task mechanism. SQLite provides an atomic execution claim, while status and results remain on the persistent disk. This is appropriate for the documented single-instance deployment, but it is not a durable queue: terminating the API process can interrupt active work. Use one API instance for this release.
+
 For horizontally scaled production, provision PostgreSQL and apply `backend/migrations/postgresql/0001_initial.sql`. The schema is ready, but the current lightweight repository adapter uses SQLite; introduce and test a PostgreSQL repository adapter before setting `DATABASE_URL`. Keep FITS files and reports in object storage or a shared persistent volume.
 
 ## Release checks

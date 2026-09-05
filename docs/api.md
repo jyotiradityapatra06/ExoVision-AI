@@ -26,11 +26,15 @@ Accepts multipart field `file` containing `.fits`, `.csv`, or `.txt` data up to 
 
 ### `POST /api/v1/analyze/{analysis_id}`
 
-Runs the existing preprocessing, BLS, candidate extraction, ML classification, and explainability pipeline for an owned upload. Returns completion status and candidate count.
+Atomically accepts an owned uploaded analysis for in-process background execution and returns `202` with its current state. Repeated requests while processing or after completion do not execute the scientific pipeline again. Failed analyses are not silently restarted.
+
+### `POST /api/v1/analyze/{analysis_id}/retry`
+
+Explicitly retries an owned failed analysis. An atomic SQLite transition prevents concurrent retries or overlap with an active run.
 
 ### `GET /api/v1/analyze/{analysis_id}/status`
 
-Returns persisted progress, status, and any terminal error.
+Returns persisted `status`, truthful coarse `stage`, user-safe `message`, `retryable`, compatibility `progress`, and any safe terminal error. Processing stages are `preparing_observation`, `analyzing_lightcurve`, `classifying_candidate`, and `preparing_results`; progress is no longer presented as a fabricated percentage in the UI.
 
 ### `GET /api/v1/analyze`
 

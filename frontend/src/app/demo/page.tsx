@@ -60,7 +60,6 @@ function DemoContent() {
 
   const working = step !== "ready" && step !== "complete";
   const labels: Record<Step, string> = { ready: "Launch screening demo", loading: "Loading stellar observation…", uploading: "Preparing observation…", analyzing: "Detecting and classifying…", complete: "Opening candidate report…" };
-  const progress: Record<Step, number> = { ready: 0, loading: 20, uploading: 38, analyzing: 78, complete: 100 };
   const stageOrder: Step[] = ["ready", "loading", "uploading", "analyzing", "complete"];
   const currentIndex = stageOrder.indexOf(step);
 
@@ -83,7 +82,7 @@ function DemoContent() {
             <div className={`absolute inset-0 rounded-full border border-dashed border-cyan-300/20 ${working ? "animate-spin [animation-duration:18s]" : ""}`} />
             <div className={`absolute inset-8 rounded-full border border-violet-300/15 ${working ? "animate-spin [animation-direction:reverse] [animation-duration:12s]" : ""}`} />
             <div className="absolute inset-16 rounded-full border border-cyan-300/10 bg-[#040a16]/80 shadow-[inset_0_0_40px_rgba(103,232,249,.05),0_0_50px_rgba(103,232,249,.06)]" />
-            <div className="relative z-10 text-center"><Telescope className={`mx-auto h-10 w-10 text-cyan-200 ${working ? "animate-pulse" : ""}`} /><p className="mt-4 font-mono text-4xl font-semibold text-white">{progress[step]}%</p><p className="mt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">Screening sequence</p></div>
+            <div className="relative z-10 px-8 text-center"><Telescope className={`mx-auto h-10 w-10 text-cyan-200 ${working ? "animate-pulse" : ""}`} /><p className="mt-4 text-sm font-semibold text-white">{labels[step]}</p><p className="mt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">Backend workflow handoff</p></div>
             <span className="absolute left-2 top-1/2 h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,.8)]" /><span className="absolute right-12 top-9 h-1.5 w-1.5 rounded-full bg-violet-300 shadow-[0_0_10px_rgba(196,181,253,.7)]" />
           </div>
         </div>
@@ -91,7 +90,7 @@ function DemoContent() {
 
       <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <article className="mission-panel">
-          <div className="flex flex-col gap-4 border-b border-white/[0.08] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div><p className="telemetry-label">Animated pipeline</p><h2 className="mt-1 font-semibold text-white">Candidate-screening workflow</h2></div><div className="flex items-center gap-3"><div className="h-1.5 w-32 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-cyan-200 shadow-[0_0_10px_rgba(103,232,249,.5)] transition-all duration-700" style={{ width: `${progress[step]}%` }} /></div><span className="font-mono text-[10px] text-cyan-200">{progress[step]}%</span></div></div>
+          <div className="flex flex-col gap-4 border-b border-white/[0.08] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div><p className="telemetry-label">Backend-backed flow</p><h2 className="mt-1 font-semibold text-white">Candidate-screening workflow</h2></div><span className="font-mono text-[10px] uppercase tracking-wider text-cyan-200">{labels[step]}</span></div>
           <ol className="grid p-5 sm:grid-cols-2 sm:p-6">
             {workflow.map((stage, index) => {
               const active = stage.states.includes(step as never);

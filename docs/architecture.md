@@ -49,9 +49,10 @@ SQLite is the supported local and single-instance deployment database. Embedded 
 1. A user authenticates and uploads a local file, starts the bundled demo, or selects a MAST product.
 2. External datasets are proxied as FITS and submitted through the normal upload contract.
 3. The backend creates an owned analysis record and stores the source safely.
-4. The existing preprocessing, BLS, candidate, ML, and explainability pipeline runs synchronously.
-5. Results are projected into bounded visualization arrays for the browser.
-6. The report service renders the same persisted result into an authenticated PDF download.
+4. SQLite atomically claims an uploaded analysis as `processing` so duplicate requests cannot execute it again.
+5. A FastAPI in-process background task runs the existing preprocessing, BLS, candidate, ML, and explainability pipeline.
+6. The browser polls persisted backend status and resumes that view after refresh; completed results are then projected into bounded visualization arrays.
+7. The report service renders the same persisted result into an authenticated PDF download.
 
 ## Security and operational boundaries
 
@@ -61,3 +62,4 @@ SQLite is the supported local and single-instance deployment database. Embedded 
 - CORS is allowlisted through `BACKEND_CORS_ORIGINS`.
 - NASA traffic is limited to public MAST endpoints and validated `mast:` product identifiers.
 - A BLS/ML candidate is screening evidence, not scientific confirmation.
+- Background execution is intentionally scoped to the current single-instance portfolio deployment. It is not a durable distributed queue; process termination can interrupt active analyses, and multi-instance scale requires dedicated worker infrastructure.

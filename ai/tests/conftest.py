@@ -38,6 +38,20 @@ class TestAnalysisRepository:
     def update_status(self, _analysis_id: str, _status: str) -> None:
         return None
 
+    def transition_status(
+        self, _analysis_id: str, _expected: str, _replacement: str
+    ) -> bool:
+        return True
+
+    def by_id(self, analysis_id: str) -> AnalysisRecord:
+        return AnalysisRecord(
+            analysis_id,
+            TEST_USER.id,
+            "observation.csv",
+            "processing",
+            TEST_USER.created_at,
+        )
+
 
 @pytest.fixture(autouse=True)
 def authenticated_api_defaults() -> Iterator[None]:

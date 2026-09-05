@@ -24,14 +24,21 @@ export type UploadResponse = {
 
 export type AnalysisResponse = {
   analysis_id: string;
-  status: "completed";
-  candidate_count: number;
+  status: "processing" | "completed" | "failed";
+  stage: AnalysisStage;
+  message: string;
+  retryable: boolean;
 };
+
+export type AnalysisStage = "ready" | "preparing_observation" | "analyzing_lightcurve" | "classifying_candidate" | "preparing_results" | "completed" | "failed";
 
 export type AnalysisStatus = {
   analysis_id: string;
   status: "uploaded" | "processing" | "completed" | "failed";
   progress: number;
+  stage: AnalysisStage;
+  message: string;
+  retryable: boolean;
   error: string | null;
 };
 

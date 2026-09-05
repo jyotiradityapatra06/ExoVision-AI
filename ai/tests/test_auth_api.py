@@ -118,6 +118,7 @@ def test_auth_payload_limits_reject_blank_name_and_oversized_password(auth_clien
     [
         ("post", "/api/v1/upload/lightcurve"),
         ("post", "/api/v1/analyze/analysis123"),
+        ("post", "/api/v1/analyze/analysis123/retry"),
         ("get", "/api/v1/results/analysis123"),
         ("post", "/api/v1/reports/analysis123"),
         ("get", "/api/v1/reports/analysis123/download"),
@@ -186,8 +187,18 @@ def test_user_cannot_access_another_users_analysis(auth_client):
         "/api/v1/results/privateanalysis",
         headers={"Authorization": f"Bearer {token}"},
     )
+    start = client.post(
+        "/api/v1/analyze/privateanalysis",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    retry = client.post(
+        "/api/v1/analyze/privateanalysis/retry",
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 404
+    assert start.status_code == 404
+    assert retry.status_code == 404
 
 
 def test_analysis_ownership_foreign_key_is_enforced(auth_client):

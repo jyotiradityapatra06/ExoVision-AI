@@ -1,65 +1,34 @@
 "use client";
 
-import { Activity, BrainCircuit, CheckCircle2, Cpu, Database, Filter, LoaderCircle, Sparkles } from "lucide-react";
+import { BrainCircuit, CheckCircle2, Database, LoaderCircle, RadioTower } from "lucide-react";
 
-export type PipelineStage = "idle" | "uploading" | "preprocessing" | "detecting" | "classifying" | "finalizing";
+export type PipelineStage = "idle" | "uploading" | "starting";
 
 const stages = [
   {
     id: "uploading",
-    title: "Uploading Dataset...",
-    detail: "Ingesting photometric light curve file",
+    title: "Preparing Observation",
+    detail: "Loading or uploading the selected light curve",
     icon: Database,
   },
   {
-    id: "preprocessing",
-    title: "Preprocessing Light Curve",
-    detail: "Validating, cleaning, normalizing & detrending",
-    icon: Filter,
-  },
-  {
-    id: "detecting",
-    title: "Detecting Transit Signal",
-    detail: "Box-Least-Squares (BLS) periodogram search",
-    icon: Activity,
-  },
-  {
-    id: "classifying",
-    title: "Classifying AI Model",
-    detail: "Random Forest candidate classification",
-    icon: Cpu,
-  },
-  {
-    id: "finalizing",
-    title: "Finalizing Results",
-    detail: "Model evidence, charts & result persistence",
-    icon: Sparkles,
+    id: "starting",
+    title: "Starting Analysis",
+    detail: "Handing processing to the backend workflow",
+    icon: RadioTower,
   },
 ];
 
 export function PipelineVisualization({ currentStage }: { currentStage: PipelineStage }) {
   const getStageStatus = (stageId: string) => {
-    const order = ["idle", "uploading", "preprocessing", "detecting", "classifying", "finalizing"];
+    const order = ["idle", "uploading", "starting"];
     const currentIndex = order.indexOf(currentStage);
     const targetIndex = order.indexOf(stageId);
 
-    if (currentIndex > targetIndex || currentStage === "finalizing") return "done";
+    if (currentIndex > targetIndex) return "done";
     if (currentIndex === targetIndex) return "active";
     return "pending";
   };
-
-  const getProgressPercent = () => {
-    switch (currentStage) {
-      case "uploading": return 20;
-      case "preprocessing": return 45;
-      case "detecting": return 70;
-      case "classifying": return 88;
-      case "finalizing": return 100;
-      default: return 0;
-    }
-  };
-
-  const percent = getProgressPercent();
 
   return (
     <div className="bg-surface-container-lowest/80 backdrop-blur-xl border border-outline-variant/30 rounded-xl flex flex-col relative overflow-hidden hud-border">
@@ -84,25 +53,10 @@ export function PipelineVisualization({ currentStage }: { currentStage: Pipeline
           <svg className="absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] spin-reverse-slow opacity-50" viewBox="0 0 100 100">
             <circle cx="50" cy="50" fill="none" r="45" stroke="#849396" strokeDasharray="10 5 2 5" strokeWidth="1" />
           </svg>
-          {/* Main Progress Ring */}
-          <svg className="absolute inset-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)] -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" fill="none" r="40" stroke="#3b494c" strokeWidth="3" />
-            <circle
-              className="transition-all duration-500 ease-out"
-              cx="50"
-              cy="50"
-              fill="none"
-              r="40"
-              stroke="#00daf3"
-              strokeDasharray="251.2"
-              strokeDashoffset={251.2 - (percent / 100) * 251.2}
-              strokeWidth="3"
-            />
-          </svg>
           {/* Inner Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center font-data-mono">
-            <span className="text-3xl font-bold text-primary">{percent}%</span>
-            <span className="text-[9px] text-outline tracking-widest mt-0.5">SEQ_PROG</span>
+            {currentStage === "idle" ? <RadioTower className="h-8 w-8 text-outline" /> : <LoaderCircle className="h-8 w-8 animate-spin text-primary" />}
+            <span className="mt-3 text-[9px] text-outline tracking-widest">{currentStage === "idle" ? "READY" : "BACKEND HANDOFF"}</span>
           </div>
         </div>
 

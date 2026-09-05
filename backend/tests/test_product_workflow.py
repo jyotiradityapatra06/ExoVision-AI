@@ -86,8 +86,8 @@ def test_authenticated_demo_to_report_workflow(tmp_path: Path):
 
         assert registration.status_code == 201
         assert upload.status_code == 201
-        assert analysis.status_code == 200
-        assert analysis.json()["candidate_count"] == 1
+        assert analysis.status_code == 202
+        assert analysis.json()["status"] == "processing"
         assert result.status_code == 200
         assert result.json()["transit"]["detected"] is True
         assert result.json()["candidates"]

@@ -2,6 +2,8 @@ import { clearToken, getStoredToken } from "@/lib/auth";
 import type { AnalysisHistoryItem, AnalysisResponse, AnalysisResult, AnalysisStatus, ApiErrorPayload, ApiHealth, AuthResponse, AuthUser, DatasetSearchResult, ModelInfo, ReportResponse, UploadResponse } from "@/types/api";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+const DEFAULT_TIMEOUT_MS = 15_000;
+const DOWNLOAD_TIMEOUT_MS = 30_000;
 
 export class ApiError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -10,13 +12,30 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<T> {
   const isFormData = init?.body instanceof FormData;
   const token = getStoredToken();
-  const response = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: { ...(isFormData ? {} : { "Content-Type": "application/json" }), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
-  });
+  const controller = new AbortController();
+  const externalSignal = init?.signal;
+  const abortFromCaller = () => controller.abort(externalSignal?.reason);
+  externalSignal?.addEventListener("abort", abortFromCaller, { once: true });
+  const timeout = setTimeout(() => controller.abort("timeout"), timeoutMs);
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: { ...(isFormData ? {} : { "Content-Type": "application/json" }), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
+    });
+  } catch {
+    if (controller.signal.aborted) {
+      throw new ApiError(0, externalSignal?.aborted ? "Request cancelled." : "The ExoVision API request timed out.");
+    }
+    throw new ApiError(0, "The ExoVision API could not be reached.");
+  } finally {
+    clearTimeout(timeout);
+    externalSignal?.removeEventListener("abort", abortFromCaller);
+  }
 
   if (!response.ok) {
     if (response.status === 401 && token) clearToken();
@@ -30,9 +49,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 async function downloadFile(path: string, fallbackName: string): Promise<File> {
   const token = getStoredToken();
-  const response = await fetch(`${API_URL}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}, signal: controller.signal,
+    });
+  } catch {
+    throw new ApiError(0, controller.signal.aborted ? "Dataset download timed out." : "Dataset download could not reach the ExoVision API.");
+  } finally {
+    clearTimeout(timeout);
+  }
   if (!response.ok) {
     if (response.status === 401 && token) clearToken();
     const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
@@ -52,8 +80,9 @@ export const api = {
     return request<UploadResponse>("/api/v1/upload/lightcurve", { method: "POST", body });
   },
   startAnalysis: (analysisId: string) => request<AnalysisResponse>(`/api/v1/analyze/${encodeURIComponent(analysisId)}`, { method: "POST" }),
-  analysisStatus: (analysisId: string) => request<AnalysisStatus>(`/api/v1/analyze/${encodeURIComponent(analysisId)}/status`, { cache: "no-store" }),
-  getAnalysisResult: (analysisId: string) => request<AnalysisResult>(`/api/v1/results/${encodeURIComponent(analysisId)}`, { cache: "no-store" }),
+  retryAnalysis: (analysisId: string) => request<AnalysisResponse>(`/api/v1/analyze/${encodeURIComponent(analysisId)}/retry`, { method: "POST" }),
+  analysisStatus: (analysisId: string, init?: RequestInit) => request<AnalysisStatus>(`/api/v1/analyze/${encodeURIComponent(analysisId)}/status`, { ...init, cache: "no-store" }),
+  getAnalysisResult: (analysisId: string, init?: RequestInit) => request<AnalysisResult>(`/api/v1/results/${encodeURIComponent(analysisId)}`, { ...init, cache: "no-store" }),
   generateReport: (analysisId: string) => request<ReportResponse>(`/api/v1/reports/${encodeURIComponent(analysisId)}`, { method: "POST" }),
   reportDownloadUrl: (analysisId: string) => `${API_URL}/api/v1/reports/${encodeURIComponent(analysisId)}/download`,
   register: (email: string, displayName: string, password: string) => request<AuthResponse>("/api/v1/auth/register", { method: "POST", body: JSON.stringify({ email, display_name: displayName, password }) }),
@@ -62,7 +91,16 @@ export const api = {
   analysisHistory: () => request<AnalysisHistoryItem[]>("/api/v1/analyze", { cache: "no-store" }),
   downloadReport: async (analysisId: string) => {
     const token = getStoredToken();
-    const response = await fetch(`${API_URL}/api/v1/reports/${encodeURIComponent(analysisId)}/download`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
+    let response: Response;
+    try {
+      response = await fetch(`${API_URL}/api/v1/reports/${encodeURIComponent(analysisId)}/download`, { headers: token ? { Authorization: `Bearer ${token}` } : {}, signal: controller.signal });
+    } catch {
+      throw new ApiError(0, controller.signal.aborted ? "Report download timed out." : "Report download could not reach the ExoVision API.");
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) {
       if (response.status === 401 && token) clearToken();
       throw new ApiError(response.status, "The scientific report could not be downloaded.");

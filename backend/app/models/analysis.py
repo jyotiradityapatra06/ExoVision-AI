@@ -65,6 +65,25 @@ class AnalysisRepository:
                 "UPDATE analyses SET status = ? WHERE id = ?", (status, analysis_id)
             )
 
+    def transition_status(
+        self, analysis_id: str, expected: str, replacement: str
+    ) -> bool:
+        """Atomically claim one analysis state transition."""
+        with self._connect() as connection:
+            cursor = connection.execute(
+                "UPDATE analyses SET status = ? WHERE id = ? AND status = ?",
+                (replacement, analysis_id, expected),
+            )
+        return cursor.rowcount == 1
+
+    def by_id(self, analysis_id: str) -> AnalysisRecord | None:
+        """Return one analysis record without weakening ownership checks."""
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM analyses WHERE id = ?", (analysis_id,)
+            ).fetchone()
+        return AnalysisRecord(**dict(row)) if row is not None else None
+
     def list_for_user(self, user_id: str) -> list[AnalysisRecord]:
         """Return newest-first analysis history for a user."""
         with self._connect() as connection:

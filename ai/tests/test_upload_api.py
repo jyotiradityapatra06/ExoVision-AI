@@ -80,6 +80,13 @@ def test_corrupt_fits_fails_analysis_with_controlled_error(upload_client):
     analysis_id = uploaded.json()["analysis_id"]
 
     response = client.post(f"/api/v1/analyze/{analysis_id}")
+    workflow = client.get(f"/api/v1/analyze/{analysis_id}/status")
 
-    assert response.status_code == 422
-    assert "Unable to open FITS" in response.json()["detail"]
+    assert response.status_code == 202
+    assert workflow.status_code == 200
+    assert workflow.json()["status"] == "failed"
+    assert workflow.json()["retryable"] is True
+    assert workflow.json()["error"] == (
+        "The observation format is unsupported or malformed."
+    )
+    assert "uploads" not in workflow.json()["error"]
