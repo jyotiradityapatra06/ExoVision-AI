@@ -6,23 +6,23 @@ import { Gauge, Orbit, ShieldCheck, Layers } from "lucide-react";
 export function MissionStats() {
   const stats = [
     {
-      value: "10,000+",
-      label: "Light Curve Samples",
-      detail: "Benchmarked & validated datasets",
+      value: "3 Formats",
+      label: "Observation Inputs",
+      detail: "FITS, CSV, and TXT light curves",
       icon: Gauge,
       accent: "text-cyan-300",
     },
     {
       value: "Kepler + TESS",
       label: "Supported Missions",
-      detail: "Full archive telemetry support",
+      detail: "Public MAST light-curve search",
       icon: Orbit,
       accent: "text-violet-300",
     },
     {
-      value: "98.4%",
-      label: "AI Candidate Confidence",
-      detail: "Ensemble deep neural precision",
+      value: "Random Forest",
+      label: "Candidate Classifier",
+      detail: "Feature-based screening model",
       icon: ShieldCheck,
       accent: "text-emerald-300",
     },

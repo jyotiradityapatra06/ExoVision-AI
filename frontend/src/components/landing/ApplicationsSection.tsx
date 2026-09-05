@@ -13,7 +13,7 @@ export function ApplicationsSection() {
     },
     {
       title: "Researchers",
-      description: "High-throughput light curve transit screening & candidate validation.",
+      description: "Light-curve transit screening and candidate assessment.",
       icon: Microscope,
       accent: "text-violet-300",
     },

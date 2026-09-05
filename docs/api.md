@@ -40,7 +40,7 @@ Returns the authenticated user's newest-first analysis history.
 
 ### `GET /api/v1/results/{analysis_id}`
 
-Returns visualization-ready raw and folded light curves, transit measurements, classification confidence, feature importance, and explanation evidence.
+Returns visualization-ready raw and folded light curves, transit measurements, classifier model score, feature importance, and explanation evidence. The score is not a calibrated probability that the candidate is a confirmed exoplanet.
 
 ## Report APIs
 

@@ -6,7 +6,7 @@ import { Activity, Cpu, Sparkles, FileText, ArrowUpRight } from "lucide-react";
 export function FeatureCards() {
   const features = [
     {
-      title: "AI Transit Detection",
+      title: "Transit-like Signal Detection",
       description: "Automated period search, phase folding, and transit detection using Box Least Squares.",
       icon: Activity,
       gradient: "from-cyan-500/20 to-blue-500/10",
@@ -25,7 +25,7 @@ export function FeatureCards() {
     },
     {
       title: "Explainable AI",
-      description: "Understand a confidence score through model feature importance and measured transit evidence.",
+      description: "Interpret a model score through feature importance and measured transit evidence.",
       icon: Sparkles,
       gradient: "from-purple-500/20 to-pink-500/10",
       accentColor: "text-purple-300",
@@ -34,7 +34,7 @@ export function FeatureCards() {
     },
     {
       title: "Scientific Reports",
-      description: "Generate structured analysis reports with precise transit depth, period, radius ratio measurements and evidence.",
+      description: "Generate structured reports with transit period, depth, signal-to-noise measurements, and candidate evidence.",
       icon: FileText,
       gradient: "from-amber-500/20 to-emerald-500/10",
       accentColor: "text-amber-300",
@@ -63,7 +63,7 @@ export function FeatureCards() {
               transition={{ delay: 0.1 }}
               className="mt-3 text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl"
             >
-              Engineered for discovery
+              Engineered for candidate screening
             </motion.h2>
           </div>
           <motion.p

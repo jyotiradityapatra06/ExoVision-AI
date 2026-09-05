@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 
 from app.api.v1.reports import get_report_service
 from app.main import app
+from app.services import report_service
 from app.services.report_service import ReportService
 
 
@@ -121,3 +122,38 @@ def test_malformed_result_shape_returns_controlled_500(report_client):
 
     assert response.status_code == 500
     assert response.json()["detail"] == "Scientific report generation failed."
+
+
+def test_pdf_uses_candidate_screening_terminology(monkeypatch, tmp_path: Path):
+    """Keep scientifically important score and limitation language in reports."""
+    captured: list[object] = []
+
+    class DocumentStub:
+        page = 1
+
+        def build(self, story, **_kwargs):
+            captured.extend(story)
+
+    monkeypatch.setattr(
+        report_service,
+        "SimpleDocTemplate",
+        lambda *_args, **_kwargs: DocumentStub(),
+    )
+    uploads = tmp_path / "uploads"
+    _store_result(uploads, "wording123")
+    result = report_service.ResultService(uploads).get("wording123")
+
+    report_service._build_pdf(tmp_path / "wording.pdf", result)
+
+    fragments: list[str] = []
+    for item in captured:
+        if hasattr(item, "getPlainText"):
+            fragments.append(item.getPlainText())
+        for row in getattr(item, "_cellvalues", []):
+            fragments.extend(str(cell) for cell in row)
+    text = " ".join(fragments)
+    assert "Model score" in text
+    assert "Classifier Random Forest" in text
+    assert "not a calibrated probability" in text
+    assert "not a confirmed discovery" in text
+    assert "Model confidence" not in text

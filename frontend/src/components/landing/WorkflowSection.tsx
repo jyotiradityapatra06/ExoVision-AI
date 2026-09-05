@@ -8,7 +8,7 @@ export function WorkflowSection() {
     {
       num: "01",
       title: "Upload Data",
-      desc: "Ingest CSV, FITS, or NASA Kepler/TESS target pixel light curves.",
+      desc: "Ingest CSV, FITS, or public NASA Kepler/TESS light curves.",
       icon: Upload,
       accent: "cyan",
     },
@@ -29,7 +29,7 @@ export function WorkflowSection() {
     {
       num: "04",
       title: "ML Classification",
-      desc: "Random Forest model evaluates exoplanet versus false-positive probability.",
+      desc: "Random Forest model scores candidate features across screening classes.",
       icon: Brain,
       accent: "purple",
     },
@@ -61,7 +61,7 @@ export function WorkflowSection() {
             transition={{ delay: 0.1 }}
             className="mt-3 text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl"
           >
-            Five steps from flux to verdict
+            Five steps from flux to evidence
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 15 }}

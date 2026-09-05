@@ -19,7 +19,7 @@ export function DashboardShowcase() {
     { id: "overview", label: "Candidate Overview", icon: Layers },
     { id: "lightcurve", label: "Light Curve Analysis", icon: LineChartIcon },
     { id: "phasefolded", label: "Phase Folded Transit", icon: Sliders },
-    { id: "confidence", label: "AI Confidence Score", icon: Sparkles },
+    { id: "confidence", label: "Model Score", icon: Sparkles },
     { id: "report", label: "Scientific Report", icon: FileCheck2 },
   ];
 
@@ -51,7 +51,7 @@ export function DashboardShowcase() {
             transition={{ delay: 0.2 }}
             className="mt-4 text-slate-400 text-base"
           >
-            Explore how ExoVision AI displays candidate metrics, phase curves, confidence scores, and automated reports.
+            Explore how ExoVision AI displays candidate metrics, phase curves, model scores, and automated reports.
           </motion.p>
         </div>
 
@@ -195,9 +195,9 @@ export function DashboardShowcase() {
                 className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center"
               >
                 <div className="rounded-2xl border border-cyan-400/30 bg-cyan-950/30 p-6">
-                  <span className="text-xs font-mono text-cyan-300">OVERALL CLASSIFICATION CONFIDENCE</span>
+                  <span className="text-xs font-mono text-cyan-300">ILLUSTRATIVE MODEL SCORE</span>
                   <p className="mt-2 text-5xl font-extrabold text-white">98.4%</p>
-                  <p className="mt-2 text-xs text-slate-300">Illustrative Random Forest candidate probability</p>
+                  <p className="mt-2 text-xs text-slate-300">Classifier output, not a confirmation probability</p>
                 </div>
                 <div className="space-y-3 font-mono text-xs">
                   <div className="flex justify-between text-slate-300">

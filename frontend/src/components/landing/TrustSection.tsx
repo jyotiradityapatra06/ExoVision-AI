@@ -16,7 +16,7 @@ export function TrustSection() {
     {
       title: "NASA TESS",
       subtitle: "ALL-SKY SURVEY",
-      description: "High cadence light curve data for discovering planetary candidates.",
+      description: "High-cadence light curves for screening transit-like signals.",
       icon: Database,
       accent: "violet",
       badge: "HIGH CADENCE",
@@ -59,7 +59,7 @@ export function TrustSection() {
             transition={{ delay: 0.2 }}
             className="mt-4 text-slate-400 text-base"
           >
-            ExoVision AI natively ingests photometric space telescope archives and raw stellar light curve feeds.
+            ExoVision AI searches public MAST light-curve products and ingests FITS, CSV, and TXT observations.
           </motion.p>
         </div>
 

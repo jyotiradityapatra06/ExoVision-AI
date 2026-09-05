@@ -25,7 +25,7 @@ export function AnalysisSummary({ result }: { result: AnalysisResult }) {
     },
     {
       label: "TRANSIT SIGNAL DETECTED",
-      value: result.transit.detected ? "CONFIRMED YES" : "NO TRANSIT",
+      value: result.transit.detected ? "CANDIDATE DETECTED" : "NO TRANSIT-LIKE SIGNAL",
       icon: Orbit,
       accent: result.transit.detected ? "emerald" : "orange",
     },

@@ -78,7 +78,7 @@ function ReportsContent() {
   function handleBibtexExport(item: AnalysisHistoryItem) {
     const bibtex = `@misc{exovision_${item.id.slice(0, 8)},
   title={Candidate Analysis Report for Target ${item.filename}},
-  author={ExoVision AI Autonomous Pipeline},
+  author={ExoVision AI Candidate-Screening Pipeline},
   year={2026},
   howpublished={ExoVision AI analysis platform},
   url={${window.location.origin}/results/${item.id}}
@@ -118,7 +118,7 @@ function ReportsContent() {
             <dl className="mt-5 grid grid-cols-2 gap-x-5 gap-y-4">
               {[{ label: "Mission", value: missionFromFilename(item.filename) }, { label: "Target", value: item.filename }, { label: "Generated date", value: new Date(item.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) }, { label: "Classification", value: candidate?.classification ?? "Unavailable" }].map((metadata) => <div className="min-w-0" key={metadata.label}><dt className="telemetry-label">{metadata.label}</dt><dd className="mt-1.5 truncate text-xs font-medium text-slate-300" title={metadata.value}>{metadata.value}</dd></div>)}
             </dl>
-            <div className="mt-5 flex items-center justify-between rounded-xl border border-white/[0.07] bg-black/20 p-3"><div><p className="telemetry-label">AI confidence</p><p className="mt-1 font-mono text-lg font-semibold text-white">{candidate ? `${(candidate.confidence * 100).toFixed(1)}%` : "—"}</p></div><div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-200" style={{ width: `${candidate ? candidate.confidence * 100 : 0}%` }} /></div></div>
+            <div className="mt-5 flex items-center justify-between rounded-xl border border-white/[0.07] bg-black/20 p-3"><div><p className="telemetry-label">Model score</p><p className="mt-1 font-mono text-lg font-semibold text-white">{candidate ? `${(candidate.confidence * 100).toFixed(1)}%` : "—"}</p></div><div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-200" style={{ width: `${candidate ? candidate.confidence * 100 : 0}%` }} /></div></div>
             <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
               <Link className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-lg border border-cyan-300/25 bg-cyan-300/[0.07] px-3 text-[11px] font-semibold uppercase tracking-wider text-cyan-200 transition hover:bg-cyan-300/[0.12]" href={`/results/${item.id}`}><ExternalLink className="h-3.5 w-3.5" /> View Report</Link>
               <button className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-lg bg-cyan-200 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-950 transition hover:bg-white disabled:opacity-50" disabled={downloadingId !== null} onClick={() => handleDownload(item.id, item.filename)} type="button">{downloadingId === item.id ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{downloadingId === item.id ? "Preparing…" : "Download PDF"}</button>

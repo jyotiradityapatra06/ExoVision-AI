@@ -14,7 +14,7 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title=settings.project_name,
         description=(
-            "AI-powered exoplanet detection platform for Kepler and TESS light curves."
+            "AI-assisted exoplanet candidate screening for stellar light curves."
         ),
         version="1.0.0",
         docs_url="/docs",

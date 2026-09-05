@@ -118,7 +118,7 @@ function Dashboard() {
     { label: "Observation Archive", caption: "Total analyses", value: history.length.toString().padStart(2, "0"), icon: Database, tone: "text-cyan-300", glow: "from-cyan-300/35" },
     { label: "Completed Missions", caption: "Finished analyses", value: completed.toString().padStart(2, "0"), icon: CheckCircle2, tone: "text-emerald-300", glow: "from-emerald-300/35" },
     { label: "Candidate Signals", caption: "Detected candidates", value: allCandidates.length ? allCandidates.length.toString().padStart(2, "0") : "—", icon: ScanSearch, tone: "text-violet-300", glow: "from-violet-300/35" },
-    { label: "AI Confidence", caption: "Average classification", value: averageConfidence === null ? "—" : `${(averageConfidence * 100).toFixed(1)}%`, icon: BrainCircuit, tone: "text-amber-300", glow: "from-amber-300/35" },
+    { label: "Model Score", caption: "Average classifier output", value: averageConfidence === null ? "—" : `${(averageConfidence * 100).toFixed(1)}%`, icon: BrainCircuit, tone: "text-amber-300", glow: "from-amber-300/35" },
   ];
 
   return (
@@ -157,21 +157,21 @@ function Dashboard() {
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,.55fr)]">
         <article className="mission-panel min-h-[330px]">
-          <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-4 sm:px-6"><div><p className="telemetry-label">Latest discovery</p><h2 className="mt-1 font-semibold text-white">Featured analysis</h2></div><Orbit className="h-5 w-5 text-cyan-300" /></div>
+          <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-4 sm:px-6"><div><p className="telemetry-label">Latest screening result</p><h2 className="mt-1 font-semibold text-white">Featured analysis</h2></div><Orbit className="h-5 w-5 text-cyan-300" /></div>
           {latest ? (
             <div className="grid min-h-[270px] gap-8 p-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-center">
               <div>
                 <span className={`inline-flex rounded-full border px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.15em] ${latestCandidate ? "border-cyan-300/25 bg-cyan-300/[0.08] text-cyan-200" : statusClasses(latest.status)}`}>{latestCandidate ? "Exoplanet candidate detected" : latest.status === "completed" ? "Analysis complete" : `Mission ${latest.status}`}</span>
                 <h3 className="mt-5 truncate text-2xl font-semibold tracking-tight text-white sm:text-3xl">{latest.filename}</h3>
                 <p className="mt-2 font-mono text-[10px] text-slate-600">MISSION ID / {latest.id}</p>
-                <p className="mt-6 max-w-xl text-sm leading-6 text-slate-400">{latestCandidate ? "Transit signal confirmed and ranked by the ExoVision classification pipeline." : latest.status === "completed" ? "The analysis pipeline completed successfully. Open the evidence workspace to review transit detection and classification." : "This observation is moving through the scientific analysis pipeline."}</p>
+                <p className="mt-6 max-w-xl text-sm leading-6 text-slate-400">{latestCandidate ? "Transit-like signal detected and ranked by the ExoVision candidate-screening pipeline." : latest.status === "completed" ? "The analysis pipeline completed successfully. Open the evidence workspace to review transit detection and classification." : "This observation is moving through the scientific analysis pipeline."}</p>
                 {latest.status === "completed" && <Link className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cyan-200 transition hover:text-white" href={`/results/${latest.id}`}>Investigate result <ArrowRight className="h-4 w-4" /></Link>}
               </div>
               <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.08]">
-                {[{ label: "Mission", value: missionFromFilename(latest.filename) }, { label: "Detection", value: latestResult?.transit.detected ? "Confirmed" : latestResult ? "Not detected" : "Unavailable" }, { label: "Confidence", value: latestCandidate ? `${(latestCandidate.confidence * 100).toFixed(1)}%` : "Unavailable" }, { label: "Classification", value: latestCandidate?.classification ?? "Unclassified" }].map((item) => <div className="bg-[#050a15] p-4" key={item.label}><dt className="telemetry-label">{item.label}</dt><dd className="mt-2 break-words text-sm font-medium text-slate-200">{item.value}</dd></div>)}
+                {[{ label: "Mission", value: missionFromFilename(latest.filename) }, { label: "Detection", value: latestResult?.transit.detected ? "Candidate detected" : latestResult ? "Not detected" : "Unavailable" }, { label: "Model score", value: latestCandidate ? `${(latestCandidate.confidence * 100).toFixed(1)}%` : "Unavailable" }, { label: "Classification", value: latestCandidate?.classification ?? "Unclassified" }].map((item) => <div className="bg-[#050a15] p-4" key={item.label}><dt className="telemetry-label">{item.label}</dt><dd className="mt-2 break-words text-sm font-medium text-slate-200">{item.value}</dd></div>)}
               </dl>
             </div>
-          ) : <div className="flex min-h-[270px] flex-col items-center justify-center p-8 text-center"><FileSearch className="h-8 w-8 text-cyan-300/50" /><h3 className="mt-4 font-semibold text-white">No discovery selected</h3><p className="mt-2 max-w-md text-sm text-slate-500">Run your first observation to populate the featured analysis panel.</p></div>}
+          ) : <div className="flex min-h-[270px] flex-col items-center justify-center p-8 text-center"><FileSearch className="h-8 w-8 text-cyan-300/50" /><h3 className="mt-4 font-semibold text-white">No analysis selected</h3><p className="mt-2 max-w-md text-sm text-slate-500">Run your first observation to populate the featured analysis panel.</p></div>}
         </article>
 
         <aside className="mission-panel">

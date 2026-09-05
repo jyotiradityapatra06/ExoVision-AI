@@ -34,10 +34,10 @@ export function CandidateCard({ candidate }: { candidate: CandidateResult }) {
         </div>
       </div>
 
-      {/* Confidence Gauge Bar */}
+      {/* Model score gauge */}
       <div className="mt-5">
         <div className="flex items-center justify-between font-mono text-xs mb-1.5">
-          <span className="text-slate-400">AI CONFIDENCE SCORE</span>
+          <span className="text-slate-400">MODEL SCORE</span>
           <span className={`font-bold ${isHighConfidence ? "text-cyan-300" : "text-orange-400"}`}>
             {confidencePercent}%
           </span>

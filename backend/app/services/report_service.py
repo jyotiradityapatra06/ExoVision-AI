@@ -179,9 +179,10 @@ def _build_pdf(path: Path, result: dict[str, Any]) -> None:
                         ("Candidate ID", str(candidate["candidate_id"])),
                         ("Classification", str(candidate["classification"])),
                         (
-                            "Model confidence",
+                            "Model score",
                             f"{float(candidate['confidence']) * 100:.1f}%",
                         ),
+                        ("Classifier", "Random Forest"),
                         ("Period", _measurement(candidate.get("period"), "days")),
                         (
                             "Transit depth",
@@ -199,6 +200,13 @@ def _build_pdf(path: Path, result: dict[str, Any]) -> None:
                         )
                     ),
                     styles["body"],
+                ),
+                Spacer(1, 3 * mm),
+                Paragraph(
+                    "The model score reflects the Random Forest classifier output "
+                    "for this candidate. It is not a calibrated probability that "
+                    "the signal represents a confirmed exoplanet.",
+                    styles["callout"],
                 ),
                 Spacer(1, 4 * mm),
                 _evidence_block(

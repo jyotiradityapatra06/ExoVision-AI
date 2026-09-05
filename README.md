@@ -1,8 +1,8 @@
 # ExoVision AI
 
-### AI-powered exoplanet detection platform
+### AI-assisted exoplanet candidate screening platform
 
-ExoVision AI turns NASA and user-supplied stellar light curves into explainable exoplanet-candidate assessments. It combines production web workflows with a scientific Box Least Squares pipeline, R[...]
+ExoVision AI turns NASA and user-supplied stellar light curves into explainable exoplanet-candidate screening assessments. It combines real light-curve preprocessing and Box Least Squares transit detection with Random Forest classification and evidence-rich scientific reports.
 
 ![ExoVision AI landing page](docs/assets/landing-page.png)
 

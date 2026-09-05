@@ -35,12 +35,12 @@ export function HeroSection() {
             <Telescope className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
             <span>EXOVISION AI</span>
             <span className="text-cyan-500">•</span>
-            <span className="text-slate-300">AI POWERED EXOPLANET DISCOVERY</span>
+            <span className="text-slate-300">AI-ASSISTED CANDIDATE SCREENING</span>
           </div>
 
           {/* Headline */}
           <h1 className="mt-8 text-4xl font-extrabold tracking-tight text-white sm:text-6xl xl:text-7xl leading-[1.1]">
-            Discover New Worlds{" "}
+            Screen Stellar Signals{" "}
             <span className="block bg-gradient-to-r from-cyan-300 via-cyan-400 to-violet-400 bg-clip-text text-transparent filter drop-shadow-[0_0_25px_rgba(0,218,243,0.3)]">
               With AI-Powered Insight
             </span>
@@ -48,7 +48,7 @@ export function HeroSection() {
 
           {/* Description */}
           <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
-            ExoVision AI analyzes stellar light curves from Kepler and TESS missions to detect potential exoplanets using advanced signal processing, machine learning, and explainable AI.
+            ExoVision AI analyzes Kepler, K2, TESS, and user-supplied light curves to detect transit-like signals and help classify potential exoplanet candidates.
           </p>
 
           {/* Buttons */}
@@ -57,7 +57,7 @@ export function HeroSection() {
               href="/upload"
               className="group inline-flex h-13 items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-cyan-300 px-8 py-3.5 font-semibold text-slate-950 shadow-[0_0_25px_rgba(0,218,243,0.4)] transition-all duration-300 hover:shadow-[0_0_35px_rgba(0,218,243,0.7)] hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span>Start Discovering</span>
+              <span>Start Screening</span>
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
 
@@ -135,7 +135,7 @@ export function HeroSection() {
             <div className="absolute bottom-2 right-2 h-4 w-4 border-b-2 border-r-2 border-cyan-400 pointer-events-none" />
           </motion.div>
 
-          {/* Floating Card: TOP RIGHT - AI CONFIDENCE */}
+          {/* Floating Card: TOP RIGHT - ILLUSTRATIVE MODEL SCORE */}
           <motion.div
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
@@ -144,14 +144,14 @@ export function HeroSection() {
             <div className="flex items-center justify-between text-xs font-mono font-bold tracking-wider text-cyan-300">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="h-4 w-4 text-cyan-400" />
-                AI CONFIDENCE
+                MODEL SCORE
               </span>
               <span className="rounded bg-cyan-400/20 px-1.5 py-0.5 text-[10px] text-cyan-300">EXAMPLE</span>
             </div>
             <p className="mt-2 text-3xl font-extrabold text-white tracking-tight">98.4%</p>
             <p className="mt-1 text-xs text-slate-300 flex items-center gap-1">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-              Example candidate classified as planet-like
+              Illustrative candidate classification
             </p>
           </motion.div>
 

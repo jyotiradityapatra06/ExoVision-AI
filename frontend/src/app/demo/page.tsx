@@ -59,7 +59,7 @@ function DemoContent() {
   }
 
   const working = step !== "ready" && step !== "complete";
-  const labels: Record<Step, string> = { ready: "Launch discovery simulation", loading: "Loading stellar observation…", uploading: "Preparing observation…", analyzing: "Detecting and classifying…", complete: "Opening discovery report…" };
+  const labels: Record<Step, string> = { ready: "Launch screening demo", loading: "Loading stellar observation…", uploading: "Preparing observation…", analyzing: "Detecting and classifying…", complete: "Opening candidate report…" };
   const progress: Record<Step, number> = { ready: 0, loading: 20, uploading: 38, analyzing: 78, complete: 100 };
   const stageOrder: Step[] = ["ready", "loading", "uploading", "analyzing", "complete"];
   const currentIndex = stageOrder.indexOf(step);
@@ -71,8 +71,8 @@ function DemoContent() {
         <div className="relative z-10 grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_360px] lg:items-center">
           <div>
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 shadow-[0_0_28px_rgba(103,232,249,.1)]"><FlaskConical className="h-6 w-6 text-cyan-200" /></div>
-            <p className="workspace-kicker mt-8">Interactive AI discovery demonstration</p>
-            <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl lg:text-6xl">Launch an Exoplanet Discovery Simulation</h1>
+            <p className="workspace-kicker mt-8">Interactive candidate-screening demonstration</p>
+            <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl lg:text-6xl">Screen a Sample Transit-like Signal</h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">Follow a real sample observation through transit detection, AI classification, explainable evidence, and a reproducible scientific result.</p>
             <div className="mt-7 flex flex-wrap gap-3">{["Calibrated FITS data", "Known transit signal", "Explainable AI output"].map((item) => <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-black/20 px-3 py-1.5 text-xs text-slate-300" key={item}><CircleCheck className="h-3.5 w-3.5 text-emerald-300" />{item}</span>)}</div>
             {error && <div className="mt-6 rounded-xl border border-rose-300/20 bg-rose-300/[0.07] p-4 text-sm text-rose-200" role="alert"><p className="font-medium">Simulation interrupted</p><p className="mt-1 text-rose-200/70">{error}</p></div>}
@@ -83,7 +83,7 @@ function DemoContent() {
             <div className={`absolute inset-0 rounded-full border border-dashed border-cyan-300/20 ${working ? "animate-spin [animation-duration:18s]" : ""}`} />
             <div className={`absolute inset-8 rounded-full border border-violet-300/15 ${working ? "animate-spin [animation-direction:reverse] [animation-duration:12s]" : ""}`} />
             <div className="absolute inset-16 rounded-full border border-cyan-300/10 bg-[#040a16]/80 shadow-[inset_0_0_40px_rgba(103,232,249,.05),0_0_50px_rgba(103,232,249,.06)]" />
-            <div className="relative z-10 text-center"><Telescope className={`mx-auto h-10 w-10 text-cyan-200 ${working ? "animate-pulse" : ""}`} /><p className="mt-4 font-mono text-4xl font-semibold text-white">{progress[step]}%</p><p className="mt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">Discovery sequence</p></div>
+            <div className="relative z-10 text-center"><Telescope className={`mx-auto h-10 w-10 text-cyan-200 ${working ? "animate-pulse" : ""}`} /><p className="mt-4 font-mono text-4xl font-semibold text-white">{progress[step]}%</p><p className="mt-2 font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">Screening sequence</p></div>
             <span className="absolute left-2 top-1/2 h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,.8)]" /><span className="absolute right-12 top-9 h-1.5 w-1.5 rounded-full bg-violet-300 shadow-[0_0_10px_rgba(196,181,253,.7)]" />
           </div>
         </div>
@@ -91,7 +91,7 @@ function DemoContent() {
 
       <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <article className="mission-panel">
-          <div className="flex flex-col gap-4 border-b border-white/[0.08] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div><p className="telemetry-label">Animated pipeline</p><h2 className="mt-1 font-semibold text-white">Discovery workflow</h2></div><div className="flex items-center gap-3"><div className="h-1.5 w-32 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-cyan-200 shadow-[0_0_10px_rgba(103,232,249,.5)] transition-all duration-700" style={{ width: `${progress[step]}%` }} /></div><span className="font-mono text-[10px] text-cyan-200">{progress[step]}%</span></div></div>
+          <div className="flex flex-col gap-4 border-b border-white/[0.08] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div><p className="telemetry-label">Animated pipeline</p><h2 className="mt-1 font-semibold text-white">Candidate-screening workflow</h2></div><div className="flex items-center gap-3"><div className="h-1.5 w-32 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-cyan-200 shadow-[0_0_10px_rgba(103,232,249,.5)] transition-all duration-700" style={{ width: `${progress[step]}%` }} /></div><span className="font-mono text-[10px] text-cyan-200">{progress[step]}%</span></div></div>
           <ol className="grid p-5 sm:grid-cols-2 sm:p-6">
             {workflow.map((stage, index) => {
               const active = stage.states.includes(step as never);

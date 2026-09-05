@@ -35,7 +35,7 @@ export function CTASection() {
           </h2>
 
           <p className="mt-6 max-w-xl mx-auto text-base sm:text-lg text-slate-300 leading-relaxed">
-            Upload your photometry data or select a pre-loaded NASA Kepler target to generate explainable exoplanet candidate reports in seconds.
+            Upload photometry or explore public NASA MAST observations to generate evidence-rich candidate screening reports.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -59,10 +59,10 @@ export function CTASection() {
           <div className="mt-10 flex items-center justify-center gap-6 text-xs font-mono text-slate-400 border-t border-white/10 pt-6">
             <span className="flex items-center gap-1.5">
               <Telescope className="h-3.5 w-3.5 text-cyan-400" />
-              NO CREDENTIALS REQUIRED FOR DEMO
+              CREATE A FREE ACCOUNT TO RUN THE BUNDLED DEMO
             </span>
             <span className="hidden sm:inline text-slate-600">•</span>
-            <span className="hidden sm:inline text-slate-400">INSTANT EXPORT TO PDF & CSV</span>
+            <span className="hidden sm:inline text-slate-400">SCIENTIFIC PDF EXPORT</span>
           </div>
         </motion.div>
       </div>

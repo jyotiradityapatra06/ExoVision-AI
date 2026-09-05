@@ -11,7 +11,7 @@ export function AIInsightSection() {
     },
     {
       title: "Transit Detection",
-      desc: "Identify recurring periodic dips in stellar brightness down to parts-per-million sensitivity.",
+      desc: "Identify recurring periodic dips in stellar brightness with a Box Least Squares search.",
     },
     {
       title: "Candidate Ranking",
@@ -42,12 +42,12 @@ export function AIInsightSection() {
             <h2 className="mt-6 text-3xl font-extrabold text-white sm:text-5xl leading-tight">
               AI meets astrophysics.{" "}
               <span className="block bg-gradient-to-r from-cyan-300 to-violet-400 bg-clip-text text-transparent">
-                Discovery made simple.
+                Candidate evidence made clear.
               </span>
             </h2>
 
             <p className="mt-6 text-slate-300 text-base leading-relaxed">
-              ExoVision AI bridges complex astronomical signal processing and modern machine learning to automate exoplanet validation without black-box opacity.
+              ExoVision AI bridges astronomical signal processing and machine learning to assist candidate screening while keeping the measured evidence visible.
             </p>
 
             <div className="mt-8 space-y-5">
@@ -88,7 +88,7 @@ export function AIInsightSection() {
                   <span>MODEL FEATURE IMPORTANCE</span>
                 </div>
                 <span className="rounded bg-violet-500/20 px-2 py-0.5 text-[10px] font-mono text-violet-300">
-                  MODEL VERSION v2.4
+                  ILLUSTRATIVE VIEW
                 </span>
               </div>
 
@@ -166,7 +166,7 @@ export function AIInsightSection() {
                   <span>PREDICTION SYNTHESIS</span>
                 </div>
                 <p className="text-slate-300 leading-relaxed">
-                  High transit depth combined with U-shaped ingress/egress profile strongly disfavors binary star contamination. Candidate classified as terrestrial planet.
+                  Transit shape and signal measurements support the illustrative classifier output. Independent validation is still required.
                 </p>
               </div>
             </div>
