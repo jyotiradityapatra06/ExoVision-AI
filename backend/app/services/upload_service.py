@@ -30,7 +30,13 @@ class UploadService:
         self.upload_root = Path(upload_root).resolve()
         self.max_upload_bytes = max_upload_bytes
 
-    async def save(self, uploaded_file: UploadFile) -> dict[str, str]:
+    async def save(
+        self,
+        uploaded_file: UploadFile,
+        *,
+        existing_analysis_ids: list[str] | None = None,
+        max_total_bytes: int | None = None,
+    ) -> dict[str, str]:
         """Validate and store an upload, returning its public metadata."""
         filename = Path(uploaded_file.filename or "").name
         if not filename:
@@ -42,6 +48,7 @@ class UploadService:
                 f"Unsupported file extension. Supported formats: {supported}."
             )
 
+        current_bytes = self.storage_bytes(existing_analysis_ids or [])
         analysis_id = uuid4().hex
         analysis_directory = self.upload_root / analysis_id
         analysis_directory.mkdir(parents=True, exist_ok=False)
@@ -54,6 +61,13 @@ class UploadService:
                     if total_bytes > self.max_upload_bytes:
                         raise UploadValidationError(
                             f"Upload exceeds the {self.max_upload_bytes} byte limit."
+                        )
+                    if (
+                        max_total_bytes is not None
+                        and current_bytes + total_bytes > max_total_bytes
+                    ):
+                        raise UploadValidationError(
+                            "Stored data quota reached; new uploads are unavailable."
                         )
                     output.write(chunk)
             if total_bytes == 0:
@@ -84,6 +98,21 @@ class UploadService:
             "filename": filename,
             "status": "uploaded",
         }
+
+    def storage_bytes(self, analysis_ids: list[str]) -> int:
+        """Measure owned upload/result storage without following external paths."""
+        total = 0
+        for analysis_id in analysis_ids:
+            if not analysis_id.isalnum():
+                continue
+            directory = self.upload_root / analysis_id
+            if directory.is_dir():
+                total += sum(
+                    path.stat().st_size
+                    for path in directory.rglob("*")
+                    if path.is_file()
+                )
+        return total
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:

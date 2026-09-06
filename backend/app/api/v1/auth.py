@@ -2,9 +2,10 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.api.dependencies import CurrentUser, get_auth_service
+from app.core.security import client_identity, enforce_rate_limit
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
 from app.services.auth_service import (
@@ -20,8 +21,11 @@ AuthServiceDependency = Annotated[AuthService, Depends(get_auth_service)]
 @router.post(
     "/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED
 )
-def register(payload: RegisterRequest, service: AuthServiceDependency) -> TokenResponse:
+def register(
+    payload: RegisterRequest, service: AuthServiceDependency, request: Request
+) -> TokenResponse:
     """Create an account and immediately establish a session."""
+    enforce_rate_limit("auth", client_identity(request))
     try:
         user = service.register(payload.email, payload.display_name, payload.password)
     except AccountExistsError as error:
@@ -32,8 +36,11 @@ def register(payload: RegisterRequest, service: AuthServiceDependency) -> TokenR
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, service: AuthServiceDependency) -> TokenResponse:
+def login(
+    payload: LoginRequest, service: AuthServiceDependency, request: Request
+) -> TokenResponse:
     """Exchange valid credentials for a bearer access token."""
+    enforce_rate_limit("auth", client_identity(request))
     try:
         user = service.authenticate(payload.email, payload.password)
     except InvalidCredentialsError as error:

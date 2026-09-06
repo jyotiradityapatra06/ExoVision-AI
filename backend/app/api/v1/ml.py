@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from ai.ml.service import MLInferenceService
 from app.api.dependencies import CurrentUser
+from app.core.security import authenticated_identity, enforce_rate_limit
 from app.schemas.ml import (
     CandidateAnalysisRequest,
     CandidateReportResponse,
@@ -38,10 +39,11 @@ MLServiceDependency = Annotated[MLInferenceService, Depends(get_ml_service)]
 @router.post("/predict", response_model=PredictionResponse)
 def predict_candidate(
     request: PredictionRequest,
-    _user: CurrentUser,
+    user: CurrentUser,
     service: MLServiceDependency,
 ) -> PredictionResponse:
     """Classify a prepared candidate and explain the result."""
+    enforce_rate_limit("ml", authenticated_identity(user))
     try:
         result = service.predict_candidate(
             request.features.model_dump(exclude_none=True)
@@ -49,7 +51,7 @@ def predict_candidate(
     except (TypeError, ValueError) as error:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(error),
+            detail="Candidate features are invalid.",
         ) from error
     return PredictionResponse(candidate_id=request.candidate_id, **result)
 
@@ -57,16 +59,17 @@ def predict_candidate(
 @router.post("/analyze", response_model=CandidateReportResponse)
 def analyze_candidate(
     request: CandidateAnalysisRequest,
-    _user: CurrentUser,
+    user: CurrentUser,
     service: MLServiceDependency,
 ) -> CandidateReportResponse:
     """Run complete ML inference, explanation, and report generation."""
+    enforce_rate_limit("ml", authenticated_identity(user))
     try:
         result = service.analyze_candidate(request.candidate)
     except (TypeError, ValueError) as error:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(error),
+            detail="Candidate data is invalid.",
         ) from error
     return CandidateReportResponse(**result)
 

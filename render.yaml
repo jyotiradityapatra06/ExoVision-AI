@@ -10,6 +10,8 @@ services:
         value: 3.12.7
       - key: PROJECT_NAME
         value: ExoVision AI API
+      - key: APP_ENV
+        value: production
       - key: BACKEND_CORS_ORIGINS
         sync: false
       - key: JWT_SECRET

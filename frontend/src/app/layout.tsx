@@ -8,11 +8,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "ExoVision AI — Explainable candidate screening",
+    default: "ExoVision AI — AI-Assisted Exoplanet Candidate Screening",
     template: "%s | ExoVision AI",
   },
   description:
-    "Detect, classify, and understand exoplanet transit candidates with an explainable astronomy workflow.",
+    "Analyze stellar observations, detect transit-like signals, and screen exoplanet candidates with machine learning.",
   keywords: [
     "Exoplanets",
     "Astronomy",
@@ -25,14 +25,14 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "ExoVision AI",
-    description: "Turn starlight into planetary evidence.",
+    description: "AI-assisted exoplanet candidate screening from stellar light curves.",
     images: [{ url: "/og.png", width: 1536, height: 1024, alt: "ExoVision AI exoplanet transit platform" }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "ExoVision AI",
-    description: "Turn starlight into planetary evidence.",
+    description: "AI-assisted exoplanet candidate screening from stellar light curves.",
     images: ["/og.png"],
   },
 };

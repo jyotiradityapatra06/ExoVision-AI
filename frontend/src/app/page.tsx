@@ -1,27 +1,22 @@
-import { StarfieldBackground } from "@/components/StarfieldBackground";
+import { DataAndReportsSection, LandingFooter, TechnologySection, TransparencyAndCta } from "@/components/landing/ClosingSections";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { TrustSection } from "@/components/landing/TrustSection";
-import { FeatureCards } from "@/components/landing/FeatureCards";
-import { MissionStats } from "@/components/landing/MissionStats";
-import { AIInsightSection } from "@/components/landing/AIInsightSection";
-import { DashboardShowcase } from "@/components/landing/DashboardShowcase";
-import { WorkflowSection } from "@/components/landing/WorkflowSection";
-import { ApplicationsSection } from "@/components/landing/ApplicationsSection";
-import { CTASection } from "@/components/landing/CTASection";
+import { LandingNav } from "@/components/landing/LandingNav";
+import { ProductShowcase } from "@/components/landing/ProductShowcase";
+import { EvidenceSection, PipelineSection, ScienceSection } from "@/components/landing/ScienceSections";
 
 export default function HomePage() {
   return (
-    <main className="relative min-h-screen bg-[#020617] text-slate-100 overflow-x-hidden selection:bg-cyan-500/30 selection:text-white">
-      <StarfieldBackground />
+    <main className="landing-page">
+      <LandingNav />
       <HeroSection />
-      <TrustSection />
-      <FeatureCards />
-      <MissionStats />
-      <AIInsightSection />
-      <DashboardShowcase />
-      <WorkflowSection />
-      <ApplicationsSection />
-      <CTASection />
+      <PipelineSection />
+      <ProductShowcase />
+      <ScienceSection />
+      <EvidenceSection />
+      <DataAndReportsSection />
+      <TechnologySection />
+      <TransparencyAndCta />
+      <LandingFooter />
     </main>
   );
 }

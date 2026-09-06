@@ -125,3 +125,25 @@ export type AnalysisHistoryItem = {
   status: string;
   created_at: string;
 };
+
+export type AnalysisSummaryItem = AnalysisHistoryItem & {
+  stage: AnalysisStage;
+  updated_at: string;
+  processing_started_at: string | null;
+  safe_error: string | null;
+  candidate_detected: boolean | null;
+  classification: string | null;
+  model_score: number | null;
+  period_days: number | null;
+  depth: number | null;
+  duration_days: number | null;
+  transit_snr: number | null;
+};
+
+export type AnalysisHistoryPage = {
+  items: AnalysisSummaryItem[];
+  counts: { total: number; completed: number; processing: number; failed: number };
+  total: number;
+  limit: number;
+  offset: number;
+};

@@ -36,6 +36,7 @@ PUBLIC_ANALYSIS_ERRORS = {
     "The observation format is unsupported or malformed.",
     "Candidate classification is temporarily unavailable.",
     "Analysis failed while processing this observation.",
+    "Analysis was interrupted before completion. You can retry it.",
 }
 
 
@@ -168,6 +169,21 @@ class AnalysisService:
             error=None,
         )
         return state
+
+    def mark_interrupted(self, analysis_id: str) -> None:
+        """Make a stale processing record safely retryable without rerunning it."""
+        try:
+            directory, state = self._load_state(analysis_id)
+        except AnalysisNotFoundError:
+            logger.warning("stale_analysis_storage_missing analysis_id=%s", analysis_id)
+            return
+        self._set_state(
+            directory,
+            state,
+            status="failed",
+            stage="failed",
+            error="Analysis was interrupted before completion. You can retry it.",
+        )
 
     def _load_state(self, analysis_id: str) -> tuple[Path, dict[str, Any]]:
         if not analysis_id or not analysis_id.isalnum():

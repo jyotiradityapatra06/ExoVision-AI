@@ -77,8 +77,8 @@ export function InteractiveLineChart({
     const projectY = (value: number) =>
       PADDING.top + (1 - (value - yMinimum) / (yMaximum - yMinimum || 1)) * plotHeight;
 
-    // Draw HUD Background Grid Line Box
-    context.strokeStyle = "rgba(0, 240, 255, 0.12)";
+    // Draw Technical Outer Frame
+    context.strokeStyle = "rgba(255, 255, 255, 0.08)";
     context.lineWidth = 1;
     context.strokeRect(PADDING.left, PADDING.top, plotWidth, plotHeight);
 
@@ -90,18 +90,17 @@ export function InteractiveLineChart({
       context.beginPath();
       context.moveTo(PADDING.left, horizontal);
       context.lineTo(size.width - PADDING.right, horizontal);
-      context.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      context.strokeStyle = "rgba(255, 255, 255, 0.04)";
       context.stroke();
       const label = (yMaximum - ((yMaximum - yMinimum) * index) / 4).toFixed(4);
       context.fillText(label, 6, horizontal + 3);
     }
 
-    // Draw Plot Line with Glow Effect
+    // Draw Plot Line - crisp, restrained scientific stroke
     context.save();
-    context.shadowBlur = 10;
-    context.shadowColor = accent;
+    context.shadowBlur = 0;
     context.strokeStyle = accent;
-    context.lineWidth = 1.8;
+    context.lineWidth = 1.5;
     context.beginPath();
     points.forEach((point, index) => {
       const horizontal = projectX(point.x);
@@ -171,7 +170,7 @@ export function InteractiveLineChart({
     <div className="relative font-mono" ref={containerRef}>
       {zoom && domain[1] - domain[0] < 1 && (
         <button
-          className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-[#061128]/90 px-2.5 py-1 text-xs text-cyan-300 shadow-cyan-sm hover:bg-cyan-500/20"
+          className="absolute right-3 top-3 z-10 flex items-center gap-1.5 border border-white/15 bg-[#060a0f]/90 px-2.5 py-1 text-[11px] font-mono text-slate-300 hover:border-cyan-300/40 hover:text-white transition"
           onClick={() => setDomain([0, 1])}
           type="button"
         >
@@ -192,27 +191,27 @@ export function InteractiveLineChart({
 
       {tooltip && (
         <div
-          className="pointer-events-none absolute rounded-xl border border-cyan-400/40 bg-[#04091a]/95 px-3 py-2 text-xs font-mono shadow-2xl backdrop-blur-md"
+          className="pointer-events-none absolute border border-white/10 bg-[#060a0f]/95 px-3 py-2 text-xs font-mono shadow-xl"
           style={{
-            left: Math.min(tooltip.left + 12, size.width - 150),
+            left: Math.min(tooltip.left + 12, size.width - 160),
             top: Math.max(10, tooltip.top - 58),
           }}
         >
-          <p className="text-slate-400">
-            {xLabel}: <span className="text-white font-bold">{tooltip.x.toFixed(4)}</span>
+          <p className="text-slate-400 text-[11px]">
+            {xLabel}: <span className="text-white font-semibold">{tooltip.x.toFixed(4)}</span>
           </p>
-          <p className="mt-0.5 text-slate-400">
-            {yLabel}: <span className="text-cyan-300 font-bold">{tooltip.y.toFixed(6)}</span>
+          <p className="mt-0.5 text-slate-400 text-[11px]">
+            {yLabel}: <span className="text-cyan-300 font-semibold">{tooltip.y.toFixed(6)}</span>
           </p>
         </div>
       )}
 
       {zoom && (
-        <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
-          <span className="flex items-center gap-1 text-cyan-400/80">
-            <ZoomIn className="h-3 w-3" /> Scroll mouse over canvas to zoom in/out
+        <div className="mt-2 flex items-center justify-between text-[10px] font-mono text-slate-500">
+          <span className="flex items-center gap-1 text-slate-400">
+            <ZoomIn className="h-3 w-3 text-cyan-400/70" /> Scroll on canvas to zoom · Drag crosshair to inspect
           </span>
-          <span>DOMAINS: {(domain[0] * 100).toFixed(0)}%–{(domain[1] * 100).toFixed(0)}%</span>
+          <span>Domain: {(domain[0] * 100).toFixed(0)}%–{(domain[1] * 100).toFixed(0)}%</span>
         </div>
       )}
     </div>

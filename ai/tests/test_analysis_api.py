@@ -72,6 +72,15 @@ class StubAnalysisRepository:
         self.state = replacement
         return True
 
+    def claim_processing(
+        self, _analysis_id: str, _user_id: str, expected: str, replacement_limit: int
+    ) -> str:
+        del replacement_limit
+        if self.state != expected:
+            return "unchanged"
+        self.state = "processing"
+        return "claimed"
+
     def update_status(self, _analysis_id: str, status: str) -> None:
         self.state = status
 

@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 
 from app.api.dependencies import OwnedAnalysisUser
 from app.config.settings import settings
+from app.core.security import enforce_rate_limit
 from app.schemas.report import ReportResponse
 from app.services.report_service import ReportNotFoundError, ReportService
 
@@ -25,9 +26,10 @@ ReportServiceDependency = Annotated[ReportService, Depends(get_report_service)]
 def generate_report(
     analysis_id: str,
     service: ReportServiceDependency,
-    _user: OwnedAnalysisUser,
+    user: OwnedAnalysisUser,
 ) -> ReportResponse:
     """Generate a professional PDF from one completed analysis."""
+    enforce_rate_limit("report", user.id)
     try:
         result = service.generate(analysis_id)
     except ReportNotFoundError as error:

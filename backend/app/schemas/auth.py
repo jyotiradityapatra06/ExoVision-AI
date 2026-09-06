@@ -56,9 +56,48 @@ class TokenResponse(BaseModel):
 
 
 class AnalysisHistoryItem(BaseModel):
-    """One user-owned dashboard history entry."""
+    """One user-owned legacy history entry."""
 
     id: str
     filename: str
     status: str
     created_at: str
+
+
+class AnalysisSummaryItem(BaseModel):
+    """One lightweight user-owned dashboard history entry."""
+
+    id: str
+    filename: str
+    status: str
+    stage: str
+    created_at: str
+    updated_at: str
+    processing_started_at: str | None = None
+    safe_error: str | None = None
+    candidate_detected: bool | None = None
+    classification: str | None = None
+    model_score: float | None = None
+    period_days: float | None = None
+    depth: float | None = None
+    duration_days: float | None = None
+    transit_snr: float | None = None
+
+
+class AnalysisHistoryCounts(BaseModel):
+    """Truthful status totals for the authenticated user's workspace."""
+
+    total: int
+    completed: int
+    processing: int
+    failed: int
+
+
+class AnalysisHistoryPage(BaseModel):
+    """A bounded page of lightweight dashboard summaries."""
+
+    items: list[AnalysisSummaryItem]
+    counts: AnalysisHistoryCounts
+    total: int
+    limit: int
+    offset: int

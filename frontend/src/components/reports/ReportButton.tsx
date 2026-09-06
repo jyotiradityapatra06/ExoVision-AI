@@ -1,16 +1,15 @@
 "use client";
 
-import { CheckCircle2, Download, FileText, LoaderCircle } from "lucide-react";
+import { AlertCircle, Download, FileText, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "@/components/button";
 import { api, ApiError } from "@/lib/api";
 
 export function ReportButton({ analysisId }: { analysisId: string }) {
-  const [status, setStatus] = useState<"idle" | "generating" | "generated" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "generating" | "generated" | "downloading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
 
-  async function generate() {
+  async function handleGenerate() {
     setStatus("generating");
     setError(null);
     try {
@@ -18,41 +17,91 @@ export function ReportButton({ analysisId }: { analysisId: string }) {
       setStatus("generated");
     } catch (caught) {
       setStatus("error");
-      setError(caught instanceof ApiError ? caught.message : "The report could not be generated.");
+      setError(caught instanceof ApiError ? caught.message : "The scientific report could not be generated.");
     }
   }
 
-  async function download() {
+  async function handleDownload() {
+    setStatus("downloading");
+    setError(null);
     try {
       const blob = await api.downloadReport(analysisId);
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `${analysisId}.pdf`;
+      anchor.download = `exovision_${analysisId}.pdf`;
       anchor.click();
       URL.revokeObjectURL(url);
+      setStatus("generated");
     } catch (caught) {
       setStatus("error");
-      setError(caught instanceof ApiError ? caught.message : "The report could not be downloaded.");
+      setError(caught instanceof ApiError ? caught.message : "The scientific report could not be downloaded.");
     }
   }
 
-  if (status === "generated") {
-    return (
-      <button className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-300 px-6 text-sm font-semibold text-slate-950 shadow-[0_0_28px_rgba(110,231,183,.15)] transition hover:-translate-y-0.5 hover:bg-emerald-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300" onClick={download} type="button">
-        <Download className="h-4 w-4" aria-hidden="true" />
-        Download report
-      </button>
-    );
-  }
-
   return (
-    <div className="relative">
-      <Button className="min-h-12 px-6 shadow-[0_0_30px_rgba(103,232,249,.18)]" disabled={status === "generating"} onClick={generate} size="lg">
-        {status === "generating" ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : status === "error" ? <FileText className="h-4 w-4" aria-hidden="true" /> : <CheckCircle2 className="h-4 w-4" aria-hidden="true" />}
-        {status === "generating" ? "Generating Scientific Report…" : status === "error" ? "Retry Scientific Report" : "Generate Scientific Report"}
-      </Button>
-      {error && <p className="absolute right-0 top-12 w-64 rounded-lg border border-rose-400/20 bg-slate-950 p-3 text-xs leading-5 text-rose-200 shadow-xl" role="alert">{error}</p>}
+    <div className="flex flex-col items-start sm:items-end gap-2">
+      {status === "idle" && (
+        <button
+          className="dashboard-primary-action min-h-[42px] px-4 shadow-[0_0_24px_rgba(128,215,229,.12)]"
+          onClick={handleGenerate}
+          type="button"
+        >
+          <FileText className="h-4 w-4" aria-hidden="true" />
+          <span>Generate Scientific Report (PDF)</span>
+        </button>
+      )}
+
+      {status === "generating" && (
+        <button
+          className="dashboard-primary-action min-h-[42px] px-4 opacity-80 cursor-wait"
+          disabled
+          type="button"
+        >
+          <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+          <span>Compiling Scientific Report…</span>
+        </button>
+      )}
+
+      {status === "generated" && (
+        <button
+          className="inline-flex min-h-[42px] items-center gap-2 border border-emerald-400/40 bg-emerald-400/10 px-4 text-xs font-semibold text-emerald-300 hover:bg-emerald-400/20 transition"
+          onClick={handleDownload}
+          type="button"
+        >
+          <Download className="h-4 w-4" aria-hidden="true" />
+          <span>Download Report (PDF)</span>
+        </button>
+      )}
+
+      {status === "downloading" && (
+        <button
+          className="inline-flex min-h-[42px] items-center gap-2 border border-emerald-400/40 bg-emerald-400/10 px-4 text-xs font-semibold text-emerald-300 opacity-80 cursor-wait"
+          disabled
+          type="button"
+        >
+          <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+          <span>Downloading PDF…</span>
+        </button>
+      )}
+
+      {status === "error" && (
+        <div className="flex flex-col sm:items-end gap-1.5">
+          <button
+            className="dashboard-secondary-action min-h-[42px] px-4 border-rose-400/30 text-rose-300 hover:border-rose-400/50"
+            onClick={handleGenerate}
+            type="button"
+          >
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
+            <span>Retry Report Generation</span>
+          </button>
+          {error && (
+            <p className="text-[11px] text-rose-400 font-mono text-left sm:text-right max-w-xs" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,21 +1,27 @@
 "use client";
 
+import Link from "next/link";
+
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { ObservationSources } from "@/components/observation-sources";
 import { UploadDropzone } from "@/components/upload-dropzone";
 
 export default function UploadPage() {
   return (
     <ProtectedRoute>
-      <main className="app-workspace min-h-screen">
-        {/* Header */}
-        <header className="mb-8 w-full border-b border-white/[0.08] pb-8">
-          <p className="workspace-kicker">Virtual telescope / observation deck</p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">ExoVision Observatory</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base">Explore astronomical targets and analyze stellar observations.</p>
+      <main className="app-workspace intake-workspace">
+        <header className="intake-header">
+          <div>
+            <p className="workspace-kicker">Analysis / New observation</p>
+            <h1>Analyze an observation</h1>
+            <p>Upload a stellar light curve and screen it for periodic transit-like signals.</p>
+          </div>
+          <ObservationSources current="/upload" />
         </header>
-
-        {/* Main Interface Grid */}
         <UploadDropzone />
+        <p className="intake-crosslink">
+          Don&apos;t have a light curve? <Link href="/datasets">Search NASA MAST</Link>, or <Link href="/demo">run the bundled demo</Link>.
+        </p>
       </main>
     </ProtectedRoute>
   );

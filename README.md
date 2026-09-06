@@ -181,6 +181,7 @@ GET  /api/v1/reports/{analysis_id}/download
 ```
 
 Analysis startup is idempotent and returns promptly while the single-instance API processes the observation in the background. The results route polls persisted stages and can recover its view after a browser refresh. This lightweight executor is not a durable distributed queue; an API process restart can interrupt active work.
+Public-deployment safeguards include stale-job recovery, per-user concurrency and storage quotas, category-specific in-memory rate limits, explicit production CORS/JWT validation, reusable reports, and security/no-cache headers. These controls target one API instance; see the deployment guide for proxy and browser-token limitations.
 
 See [API documentation](docs/api.md) for all authentication, upload, analysis, result, report, model, and dataset endpoints.
 

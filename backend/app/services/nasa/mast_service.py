@@ -9,12 +9,28 @@ import time
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.parse import urlencode, urlsplit
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 MAST_INVOKE_URL = "https://mast.stsci.edu/api/v0/invoke"
 MAST_DOWNLOAD_URL = "https://mast.stsci.edu/api/v0.1/Download/file"
 logger = logging.getLogger(__name__)
+MAX_MAST_RESPONSE_BYTES = 2 * 1024 * 1024
+
+
+class _MastRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if urlsplit(newurl).hostname != "mast.stsci.edu":
+            raise MastServiceError("MAST returned an unsafe redirect.")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_opener = build_opener(_MastRedirectHandler())
+
+
+def urlopen(*args, **kwargs):
+    """Open a MAST request with redirect validation; retained as a test seam."""
+    return _opener.open(*args, **kwargs)
 
 
 class MastServiceError(RuntimeError):
@@ -199,7 +215,12 @@ class MastService:
                         ),
                         timeout=remaining,
                     ) as response:
-                        payload = json.loads(response.read().decode("utf-8"))
+                        raw = response.read(MAX_MAST_RESPONSE_BYTES + 1)
+                        if len(raw) > MAX_MAST_RESPONSE_BYTES:
+                            raise MastServiceError(
+                                "MAST returned an oversized response."
+                            )
+                        payload = json.loads(raw.decode("utf-8"))
                     if not isinstance(payload, dict):
                         raise MastServiceError(
                             "MAST returned an invalid response payload."

@@ -1,36 +1,54 @@
 "use client";
 
+import { BrainCircuit } from "lucide-react";
+
 export function FeatureImportanceChart({
   attributions,
 }: {
   attributions?: Array<{ feature: string; importance: number; direction: string }>;
 }) {
   const items = attributions ?? [];
+  const maxImportance = Math.max(...items.map((i) => Math.abs(i.importance)), 0.01);
 
   return (
-    <div className="hud-border p-6 hud-corner hud-corner-tr hud-corner-bl rounded-xl bg-surface-container/60 backdrop-blur-md">
-      <h2 className="font-label-caps text-xs text-ai-accent border-b border-ai-accent/30 pb-2 mb-4 flex items-center gap-2 font-bold tracking-widest uppercase">
-        <span className="h-2 w-2 rounded-full bg-ai-accent animate-pulse" />
-        AI FEATURE IMPORTANCE
-      </h2>
-      <div className="space-y-4 font-data-mono text-xs">
-        {!items.length && <p className="font-sans text-sm leading-6 text-slate-400">Feature attribution data was not provided for this candidate.</p>}
-        {items.map((item) => (
-          <div key={item.feature}>
-            <div className="flex justify-between text-xs mb-1 font-mono">
-              <span className="text-on-surface font-semibold">{item.feature}</span>
-              <span className="text-primary font-bold">
-                {item.importance > 0 ? `+${item.importance.toFixed(2)}` : item.importance.toFixed(2)}
-              </span>
-            </div>
-            <div className="w-full h-2 bg-surface-variant rounded-full overflow-hidden">
-              <div
-                className="bg-primary h-full rounded-full transition-all duration-500 shadow-[0_0_8px_#00e5ff]"
-                style={{ width: `${Math.min(100, Math.max(10, item.importance * 200))}%` }}
-              />
-            </div>
-          </div>
-        ))}
+    <div className="results-importance-panel" aria-labelledby="model-interpret-heading">
+      <div className="results-panel-title">
+        <div>
+          <h3 id="model-interpret-heading">Model interpretation</h3>
+          <p>Relative feature importance from the bundled Random Forest classifier</p>
+        </div>
+        <BrainCircuit className="h-4 w-4" />
+      </div>
+
+      <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+        Global feature importance metrics indicate which observable transit parameters carry the most weight in the Random Forest screening model across the training distribution. This is a model-level diagnostic, not a causal exoplanet confirmation.
+      </p>
+
+      <div className="results-feature-list">
+        {items.length === 0 ? (
+          <p className="py-4 text-xs font-mono text-slate-500">
+            Feature attribution data was not recorded for this candidate.
+          </p>
+        ) : (
+          items.map((item) => {
+            const widthPct = Math.min(100, Math.max(8, (Math.abs(item.importance) / maxImportance) * 100));
+            const formattedVal = item.importance >= 0 ? `+${item.importance.toFixed(3)}` : item.importance.toFixed(3);
+            return (
+              <div className="results-feature-item" key={item.feature}>
+                <div className="results-feature-item-header">
+                  <span className="results-feature-name">{item.feature}</span>
+                  <span className="results-feature-val font-mono">{formattedVal}</span>
+                </div>
+                <div className="results-feature-track" role="progressbar" aria-valuenow={Math.round(widthPct)} aria-valuemin={0} aria-valuemax={100} aria-label={`${item.feature} importance`}>
+                  <div
+                    className="results-feature-fill"
+                    style={{ width: `${widthPct}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

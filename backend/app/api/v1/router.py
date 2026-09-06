@@ -9,6 +9,8 @@ from app.api.v1.ml import router as ml_router
 from app.api.v1.reports import router as reports_router
 from app.api.v1.results import router as results_router
 from app.api.v1.upload import router as upload_router
+from app.config.settings import settings
+from app.models.database import connect_database
 from app.schemas.health import HealthResponse
 
 router = APIRouter()
@@ -24,6 +26,8 @@ router.include_router(reports_router)
 @router.get("/health", response_model=HealthResponse, tags=["system"])
 def get_health() -> HealthResponse:
     """Report whether the production API process is available."""
+    with connect_database(settings.database_path) as connection:
+        connection.execute("SELECT 1").fetchone()
     return HealthResponse(
         status="healthy",
         service="ExoVision API",

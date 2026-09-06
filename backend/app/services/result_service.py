@@ -32,6 +32,44 @@ class ResultService:
             raise ValueError("Stored analysis result must be a JSON object.")
         return _project_result(analysis_id, stored)
 
+    def summary(self, analysis_id: str) -> dict[str, Any]:
+        """Project compact candidate metadata without scientific sample arrays."""
+        if not analysis_id or not analysis_id.isalnum():
+            raise ResultNotFoundError("Analysis result not found.")
+        result_path = self.upload_root / analysis_id / "result.json"
+        if not result_path.is_file():
+            raise ResultNotFoundError("Analysis result not found.")
+        try:
+            stored = json.loads(result_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError("Stored analysis result is unreadable.") from error
+        if not isinstance(stored, dict):
+            raise ValueError("Stored analysis result must be a JSON object.")
+
+        pipeline = _mapping(stored.get("pipeline"))
+        candidate = _mapping(pipeline.get("candidate"))
+        detection = _mapping(pipeline.get("detection"))
+        classification = _mapping(
+            _mapping(stored.get("ml_report")).get("classification")
+        )
+        return {
+            "candidate_detected": bool(candidate),
+            "classification": str(classification.get("label"))
+            if classification.get("label") is not None
+            else None,
+            "model_score": _probability(classification.get("confidence"))
+            if classification.get("confidence") is not None
+            else None,
+            "period_days": _number(
+                candidate.get("period_days", detection.get("period_days"))
+            ),
+            "depth": _number(candidate.get("depth", detection.get("depth"))),
+            "duration_days": _number(
+                candidate.get("duration_days", detection.get("duration_days"))
+            ),
+            "transit_snr": _number(candidate.get("transit_snr", detection.get("snr"))),
+        }
+
 
 def _project_result(analysis_id: str, stored: dict[str, Any]) -> dict[str, Any]:
     pipeline = _mapping(stored.get("pipeline"))

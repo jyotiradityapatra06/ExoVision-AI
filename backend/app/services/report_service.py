@@ -41,13 +41,15 @@ class ReportService:
         self.report_root = Path(report_root).resolve()
 
     def generate(self, analysis_id: str) -> dict[str, str]:
-        """Generate or replace one report from persisted analysis results."""
+        """Generate a report once, reusing the immutable analysis PDF thereafter."""
         try:
             result = self.result_service.get(analysis_id)
         except ResultNotFoundError as error:
             raise ReportNotFoundError("Completed analysis result not found.") from error
         self.report_root.mkdir(parents=True, exist_ok=True)
         destination = self.report_root / f"{analysis_id}.pdf"
+        if destination.is_file():
+            return self._response(analysis_id, destination)
         temporary = self.report_root / f"{analysis_id}.tmp"
         try:
             _build_pdf(temporary, result)
@@ -55,6 +57,10 @@ class ReportService:
         except Exception:
             temporary.unlink(missing_ok=True)
             raise
+        return self._response(analysis_id, destination)
+
+    @staticmethod
+    def _response(analysis_id: str, destination: Path) -> dict[str, str]:
         return {
             "analysis_id": analysis_id,
             "status": "generated",
