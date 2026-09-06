@@ -1,135 +1,128 @@
 "use client";
 
-import { BookOpen, CalendarDays, Download, ExternalLink, FileText, LoaderCircle, Orbit, Search, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowRight, BookOpen, CheckCircle2, Download, FileText, FlaskConical, LoaderCircle, RefreshCw, Search, Telescope } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { api, ApiError } from "@/lib/api";
-import type { AnalysisHistoryItem, AnalysisResult } from "@/types/api";
+import type { AnalysisHistoryPage, AnalysisSummaryItem } from "@/types/api";
 
-type ResultRegistry = Record<string, AnalysisResult>;
+const PAGE_SIZE = 24;
+const emptyPage: AnalysisHistoryPage = { items: [], counts: { total: 0, completed: 0, processing: 0, failed: 0 }, total: 0, limit: PAGE_SIZE, offset: 0 };
+type CandidateFilter = "all" | "candidate" | "no-candidate";
 
 function missionFromFilename(filename: string) {
   const normalized = filename.toLowerCase();
   if (normalized.includes("tess") || normalized.includes("tic")) return "TESS";
   if (normalized.includes("k2")) return "K2";
   if (normalized.includes("kepler") || normalized.includes("kic")) return "Kepler";
-  return "Independent observation";
+  return "Independent";
 }
 
-export default function ReportsPage() {
-  return <ProtectedRoute><ReportsContent /></ProtectedRoute>;
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" }).format(new Date(value));
 }
 
-function ReportsContent() {
-  const [history, setHistory] = useState<AnalysisHistoryItem[]>([]);
-  const [results, setResults] = useState<ResultRegistry>({});
+function safeFilename(filename: string) {
+  return filename.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9_-]+/gi, "_");
+}
+
+export default function ReportsPage() { return <ProtectedRoute><ReportsArchive /></ProtectedRoute>; }
+
+function ReportsArchive() {
+  const [page, setPage] = useState<AnalysisHistoryPage>(emptyPage);
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<CandidateFilter>("all");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isSubscribed = true;
-    api.analysisHistory()
-      .then(async (data) => {
-        const completed = data.filter((item) => item.status === "completed");
-        const settled = await Promise.allSettled(completed.map((item) => api.getAnalysisResult(item.id)));
-        const registry: ResultRegistry = {};
-        settled.forEach((result, index) => {
-          if (result.status === "fulfilled") registry[completed[index].id] = result.value;
-        });
-        if (isSubscribed) { setHistory(data); setResults(registry); setLoading(false); }
-      })
-      .catch((caught) => {
-        if (isSubscribed) {
-          setHistory([]);
-          setError(caught instanceof ApiError ? caught.message : "The report registry could not be loaded.");
-          setLoading(false);
-        }
-      });
-    return () => { isSubscribed = false; };
-  }, []);
-
-  const filteredHistory = history
-    .filter((item) => item.status === "completed" && (item.filename.toLowerCase().includes(search.toLowerCase()) || item.id.toLowerCase().includes(search.toLowerCase())))
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-  async function handleDownload(id: string, filename: string) {
-    setDownloadingId(id);
+  const load = useCallback(async (offset = 0, append = false) => {
+    if (append) setLoadingMore(true);
+    else setLoading(true);
     setError(null);
     try {
-      await api.generateReport(id);
-      const blob = await api.downloadReport(id);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${filename}_report.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const response = await api.dashboardHistory(PAGE_SIZE, offset);
+      setPage((current) => ({ ...response, items: append ? [...current.items, ...response.items.filter((item) => !current.items.some((existing) => existing.id === item.id))] : response.items }));
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : "Report PDF generation failed.");
-    } finally {
-      setDownloadingId(null);
-    }
+      setError(caught instanceof ApiError && caught.status === 0 ? "The ExoVision API could not be reached. Check the service and try again." : "The scientific archive could not be loaded safely. Please try again.");
+    } finally { setLoading(false); setLoadingMore(false); }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    api.dashboardHistory(PAGE_SIZE, 0)
+      .then((response) => { if (active) setPage(response); })
+      .catch((caught) => {
+        if (active) setError(caught instanceof ApiError && caught.status === 0 ? "The ExoVision API could not be reached. Check the service and try again." : "The scientific archive could not be loaded safely. Please try again.");
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  const completed = useMemo(() => page.items.filter((item) => item.status === "completed"), [page.items]);
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return completed.filter((item) => {
+      const matchesQuery = !query || item.filename.toLowerCase().includes(query) || item.id.toLowerCase().includes(query) || (item.classification ?? "").toLowerCase().includes(query);
+      const matchesFilter = filter === "all" || (filter === "candidate" ? item.candidate_detected === true : item.candidate_detected === false);
+      return matchesQuery && matchesFilter;
+    });
+  }, [completed, filter, search]);
+  const candidateCount = completed.filter((item) => item.candidate_detected === true).length;
+  const hasMore = page.items.length < page.total;
+
+  async function handleDownload(item: AnalysisSummaryItem) {
+    setDownloadingId(item.id); setDownloadError(null);
+    try {
+      await api.generateReport(item.id);
+      const blob = await api.downloadReport(item.id);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url; anchor.download = `${safeFilename(item.filename)}_scientific_report.pdf`;
+      document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
+    } catch (caught) {
+      setDownloadError(caught instanceof ApiError ? caught.message : "The scientific PDF could not be prepared.");
+    } finally { setDownloadingId(null); }
   }
 
-  function handleBibtexExport(item: AnalysisHistoryItem) {
-    const bibtex = `@misc{exovision_${item.id.slice(0, 8)},
-  title={Candidate Analysis Report for Target ${item.filename}},
-  author={ExoVision AI Candidate-Screening Pipeline},
-  year={2026},
-  howpublished={ExoVision AI analysis platform},
-  url={${window.location.origin}/results/${item.id}}
-}`;
-    const blob = new Blob([bibtex], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${item.filename}_citation.bib`;
-    a.click();
-    URL.revokeObjectURL(url);
+  function exportBibtex(item: AnalysisSummaryItem) {
+    const year = new Date(item.updated_at).getFullYear();
+    const bibtex = `@misc{exovision_${item.id.slice(0, 8)},\n  title={Candidate Analysis Report for ${item.filename}},\n  author={{ExoVision AI Candidate-Screening Pipeline}},\n  year={${year}},\n  howpublished={ExoVision AI analysis platform},\n  url={${window.location.origin}/results/${item.id}}\n}`;
+    const url = URL.createObjectURL(new Blob([bibtex], { type: "application/x-bibtex" }));
+    const anchor = document.createElement("a");
+    anchor.href = url; anchor.download = `${safeFilename(item.filename)}_citation.bib`;
+    document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
   }
 
-  return (
-    <main className="app-workspace">
-      <header className="mb-8 flex flex-col gap-6 border-b border-white/[0.08] pb-8 md:flex-row md:items-end md:justify-between">
-        <div><p className="workspace-kicker">Evidence repository / verified exports</p><h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-5xl">Scientific Archive</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">Browse reproducible candidate analyses, inspect scientific metadata, and export publication-ready evidence.</p></div>
-        <div className="relative w-full md:w-80"><Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" /><input className="h-11 w-full rounded-xl border border-white/[0.09] bg-slate-950/70 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-300/40 focus:shadow-[0_0_18px_rgba(103,232,249,.08)]" onChange={(event) => setSearch(event.target.value)} placeholder="Search targets or report IDs…" type="search" value={search} /></div>
-      </header>
-
-      {error && <p className="mb-6 rounded-xl border border-rose-400/25 bg-rose-400/[0.08] p-4 text-sm text-rose-200" role="alert">{error}</p>}
-
-      <section aria-live="polite">
-        <div className="mb-4 flex items-end justify-between"><div><p className="telemetry-label">Report collection</p><h2 className="mt-1 text-lg font-semibold text-white">Archived analyses</h2></div>{!loading && <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-600">{filteredHistory.length} reports available</span>}</div>
-        {loading ? <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-label="Syncing reports"><div className="skeleton-line h-[410px]" /><div className="skeleton-line h-[410px]" /><div className="skeleton-line h-[410px]" /></div>
-        : filteredHistory.length ? <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{filteredHistory.map((item) => {
-          const result = results[item.id];
-          const candidate = result?.candidates[0];
-          return <article className="group mission-panel flex min-h-[410px] flex-col p-5 transition duration-300 hover:-translate-y-1 hover:border-cyan-200/25 hover:shadow-[0_28px_80px_rgba(0,0,0,.4),0_0_35px_rgba(103,232,249,.055)] sm:p-6" key={item.id}>
-            <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#eef7f8] p-4 text-slate-900 shadow-[0_16px_35px_rgba(0,0,0,.25)]">
-              <div className="absolute right-0 top-0 h-16 w-16 bg-gradient-to-bl from-cyan-100 to-transparent" />
-              <div className="flex items-center justify-between border-b border-slate-900/10 pb-3"><div className="flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-900"><Orbit className="h-3.5 w-3.5 text-cyan-200" /></span><span className="text-[10px] font-bold uppercase tracking-[0.14em]">ExoVision AI</span></div><span className="font-mono text-[8px] text-slate-500">EV-{item.id.slice(0, 8).toUpperCase()}</span></div>
-              <p className="mt-4 text-[8px] font-bold uppercase tracking-[0.16em] text-cyan-700">Candidate analysis report</p><h3 className="mt-1 truncate text-lg font-bold tracking-tight">{item.filename}</h3>
-              <div className="mt-4 grid grid-cols-3 gap-2"><span className="h-8 rounded bg-slate-900/[0.06]" /><span className="h-8 rounded bg-slate-900/[0.06]" /><span className="h-8 rounded bg-slate-900/[0.06]" /></div><div className="mt-2 h-1.5 w-full rounded bg-slate-900/10" /><div className="mt-1.5 h-1.5 w-3/4 rounded bg-slate-900/10" />
-            </div>
-
-            <dl className="mt-5 grid grid-cols-2 gap-x-5 gap-y-4">
-              {[{ label: "Mission", value: missionFromFilename(item.filename) }, { label: "Target", value: item.filename }, { label: "Generated date", value: new Date(item.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) }, { label: "Classification", value: candidate?.classification ?? "Unavailable" }].map((metadata) => <div className="min-w-0" key={metadata.label}><dt className="telemetry-label">{metadata.label}</dt><dd className="mt-1.5 truncate text-xs font-medium text-slate-300" title={metadata.value}>{metadata.value}</dd></div>)}
-            </dl>
-            <div className="mt-5 flex items-center justify-between rounded-xl border border-white/[0.07] bg-black/20 p-3"><div><p className="telemetry-label">Model score</p><p className="mt-1 font-mono text-lg font-semibold text-white">{candidate ? `${(candidate.confidence * 100).toFixed(1)}%` : "—"}</p></div><div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/[0.06]"><div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-200" style={{ width: `${candidate ? candidate.confidence * 100 : 0}%` }} /></div></div>
-            <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
-              <Link className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-lg border border-cyan-300/25 bg-cyan-300/[0.07] px-3 text-[11px] font-semibold uppercase tracking-wider text-cyan-200 transition hover:bg-cyan-300/[0.12]" href={`/results/${item.id}`}><ExternalLink className="h-3.5 w-3.5" /> View Report</Link>
-              <button className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-lg bg-cyan-200 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-950 transition hover:bg-white disabled:opacity-50" disabled={downloadingId !== null} onClick={() => handleDownload(item.id, item.filename)} type="button">{downloadingId === item.id ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}{downloadingId === item.id ? "Preparing…" : "Download PDF"}</button>
-              <button aria-label={`Export BibTeX citation for ${item.filename}`} className="inline-flex min-h-9 items-center justify-center rounded-lg border border-white/[0.08] px-3 text-slate-500 transition hover:border-cyan-300/20 hover:text-cyan-200" onClick={() => handleBibtexExport(item)} title="Export BibTeX citation" type="button"><BookOpen className="h-3.5 w-3.5" /></button>
-            </div>
-          </article>;
-        })}</div>
-        : <div className="mission-panel p-14 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-300/10 bg-cyan-300/[0.04]"><FileText className="h-6 w-6 text-cyan-300/60" /></span><h2 className="mt-5 font-semibold text-white">No reports in view</h2><p className="mt-2 text-sm text-slate-500">Complete an analysis or adjust the current search filter.</p></div>}
+  return <main className="app-workspace reports-workspace">
+    <header className="reports-header"><div><p className="workspace-kicker">Research outputs</p><h1>Scientific Archive</h1><p>Review completed candidate-screening runs and prepare reproducible evidence packages from persisted results.</p></div><Link href="/upload" className="dashboard-primary-action"><Telescope aria-hidden="true" /> Analyze Observation</Link></header>
+    {loading ? <ReportsSkeleton /> : error ? <ReportsError message={error} retry={() => void load()} /> : page.counts.completed === 0 ? <ReportsEmpty /> : <>
+      <section className="reports-metrics" aria-label="Archive summary">
+        <article><p>Completed analyses</p><strong>{page.counts.completed}</strong><span>Available for report generation</span></article>
+        <article><p>Candidates in view</p><strong>{candidateCount}</strong><span>Within {completed.length} loaded records</span></article>
+        <article><p>Archive coverage</p><strong>{completed.length}<small> / {page.counts.completed}</small></strong><span>Completed records currently loaded</span></article>
+        <article><p>Latest evidence</p><strong className="reports-date-value">{completed[0] ? formatDate(completed[0].updated_at) : "—"}</strong><span>Most recently updated record</span></article>
       </section>
-
-      <footer className="mt-6 flex flex-col gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between"><span className="flex items-center gap-2"><Sparkles className="h-3.5 w-3.5 text-violet-300" /> Reports are generated from persisted pipeline evidence.</span><span className="flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" /> Dates reflect analysis archive records.</span></footer>
-    </main>
-  );
+      <section className="reports-archive" aria-labelledby="archive-heading">
+        <header><div><p className="dashboard-section-label">Evidence registry</p><h2 id="archive-heading">Completed analyses</h2><p>PDFs are generated on demand from stored measurements; no scientific calculations are repeated.</p></div><button type="button" onClick={() => void load()} aria-label="Refresh scientific archive"><RefreshCw aria-hidden="true" /></button></header>
+        <div className="reports-toolbar"><label><span className="sr-only">Search completed analyses</span><Search aria-hidden="true" /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search target, analysis ID, or classification" /></label><div role="group" aria-label="Filter candidate status">{([["all", "All"], ["candidate", "Candidate"], ["no-candidate", "No candidate"]] as const).map(([value, label]) => <button type="button" key={value} className={filter === value ? "is-active" : ""} aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>)}</div></div>
+        {downloadError && <div className="reports-inline-error" role="alert"><AlertCircle aria-hidden="true" /><span>{downloadError}</span><button type="button" onClick={() => setDownloadError(null)}>Dismiss</button></div>}
+        {filtered.length ? <div className="reports-grid">{filtered.map((item) => <ReportCard item={item} busy={downloadingId !== null} downloading={downloadingId === item.id} download={() => void handleDownload(item)} exportCitation={() => exportBibtex(item)} key={item.id} />)}</div> : <div className="reports-no-match"><Search aria-hidden="true" /><h3>No matching evidence records</h3><p>Adjust the search or candidate filter to restore completed analyses.</p><button type="button" onClick={() => { setSearch(""); setFilter("all"); }}>Clear filters</button></div>}
+        <footer><p>Showing {filtered.length} matching records from {completed.length} loaded</p>{hasMore && <button type="button" disabled={loadingMore} onClick={() => void load(page.items.length, true)}>{loadingMore ? <><LoaderCircle className="animate-spin" aria-hidden="true" /> Loading</> : <>Load more analyses <ArrowRight aria-hidden="true" /></>}</button>}</footer>
+      </section>
+    </>}
+  </main>;
 }
+
+function ReportCard({ item, busy, downloading, download, exportCitation }: { item: AnalysisSummaryItem; busy: boolean; downloading: boolean; download: () => void; exportCitation: () => void }) {
+  const candidate = item.candidate_detected === true;
+  return <article className="report-card"><header><span className="report-document-icon"><FileText aria-hidden="true" /></span><div><p>{missionFromFilename(item.filename)} observation</p><h3 title={item.filename}>{item.filename}</h3><code title={item.id}>EV-{item.id.slice(0, 8).toUpperCase()}</code></div><span className={`app-status ${candidate ? "app-status-info" : "app-status-complete"}`}>{candidate ? "Candidate" : "No candidate"}</span></header><dl><div><dt>Classification</dt><dd>{item.classification ?? (candidate ? "Candidate detected" : "No candidate detected")}</dd></div><div><dt>Model score</dt><dd title="Classifier output used for candidate screening; not confirmation probability.">{item.model_score === null ? "—" : `${(item.model_score * 100).toFixed(1)}%`}</dd></div><div><dt>Period</dt><dd>{item.period_days === null ? "—" : `${item.period_days.toFixed(4)} d`}</dd></div><div><dt>Transit depth</dt><dd>{item.depth === null ? "—" : `${(item.depth * 100).toFixed(4)}%`}</dd></div></dl><div className="report-card-provenance"><CheckCircle2 aria-hidden="true" /><span>Completed {formatDate(item.updated_at)}</span><span>Persisted pipeline evidence</span></div><footer><Link href={`/results/${item.id}`}>Inspect result <ArrowRight aria-hidden="true" /></Link><button type="button" onClick={exportCitation} aria-label={`Export BibTeX citation for ${item.filename}`} title="Export BibTeX citation"><BookOpen aria-hidden="true" /></button><button className="report-download" type="button" disabled={busy} onClick={download}>{downloading ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Download aria-hidden="true" />}{downloading ? "Preparing PDF" : "Generate PDF"}</button></footer></article>;
+}
+
+function ReportsSkeleton() { return <div className="reports-loading" role="status" aria-live="polite"><span className="sr-only">Loading scientific archive</span><div className="reports-metrics">{[0, 1, 2, 3].map((item) => <div className="skeleton-line h-32" key={item} />)}</div><div className="reports-grid">{[0, 1, 2].map((item) => <div className="skeleton-line h-80" key={item} />)}</div></div>; }
+function ReportsError({ message, retry }: { message: string; retry: () => void }) { return <section className="dashboard-state" role="alert"><AlertCircle aria-hidden="true" /><h2>Unable to open the scientific archive</h2><p>{message}</p><button type="button" onClick={retry}><RefreshCw aria-hidden="true" /> Try again</button></section>; }
+function ReportsEmpty() { return <section className="observatory-empty reports-evidence-empty"><div className="evidence-document-visual" aria-hidden="true"><span><FileText /></span><i /><i /><i /></div><div className="observatory-empty-copy"><p className="dashboard-section-label">Evidence repository</p><h2>No completed evidence records yet.</h2><p>Completed analyses become archive records here. Scientific PDFs are generated on demand from persisted measurements without rerunning the pipeline.</p><div><Link href="/upload" className="dashboard-primary-action">Analyze Observation <ArrowRight aria-hidden="true" /></Link><Link href="/demo" className="dashboard-secondary-action"><FlaskConical aria-hidden="true" /> Explore Demo</Link></div></div><ol className="observatory-empty-steps" aria-label="Report workflow"><li><span><b>01</b><strong>Complete analysis</strong><small>Produce a persisted scientific result</small></span></li><li><span><b>02</b><strong>Review evidence</strong><small>Inspect candidate measurements and caveats</small></span></li><li><span><b>03</b><strong>Generate report</strong><small>Export PDF and BibTeX on demand</small></span></li></ol></section>; }

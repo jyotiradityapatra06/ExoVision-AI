@@ -1,10 +1,12 @@
 "use client";
 
-import { AlertCircle, ArrowRight, Clock3, FlaskConical, LoaderCircle, RefreshCw, ScanSearch, Telescope } from "lucide-react";
+import { AlertCircle, ArrowRight, FileSearch, FlaskConical, LoaderCircle, RefreshCw, ScanSearch, Telescope, Waves } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { OrbitalSystem } from "@/components/observatory/OrbitalSystem";
+import { useAuth } from "@/contexts/AuthContext";
 import { api, ApiError } from "@/lib/api";
 import type { AnalysisHistoryPage, AnalysisSummaryItem } from "@/types/api";
 
@@ -60,6 +62,7 @@ export default function DashboardPage() {
 }
 
 function Dashboard() {
+  const { user } = useAuth();
   const [page, setPage] = useState<AnalysisHistoryPage>({ items: [], counts: emptyCounts, total: 0, limit: PAGE_SIZE, offset: 0 });
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -102,9 +105,9 @@ function Dashboard() {
 
   return (
     <main className="app-workspace dashboard-workspace">
-      <header className="dashboard-header">
-        <div><p className="workspace-kicker">Observation workspace</p><h1>Dashboard</h1><p>Your observation analyses and candidate-screening activity.</p></div>
-        <div className="dashboard-actions"><Link href="/demo" className="dashboard-secondary-action"><FlaskConical aria-hidden="true" /> Explore Demo</Link><Link href="/upload" className="dashboard-primary-action"><Telescope aria-hidden="true" /> Analyze Observation</Link></div>
+      <header className="dashboard-header dashboard-hero">
+        <div className="dashboard-hero-copy"><p className="workspace-kicker">Observation workspace</p><h1><span>Welcome back,</span>{user?.display_name || "Researcher"}</h1><p>Analyze stellar observations. Detect transit-like signals. Screen candidates with machine learning.</p><div className="dashboard-actions"><Link href="/demo" className="dashboard-secondary-action"><FlaskConical aria-hidden="true" /> Explore Demo</Link><Link href="/upload" className="dashboard-primary-action"><Telescope aria-hidden="true" /> Analyze Observation</Link></div></div>
+        <OrbitalSystem />
       </header>
 
       {loading ? <DashboardSkeleton /> : error ? <DashboardError message={error} retry={() => void load()} /> : page.total === 0 ? <DashboardEmpty /> : <>
@@ -148,5 +151,9 @@ function DashboardError({ message, retry }: { message: string; retry: () => void
 }
 
 function DashboardEmpty() {
-  return <section className="dashboard-state"><span><Clock3 aria-hidden="true" /></span><h2>Begin with a stellar observation.</h2><p>Upload a FITS, CSV, or TXT light curve or explore the bundled demonstration.</p><div><Link href="/upload" className="dashboard-primary-action">Analyze Observation <ArrowRight aria-hidden="true" /></Link><Link href="/demo" className="dashboard-secondary-action">Explore Demo</Link></div></section>;
+  return <section className="observatory-empty dashboard-observation-empty" aria-labelledby="first-observation-heading">
+    <OrbitalSystem compact />
+    <div className="observatory-empty-copy"><p className="dashboard-section-label">First observation</p><h2 id="first-observation-heading">Begin with a stellar light curve.</h2><p>Provide an observation and ExoVision will screen its photometry for periodic transit-like signals. Measurements and evidence will return to this workspace.</p><div><Link href="/upload" className="dashboard-primary-action">Analyze Observation <ArrowRight aria-hidden="true" /></Link><Link href="/demo" className="dashboard-secondary-action">Explore Demo</Link></div></div>
+    <ol className="observatory-empty-steps" aria-label="Observation workflow"><li><Telescope aria-hidden="true" /><span><b>01</b><strong>Provide observation</strong><small>Upload or select a supported light curve</small></span></li><li><Waves aria-hidden="true" /><span><b>02</b><strong>Screen the signal</strong><small>Run the real photometric analysis pipeline</small></span></li><li><FileSearch aria-hidden="true" /><span><b>03</b><strong>Review evidence</strong><small>Inspect measurements, caveats, and reports</small></span></li></ol>
+  </section>;
 }

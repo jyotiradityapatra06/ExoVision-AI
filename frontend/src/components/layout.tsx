@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Navbar } from "@/components/navbar";
+import { ObservatoryBackground } from "@/components/observatory/ObservatoryBackground";
 import { useAuth } from "@/contexts/AuthContext";
 
 const applicationRoutes = ["/dashboard", "/upload", "/datasets", "/demo", "/reports", "/results"];
@@ -28,5 +29,5 @@ export function SiteLayout({ children }: { children: ReactNode }) {
 
   if (!user) return <div className="min-h-screen bg-[#05080d] text-on-surface">{children}</div>;
 
-  return <div className="app-shell"><Navbar /><main className="app-shell-main">{children}</main></div>;
+  return <div className="app-shell"><ObservatoryBackground /><Navbar /><main className="app-shell-main">{children}</main></div>;
 }

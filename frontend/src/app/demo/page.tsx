@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, Database, FlaskConical, LoaderCircle, Play, ScanSearch } from "lucide-react";
+import { ArrowRight, BrainCircuit, Check, Database, FileSearch, FlaskConical, LoaderCircle, Play, ScanSearch } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -81,7 +81,8 @@ function DemoContent() {
         </div>
 
         <aside>
-          <h2>What happens</h2>
+          <p className="dashboard-section-label">Conceptual workflow</p>
+          <h2>From observation to evidence</h2>
           <ol>
             <li>
               <span>
@@ -102,14 +103,19 @@ function DemoContent() {
               </div>
             </li>
             <li>
+              <span><ScanSearch aria-hidden="true" /></span>
+              <div><strong>Search for transit-like signals</strong><p>Box Least Squares evaluates periodic dimming in the light curve.</p></div>
+            </li>
+            <li>
               <span>
-                <ScanSearch aria-hidden="true" />
+                <BrainCircuit aria-hidden="true" />
               </span>
               <div>
-                <strong>Screen the signal</strong>
-                <p>The normal backend stages continue on the processing page.</p>
+                <strong>Screen the candidate</strong>
+                <p>The Random Forest produces candidate-screening output.</p>
               </div>
             </li>
+            <li><span><FileSearch aria-hidden="true" /></span><div><strong>Review scientific evidence</strong><p>Measurements, model evidence, and caveats appear in Results.</p></div></li>
           </ol>
         </aside>
       </section>

@@ -219,9 +219,8 @@ function DatasetExplorer() {
 function MastState({ icon: Icon, title, copy }: { icon: typeof Search; title: string; copy: string }) {
   return (
     <div className="mast-state">
-      <Icon aria-hidden="true" />
-      <h3>{title}</h3>
-      <p>{copy}</p>
+      <div className="mast-catalog-visual" aria-hidden="true"><span /><span /><span /><Icon /></div>
+      <div><p className="dashboard-section-label">MAST catalog query</p><h3>{title}</h3><p>{copy}</p><ul aria-hidden="true"><li>Kepler</li><li>K2</li><li>TESS</li></ul></div>
     </div>
   );
 }

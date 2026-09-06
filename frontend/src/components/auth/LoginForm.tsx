@@ -1,13 +1,11 @@
 "use client";
 
 import { Eye, EyeOff, LoaderCircle, Lock, LogIn, Mail } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 
-import { Button } from "@/components/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { ApiError } from "@/lib/api";
+import { authErrorMessage } from "@/lib/auth-errors";
 
 export function LoginForm() {
   const { login } = useAuth();
@@ -18,85 +16,17 @@ export function LoginForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setBusy(true);
-    setError(null);
+    if (busy) return;
+    setBusy(true); setError(null);
     const data = new FormData(event.currentTarget);
-    try {
-      await login(String(data.get("email")), String(data.get("password")));
-      router.replace("/dashboard");
-    } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : "Authentication failed. Check your credentials.");
-      setBusy(false);
-    }
+    try { await login(String(data.get("email")), String(data.get("password"))); router.replace("/dashboard"); }
+    catch (caught) { setError(authErrorMessage(caught, "login")); setBusy(false); }
   }
 
-  return (
-    <form className="space-y-5" onSubmit={submit}>
-      <div>
-        <label htmlFor="login-email" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
-          Researcher Email Address
-        </label>
-        <div className="relative">
-          <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
-          <input
-            id="login-email"
-            maxLength={254}
-            autoComplete="email"
-            className="w-full rounded-xl border border-cyan-900/40 bg-[#04091a]/90 pl-10 pr-4 py-3 font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400 focus:shadow-cyan-sm"
-            name="email"
-            placeholder="astronomer@observatory.org"
-            required
-            type="email"
-          />
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label htmlFor="login-password" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
-            Access Key / Password
-          </label>
-        </div>
-        <div className="relative">
-          <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-400" />
-          <input
-            id="login-password"
-            maxLength={128}
-            autoComplete="current-password"
-            className="w-full rounded-xl border border-cyan-900/40 bg-[#04091a]/90 pl-10 pr-10 py-3 font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-400 focus:shadow-cyan-sm"
-            name="password"
-            placeholder="••••••••••••"
-            required
-            type={showPassword ? "text" : "password"}
-          />
-          <button
-            aria-label={showPassword ? "Hide password" : "Show password"}
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-3.5 text-slate-400 hover:text-cyan-300"
-          >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <p className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 font-mono text-xs text-rose-200" role="alert">
-          {error}
-        </p>
-      )}
-
-      <Button className="w-full shadow-cyan-glow" disabled={busy} size="lg" type="submit">
-        {busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
-        <span>Authenticate Mission Control</span>
-      </Button>
-
-      <p className="text-center font-mono text-xs text-slate-400 pt-2">
-        New to ExoVision AI?{" "}
-        <Link className="text-cyan-300 font-bold hover:underline" href="/auth/signup">
-          Initialize Account
-        </Link>
-      </p>
-    </form>
-  );
+  return <form className="auth-form" onSubmit={submit} aria-busy={busy}>
+    <div className="auth-field"><label htmlFor="login-email">Email address</label><div><Mail aria-hidden="true" /><input id="login-email" maxLength={254} autoCapitalize="none" autoComplete="email" inputMode="email" name="email" placeholder="researcher@observatory.org" required type="email" /></div></div>
+    <div className="auth-field"><label htmlFor="login-password">Password</label><div><Lock aria-hidden="true" /><input id="login-password" maxLength={128} autoComplete="current-password" name="password" placeholder="Enter your password" required type={showPassword ? "text" : "password"} /><button aria-controls="login-password" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} type="button" onClick={() => setShowPassword((shown) => !shown)}>{showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}</button></div></div>
+    {error && <p className="auth-error" role="alert">{error}</p>}
+    <button className="auth-submit" disabled={busy} type="submit">{busy ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <LogIn aria-hidden="true" />}<span>{busy ? "Signing in…" : "Sign in"}</span></button>
+  </form>;
 }

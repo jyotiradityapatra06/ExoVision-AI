@@ -43,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" data-scroll-behavior="smooth">
       <body className="min-h-screen bg-astro-dark antialiased selection:bg-sky-300 selection:text-slate-950">
         <AuthProvider><SiteLayout>{children}</SiteLayout></AuthProvider>
       </body>

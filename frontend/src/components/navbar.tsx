@@ -2,8 +2,8 @@
 
 import { BarChart3, ChevronRight, Database, FileText, FlaskConical, LogOut, Menu, RadioTower, Telescope, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -41,7 +41,14 @@ function Brand() {
 
 function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
+
+  function signOut() {
+    logout();
+    onNavigate?.();
+    router.replace("/auth/login");
+  }
 
   return (
     <>
@@ -65,7 +72,7 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="app-account">
         <div className="app-account-avatar" aria-hidden="true">{user?.display_name?.slice(0, 1).toUpperCase() ?? "R"}</div>
         <div className="app-account-copy"><strong>{user?.display_name ?? "Researcher"}</strong><span>{user?.email ?? "Authenticated account"}</span></div>
-        <button type="button" onClick={logout} className="app-sign-out" aria-label="Sign out" title="Sign out"><LogOut aria-hidden="true" /></button>
+        <button type="button" onClick={signOut} className="app-sign-out" aria-label="Sign out" title="Sign out"><LogOut aria-hidden="true" /></button>
       </div>
     </>
   );
@@ -74,17 +81,29 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
   const meta = routeMeta.find((route) => route.match(pathname)) ?? { section: "Workspace", title: "ExoVision AI" };
 
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    const closeOnKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setOpen(false); menuButtonRef.current?.focus(); return; }
+      if (event.key !== "Tab" || !drawerRef.current) return;
+      const focusable = [...drawerRef.current.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
     document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("keydown", closeOnKey);
+    requestAnimationFrame(() => drawerRef.current?.querySelector<HTMLElement>("a[href]")?.focus());
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("keydown", closeOnKey);
     };
   }, [open]);
 
@@ -94,14 +113,14 @@ export function Navbar() {
       <header className="app-topbar">
         <div className="app-mobile-brand"><Brand /></div>
         <div className="app-route-context"><span>{meta.section}</span><ChevronRight aria-hidden="true" /><strong>{meta.title}</strong></div>
-        <button type="button" className="app-menu-button" aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+        <button ref={menuButtonRef} type="button" className="app-menu-button" aria-label={open ? "Close navigation menu" : "Open navigation menu"}
           aria-expanded={open} aria-controls="mobile-app-navigation" onClick={() => setOpen((current) => !current)}>
           {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
         </button>
       </header>
       <button type="button" className={`app-drawer-backdrop${open ? " is-open" : ""}`} aria-label="Close navigation menu"
         tabIndex={open ? 0 : -1} onClick={() => setOpen(false)} />
-      <aside id="mobile-app-navigation" className={`app-drawer${open ? " is-open" : ""}`} aria-hidden={!open} inert={!open}>
+      <aside ref={drawerRef} id="mobile-app-navigation" className={`app-drawer${open ? " is-open" : ""}`} aria-hidden={!open} inert={!open} aria-label="Mobile application navigation">
         <NavigationContent onNavigate={() => setOpen(false)} />
       </aside>
     </>

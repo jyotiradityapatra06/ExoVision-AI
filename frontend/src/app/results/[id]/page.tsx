@@ -55,6 +55,7 @@ function ResultsContent({ id }: { id: string }) {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [workflow, setWorkflow] = useState<AnalysisStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState(false);
   const [pollTrigger, setPollTrigger] = useState(0);
@@ -69,6 +70,7 @@ function ResultsContent({ id }: { id: string }) {
         if (!active) return;
         setWorkflow(current);
         setError(null);
+        setErrorStatus(null);
         setLoading(false);
 
         if (current.status === "completed") {
@@ -82,9 +84,8 @@ function ResultsContent({ id }: { id: string }) {
         }
       } catch (caught) {
         if (!active) return;
-        setError(
-          caught instanceof ApiError ? caught.message : "Analysis status could not be retrieved."
-        );
+        setErrorStatus(caught instanceof ApiError ? caught.status : null);
+        setError(caught instanceof ApiError && caught.status === 404 ? "This analysis could not be found or is not available to your account." : caught instanceof ApiError && caught.status === 0 ? "The ExoVision API could not be reached. Check the service and try again." : "Analysis status could not be retrieved safely. Please try again.");
         setLoading(false);
       }
     }
@@ -100,6 +101,7 @@ function ResultsContent({ id }: { id: string }) {
   async function requestStart(retry: boolean) {
     setRetrying(true);
     setError(null);
+    setErrorStatus(null);
     try {
       const accepted = retry ? await api.retryAnalysis(id) : await api.startAnalysis(id);
       setWorkflow((current) =>
@@ -125,7 +127,7 @@ function ResultsContent({ id }: { id: string }) {
   // 1. Initial Loading State
   if (loading) {
     return (
-      <div className="results-state-wrapper">
+      <div className="results-state-wrapper" role="status" aria-live="polite">
         <div className="results-state-card text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center border border-cyan-400/20 bg-cyan-400/5 text-cyan-300">
             <LoaderCircle className="h-6 w-6 animate-spin" aria-hidden="true" />
@@ -142,6 +144,7 @@ function ResultsContent({ id }: { id: string }) {
 
   // 2. Failed State
   if (workflow?.status === "failed" || error) {
+    const unavailable = errorStatus === 404;
     const safeError =
       error || workflow?.error || workflow?.message || "Analysis sequence could not be completed.";
     return (
@@ -152,8 +155,8 @@ function ResultsContent({ id }: { id: string }) {
               <AlertTriangle className="h-6 w-6" aria-hidden="true" />
             </div>
             <div>
-              <p className="results-kicker">ANALYSIS FAILED</p>
-              <h1 className="mt-1">Analysis could not be completed</h1>
+              <p className="results-kicker">{unavailable ? "ANALYSIS UNAVAILABLE" : "ANALYSIS FAILED"}</p>
+              <h1 className="mt-1">{unavailable ? "Analysis is not available" : "Analysis could not be completed"}</h1>
               <p className="results-state-meta">
                 Observation ID: <code>{workflow?.analysis_id || id}</code>
               </p>
@@ -164,12 +167,10 @@ function ResultsContent({ id }: { id: string }) {
             <p>{safeError}</p>
           </div>
 
-          <p className="mt-4 text-xs text-slate-500 leading-relaxed">
-            The photometric pipeline encountered an unrecoverable condition while processing this observation. You may retry the analysis if the pipeline was temporarily interrupted, or inspect the file format.
-          </p>
+          <p className="mt-4 text-xs text-slate-500 leading-relaxed">{unavailable ? "Return to your dashboard to open an analysis owned by the current account." : "The photometric pipeline encountered an unrecoverable condition while processing this observation. You may retry the analysis if the pipeline was temporarily interrupted, or inspect the file format."}</p>
 
           <div className="results-state-actions">
-            {workflow?.retryable !== false && (
+            {!unavailable && workflow?.retryable !== false && (
               <button
                 className="dashboard-primary-action min-h-[42px] px-4"
                 disabled={retrying}
@@ -184,10 +185,10 @@ function ResultsContent({ id }: { id: string }) {
                 <span>{retrying ? "Retrying analysis…" : "Retry analysis"}</span>
               </button>
             )}
-            <Link className="dashboard-secondary-action min-h-[42px] px-4" href="/upload">
+            {!unavailable && <Link className="dashboard-secondary-action min-h-[42px] px-4" href="/upload">
               <FileSearch className="h-4 w-4" aria-hidden="true" />
               <span>Choose another observation</span>
-            </Link>
+            </Link>}
             <Link className="dashboard-secondary-action min-h-[42px] px-4" href="/dashboard">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               <span>Return to dashboard</span>
