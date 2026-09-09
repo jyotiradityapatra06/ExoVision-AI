@@ -9,6 +9,9 @@ export function HeroSection() {
   const [videoAvailable, setVideoAvailable] = useState(true);
 
   useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = true;
+    }
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const updatePlayback = () => {
       if (!videoRef.current) return;
@@ -29,7 +32,7 @@ export function HeroSection() {
       <div className="landing-hero-fallback" aria-hidden="true" />
       {videoAvailable && (
         <video ref={videoRef} aria-hidden="true" autoPlay className="landing-hero-video" loop muted onError={() => setVideoAvailable(false)} playsInline preload="metadata">
-          <source src="/EXOVISION_AI__AI_Assisted_Exop.mp4" type="video/mp4" />
+          <source src="/EXOVISION_AI_AI_Assisted_Expo.mp4" type="video/mp4" />
         </video>
       )}
       <div className="landing-hero-shade" aria-hidden="true" />
