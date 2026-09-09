@@ -17,7 +17,7 @@ export function AuthShell({ children, eyebrow, title, description, alternateHref
   if (loading || user) return <div className="app-session-loading" role="status" aria-live="polite"><span className="app-brand-mark"><LoaderCircle className="animate-spin" aria-hidden="true" /></span><p>{loading ? "Restoring research session" : "Opening research workspace"}</p></div>;
 
   return <main className="auth-shell">
-    <ObservatoryBackground className="observatory-background-auth" />
+    <ObservatoryBackground variant="auth" className="observatory-background-auth" />
     <section className="auth-context" aria-labelledby="auth-product-title">
       <div className="auth-celestial" aria-hidden="true"><span /><span /><i /><svg viewBox="0 0 600 120" preserveAspectRatio="none"><path d="M0 60 C80 57 132 63 202 59 S288 55 320 60 L332 60 L339 88 L347 34 L355 78 L365 60 C430 56 508 64 600 58" /></svg></div>
       <Link href="/" className="auth-brand"><span className="app-brand-mark"><RadioTower aria-hidden="true" /></span><span><strong id="auth-product-title">ExoVision AI</strong><small>Candidate-screening platform</small></span></Link>

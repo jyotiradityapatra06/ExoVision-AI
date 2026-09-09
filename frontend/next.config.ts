@@ -18,6 +18,7 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  devIndicators: false,
   async headers() {
     return [{
       source: "/(.*)",

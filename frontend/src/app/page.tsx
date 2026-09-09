@@ -8,7 +8,7 @@ import { ObservatoryBackground } from "@/components/observatory/ObservatoryBackg
 export default function HomePage() {
   return (
     <main className="landing-page">
-      <ObservatoryBackground className="observatory-background-landing" />
+      <ObservatoryBackground variant="landing" className="observatory-background-landing" />
       <LandingNav />
       <HeroSection />
       <PipelineSection />

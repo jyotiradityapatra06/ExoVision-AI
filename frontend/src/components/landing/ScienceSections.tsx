@@ -51,7 +51,11 @@ export function ScienceSection() {
           <div><p className="landing-kicker">Machine learning</p><h2>Machine learning as a screening layer.</h2><p className="landing-lead">Detected candidates become measurable features evaluated by the bundled Random Forest classifier.</p></div>
           <div className="model-panel">
             <div className="model-panel-header"><BrainCircuit className="h-5 w-5" /><span>Classifier output</span></div>
-            <p className="model-score-label">Model Score</p><div className="model-score"><span>screening</span><i aria-hidden="true" /></div>
+            <p className="model-score-label">Model Score</p>
+            <div className="model-score">
+              <span className="font-mono">0.84</span>
+              <i aria-hidden="true" />
+            </div>
             <dl><div><dt>Period</dt><dd>Orbital interval</dd></div><div><dt>Transit depth</dt><dd>Relative flux change</dd></div><div><dt>Duration</dt><dd>Event width</dd></div><div><dt>Transit SNR</dt><dd>Signal strength</dd></div></dl>
             <p className="model-note">Model score reflects classifier output for candidate screening. It is not a calibrated probability of a confirmed exoplanet.</p>
           </div>

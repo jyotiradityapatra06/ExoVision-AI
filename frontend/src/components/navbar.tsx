@@ -33,8 +33,13 @@ function isActive(pathname: string, href: string) {
 function Brand() {
   return (
     <Link href="/dashboard" className="app-brand" aria-label="ExoVision AI dashboard">
-      <span className="app-brand-mark"><RadioTower aria-hidden="true" /></span>
-      <span className="app-brand-copy"><strong>ExoVision</strong><small>AI Observatory</small></span>
+      <span className="app-brand-mark">
+        <RadioTower className="h-4 w-4 text-stellar-cyan" aria-hidden="true" />
+      </span>
+      <span className="app-brand-copy">
+        <strong className="font-display tracking-tight text-starlight">ExoVision</strong>
+        <small className="font-mono text-[9px] tracking-widest text-muted-slate uppercase">Digital Observatory</small>
+      </span>
     </Link>
   );
 }
@@ -60,9 +65,17 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
             <div>{group.links.map((link) => {
               const active = isActive(pathname, link.href);
               return (
-                <Link className={`app-nav-link${active ? " is-active" : ""}`} href={link.href} key={link.href}
-                  onClick={onNavigate} aria-current={active ? "page" : undefined} title={link.label}>
-                  <link.icon aria-hidden="true" /><span>{link.label}</span>
+                <Link
+                  className={`app-nav-link${active ? " is-active" : ""}`}
+                  href={link.href}
+                  key={link.href}
+                  onClick={onNavigate}
+                  aria-current={active ? "page" : undefined}
+                  title={link.label}
+                >
+                  <span className="app-nav-indicator" aria-hidden="true" />
+                  <link.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>{link.label}</span>
                 </Link>
               );
             })}</div>
@@ -71,8 +84,13 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
       <div className="app-account">
         <div className="app-account-avatar" aria-hidden="true">{user?.display_name?.slice(0, 1).toUpperCase() ?? "R"}</div>
-        <div className="app-account-copy"><strong>{user?.display_name ?? "Researcher"}</strong><span>{user?.email ?? "Authenticated account"}</span></div>
-        <button type="button" onClick={signOut} className="app-sign-out" aria-label="Sign out" title="Sign out"><LogOut aria-hidden="true" /></button>
+        <div className="app-account-copy">
+          <strong>{user?.display_name ?? "Researcher"}</strong>
+          <span>{user?.email ?? "Authenticated account"}</span>
+        </div>
+        <button type="button" onClick={signOut} className="app-sign-out" aria-label="Sign out" title="Sign out">
+          <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
       </div>
     </>
   );
