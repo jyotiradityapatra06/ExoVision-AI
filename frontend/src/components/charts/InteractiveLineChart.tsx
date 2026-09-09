@@ -56,16 +56,23 @@ export function InteractiveLineChart({
 
     const xMinimum = x[0] + (x[pairedLength - 1] - x[0]) * domain[0];
     const xMaximum = x[0] + (x[pairedLength - 1] - x[0]) * domain[1];
-    const points = x
-      .slice(0, pairedLength)
-      .map((value, index) => ({ x: value, y: y[index] }))
-      .filter((point) => point.x >= xMinimum && point.x <= xMaximum && Number.isFinite(point.y));
 
-    if (points.length < 2) return;
+    let yMinimum = Infinity;
+    let yMaximum = -Infinity;
+    let visibleCount = 0;
 
-    const yValues = points.map((point) => point.y);
-    let yMinimum = Math.min(...yValues);
-    let yMaximum = Math.max(...yValues);
+    for (let i = 0; i < pairedLength; i += 1) {
+      const px = x[i];
+      const py = y[i];
+      if (px >= xMinimum && px <= xMaximum && Number.isFinite(py)) {
+        if (py < yMinimum) yMinimum = py;
+        if (py > yMaximum) yMaximum = py;
+        visibleCount += 1;
+      }
+    }
+
+    if (visibleCount < 2 || !Number.isFinite(yMinimum) || !Number.isFinite(yMaximum)) return;
+
     const margin = Math.max((yMaximum - yMinimum) * 0.14, Math.abs(yMaximum) * 0.0005, 1e-8);
     yMinimum -= margin;
     yMaximum += margin;
@@ -102,12 +109,21 @@ export function InteractiveLineChart({
     context.strokeStyle = accent;
     context.lineWidth = 1.5;
     context.beginPath();
-    points.forEach((point, index) => {
-      const horizontal = projectX(point.x);
-      const vertical = projectY(point.y);
-      if (index === 0) context.moveTo(horizontal, vertical);
-      else context.lineTo(horizontal, vertical);
-    });
+    let first = true;
+    for (let i = 0; i < pairedLength; i += 1) {
+      const px = x[i];
+      const py = y[i];
+      if (px >= xMinimum && px <= xMaximum && Number.isFinite(py)) {
+        const horizontal = projectX(px);
+        const vertical = projectY(py);
+        if (first) {
+          context.moveTo(horizontal, vertical);
+          first = false;
+        } else {
+          context.lineTo(horizontal, vertical);
+        }
+      }
+    }
     context.stroke();
     context.restore();
 

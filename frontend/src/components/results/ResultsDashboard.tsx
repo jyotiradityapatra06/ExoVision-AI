@@ -42,9 +42,10 @@ export function ResultsDashboard({
   const displayTarget = filename || analysis.analysis_id;
   const sampleCount = analysis.lightcurve.sample_count;
 
-  // Calculate baseline metrics for lightcurve
-  const timeMin = analysis.lightcurve.time.length > 0 ? Math.min(...analysis.lightcurve.time) : 0;
-  const timeMax = analysis.lightcurve.time.length > 0 ? Math.max(...analysis.lightcurve.time) : 0;
+  // Calculate baseline metrics for lightcurve safely without spread operator stack overflow risks
+  const timeArray = analysis.lightcurve.time;
+  const timeMin = timeArray.length > 0 ? timeArray[0] : 0;
+  const timeMax = timeArray.length > 0 ? timeArray[timeArray.length - 1] : 0;
   const observationDuration = timeMax > timeMin ? (timeMax - timeMin).toFixed(2) : "—";
 
   return (

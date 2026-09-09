@@ -839,10 +839,26 @@ def _finite_or_none(value: Any) -> float | None:
 def _json_safe(value: Any) -> Any:
     if value is None:
         return None
+    if isinstance(value, np.ndarray):
+        if value.ndim == 1:
+            if np.issubdtype(value.dtype, np.integer) or np.issubdtype(value.dtype, np.bool_):
+                return value.tolist()
+            if np.issubdtype(value.dtype, np.floating):
+                if np.all(np.isfinite(value)):
+                    return value.tolist()
+                return [float(x) if np.isfinite(x) else None for x in value]
+        return [_json_safe(item) for item in value.tolist()]
     if isinstance(value, dict):
         return {str(key): _json_safe(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple, np.ndarray)):
-        return [_json_safe(item) for item in list(value)]
+    if isinstance(value, list):
+        if len(value) == 0:
+            return []
+        first = value[0]
+        if isinstance(first, (int, float, str, bool)) and not isinstance(first, np.generic):
+            return value
+        return [_json_safe(item) for item in value]
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
     if isinstance(value, Enum):
         return value.value
     if isinstance(value, np.generic):

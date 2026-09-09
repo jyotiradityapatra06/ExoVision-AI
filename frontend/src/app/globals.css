@@ -18,6 +18,7 @@
     --ice-blue: #7dd3fc;
     --controlled-violet: #8b5cf6;
     --transit-amber: #f59e0b;
+    /* Candidate-screening flag state (indicates candidate flag for review; does not confirm an exoplanet) */
     --candidate-emerald: #10b981;
     --secondary-slate: #94a3b8;
     --muted-slate: #64748b;
@@ -908,8 +909,256 @@
   .dashboard-hero .orbital-system { min-height: 145px; opacity: .72; }
   .dashboard-hero .dashboard-actions { display: grid; grid-template-columns: 1fr; }
 }
+/* ======================================================================
+   PHASE 2: FIRST CONTACT — CINEMATIC LANDING, AUTH, AND OBSERVATORY CONSOLE
+   ====================================================================== */
+
+/* 1. Landing Hero Cinematic Masking & Alignment */
+.landing-hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 32%;
+  opacity: 0.72;
+  filter: contrast(1.12) brightness(0.88);
+}
+
+.landing-hero-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: 
+    radial-gradient(ellipse at 68% 36%, rgba(3, 6, 10, 0.22) 0%, rgba(3, 6, 10, 0.78) 60%, #03060a 100%),
+    linear-gradient(90deg, rgba(3, 6, 10, 0.98) 0%, rgba(3, 6, 10, 0.88) 45%, rgba(3, 6, 10, 0.25) 85%),
+    linear-gradient(0deg, #03060a 0%, transparent 22%, rgba(3, 6, 10, 0.35) 100%);
+}
+
+.landing-hero-motif {
+  margin-top: 2rem;
+  padding: 1rem 1.25rem;
+  border-radius: 4px;
+  border: 1px solid rgba(27, 42, 64, 0.7);
+  background: rgba(6, 11, 18, 0.75);
+  backdrop-filter: blur(8px);
+}
+
+/* 2. Observation -> Signal -> Evidence Section */
+.ose-section {
+  position: relative;
+  padding-block: clamp(5rem, 8vw, 7.5rem);
+  border-bottom: 1px solid rgba(27, 42, 64, 0.6);
+  background: linear-gradient(180deg, #03060a 0%, #060b12 50%, #03060a 100%);
+}
+
+.ose-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 3.5rem;
+}
+
+@media (min-width: 960px) {
+  .ose-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ose-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid rgba(27, 42, 64, 0.8);
+  background: linear-gradient(145deg, rgba(11, 19, 32, 0.85), rgba(6, 11, 18, 0.95));
+  padding: 1.75rem 1.5rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.ose-card:hover {
+  border-color: rgba(56, 189, 248, 0.35);
+  transform: translateY(-2px);
+}
+
+.ose-step-num {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--stellar-cyan);
+}
+
+.ose-title {
+  margin-top: 0.5rem;
+  font-family: var(--font-display, sans-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--starlight);
+}
+
+.ose-desc {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--secondary-slate);
+}
+
+.ose-visual {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid rgba(27, 42, 64, 0.6);
+  background: rgba(3, 6, 10, 0.8);
+}
+
+/* 3. Auth Layout Mobile-First & Split View */
+@media (max-width: 899px) {
+  .auth-shell {
+    grid-template-columns: 1fr !important;
+    min-height: 100svh;
+  }
+  .auth-context {
+    min-height: auto !important;
+    padding: 1.25rem 1.25rem 0.5rem !important;
+    border-bottom: 0 !important;
+  }
+  .auth-context-copy,
+  .auth-assurance,
+  .auth-celestial {
+    display: none !important;
+  }
+  .auth-panel {
+    min-height: auto !important;
+    padding: 0.75rem 1.25rem 2.5rem !important;
+    align-items: flex-start !important;
+  }
+  .auth-panel-inner {
+    max-width: 100% !important;
+  }
+}
+
+/* 4. Observatory Console Dashboard */
+.obs-console-header {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--obs-border);
+}
+
+.obs-console-title {
+  font-family: var(--font-display, sans-serif);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--starlight);
+}
+
+.obs-console-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.obs-aperture-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 44px;
+  padding: 0.65rem 1.4rem;
+  border-radius: 4px;
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  background: linear-gradient(180deg, #f0fbff 0%, #c4edf8 100%);
+  color: #03060a;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.22), inset 0 1px 0 #ffffff;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.obs-aperture-cta:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 35px rgba(56, 189, 248, 0.4), inset 0 1px 0 #ffffff;
+}
+
+.obs-instrument-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin-top: 1.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--obs-border);
+  background: var(--obs-border);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .obs-instrument-strip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.obs-instrument-chip {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.15rem 1.25rem;
+  background: var(--obs-deep);
+  transition: background 0.16s ease;
+}
+
+.obs-instrument-chip:hover {
+  background: var(--obs-surface);
+}
+
+.obs-chip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.obs-chip-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-slate);
+}
+
+.obs-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.obs-chip-value {
+  margin-top: 0.75rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 1.85rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--starlight);
+  font-variant-numeric: tabular-nums;
+}
+
+.obs-chip-sub {
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--secondary-slate);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .star-layer,.orbital-ring,.app-workspace > header,.app-workspace > section,.results-workspace > header,.results-workspace > section,.workspace-kicker,.auth-context-copy > *,.auth-panel-inner > *,.intake-dropzone::before,.demo-intake ol::after,.mast-catalog-visual,.auth-celestial>span { animation: none !important; }
-  .dashboard-metrics article,.reports-metrics article,.results-metric-card,.app-nav-link svg { transition: none; }
-  .dashboard-metrics article:hover,.reports-metrics article:hover,.results-metric-card:hover,.app-nav-link:hover svg { transform: none; }
+  .dashboard-metrics article,.reports-metrics article,.results-metric-card,.app-nav-link svg,.ose-card,.obs-aperture-cta { transition: none !important; }
+  .dashboard-metrics article:hover,.reports-metrics article:hover,.results-metric-card:hover,.app-nav-link:hover svg,.ose-card:hover,.obs-aperture-cta:hover { transform: none !important; }
 }

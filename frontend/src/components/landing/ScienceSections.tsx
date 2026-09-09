@@ -1,12 +1,12 @@
 import { Activity, Binary, BrainCircuit, FileSearch, ScanLine } from "lucide-react";
 
 const pipeline = [
-  ["01", "Observation", "FITS / CSV / TXT"],
-  ["02", "Preprocess", "Clean · Normalize · Detrend"],
-  ["03", "BLS search", "Periodic transit search"],
-  ["04", "Candidate", "Period · Duration · Depth · SNR"],
-  ["05", "ML screening", "Random Forest"],
-  ["06", "Evidence", "Measurements · Model score · Report"],
+  ["01", "Observation Intake", "FITS · CSV · TXT · NASA MAST"],
+  ["02", "Light-Curve Prep", "Clean · Normalize · Detrend"],
+  ["03", "BLS Transit Search", "Box Least Squares periodic search"],
+  ["04", "Candidate Metrics", "Period · Duration · Depth · SNR"],
+  ["05", "ML Screening", "Random Forest classifier"],
+  ["06", "Evidence Review", "Diagnostics · Caveats · PDF Export"],
 ];
 
 export function PipelineSection() {
@@ -14,8 +14,8 @@ export function PipelineSection() {
     <section className="landing-section border-b border-white/[0.07]" id="capabilities">
       <div className="landing-shell">
         <div className="landing-heading-grid">
-          <div><p className="landing-kicker">The analysis path</p><h2>From starlight to evidence.</h2></div>
-          <p>A stellar light curve contains changes in brightness over time. ExoVision processes that observation, searches for periodic transit-like signals, extracts candidate measurements, and uses machine learning to assist candidate screening.</p>
+          <div><p className="landing-kicker">The analysis pipeline</p><h2>From starlight to evidence.</h2></div>
+          <p>A stellar light curve records changes in brightness over time. ExoVision prepares observations, searches for periodic transit-like dips using Box Least Squares, extracts candidate measurements, and evaluates them with a machine learning screening layer.</p>
         </div>
         <ol className="pipeline-sequence" aria-label="ExoVision analysis pipeline">
           {pipeline.map(([number, title, detail]) => (
@@ -45,19 +45,19 @@ export function ScienceSection() {
   return (
     <section className="landing-section" id="science">
       <div className="landing-shell">
-        <div className="max-w-3xl"><p className="landing-kicker">Signal analysis</p><h2>Search for the repeating shadow.</h2><p className="landing-lead">When an orbiting object crosses its host star, measured brightness may decrease periodically. ExoVision uses Box Least Squares to search for repeating box-shaped transit-like signals. A detection is evidence to inspect—not confirmation of a planet.</p></div>
+        <div className="max-w-3xl"><p className="landing-kicker">Signal analysis</p><h2>Search for the repeating shadow.</h2><p className="landing-lead">When an orbiting object crosses its host star, measured brightness may decrease periodically. ExoVision uses Box Least Squares to search for repeating box-shaped transit-like signals. A detection is candidate evidence to inspect—not confirmation of an exoplanet.</p></div>
         <div className="mt-14"><TransitChart /></div>
         <div className="science-columns mt-24">
-          <div><p className="landing-kicker">Machine learning</p><h2>Machine learning as a screening layer.</h2><p className="landing-lead">Detected candidates become measurable features evaluated by the bundled Random Forest classifier.</p></div>
+          <div><p className="landing-kicker">Machine learning</p><h2>Machine learning as a screening layer.</h2><p className="landing-lead">Detected candidates become measurable astrophysical features evaluated by the bundled Random Forest classifier.</p></div>
           <div className="model-panel">
-            <div className="model-panel-header"><BrainCircuit className="h-5 w-5" /><span>Classifier output</span></div>
-            <p className="model-score-label">Model Score</p>
+            <div className="model-panel-header"><BrainCircuit className="h-5 w-5" /><span>Illustrative Classifier Output (Sample Benchmark)</span></div>
+            <p className="model-score-label">Classifier Screening Score</p>
             <div className="model-score">
               <span className="font-mono">0.84</span>
               <i aria-hidden="true" />
             </div>
             <dl><div><dt>Period</dt><dd>Orbital interval</dd></div><div><dt>Transit depth</dt><dd>Relative flux change</dd></div><div><dt>Duration</dt><dd>Event width</dd></div><div><dt>Transit SNR</dt><dd>Signal strength</dd></div></dl>
-            <p className="model-note">Model score reflects classifier output for candidate screening. It is not a calibrated probability of a confirmed exoplanet.</p>
+            <p className="model-note">Representative Random Forest classifier score from sample training benchmark. Model scores assist candidate screening; they are not calibrated probabilities of a confirmed exoplanet.</p>
           </div>
         </div>
       </div>

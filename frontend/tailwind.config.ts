@@ -69,6 +69,7 @@ const config: Config = {
         "ice-blue": "#7DD3FC",
         "controlled-violet": "#8B5CF6",
         "transit-amber": "#F59E0B",
+        // Candidate-screening flag state (indicates candidate flag for review; does not confirm an exoplanet)
         "candidate-emerald": "#10B981",
         "muted-slate": "#64748B",
         "secondary-slate": "#94A3B8",

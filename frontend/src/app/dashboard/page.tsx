@@ -96,23 +96,74 @@ function Dashboard() {
 
   const active = useMemo(() => page.items.filter((item) => item.status === "processing"), [page.items]);
   const hasMore = page.items.length < page.total;
-  const metrics = [
-    { label: "Total analyses", value: page.counts.total, note: "All observation runs" },
-    { label: "Completed", value: page.counts.completed, note: "Finished pipeline runs" },
-    { label: "Processing", value: page.counts.processing, note: "Currently active" },
-    { label: "Failed", value: page.counts.failed, note: "Visible for review" },
-  ];
 
   return (
     <main className="app-workspace dashboard-workspace">
-      <header className="dashboard-header dashboard-hero">
-        <div className="dashboard-hero-copy"><p className="workspace-kicker">Observation workspace</p><h1><span>Welcome back,</span>{user?.display_name || "Researcher"}</h1><p>Analyze stellar observations. Detect transit-like signals. Screen candidates with machine learning.</p><div className="dashboard-actions"><Link href="/demo" className="dashboard-secondary-action"><FlaskConical aria-hidden="true" /> Explore Demo</Link><Link href="/upload" className="dashboard-primary-action"><Telescope aria-hidden="true" /> Analyze Observation</Link></div></div>
-        <OrbitalSystem />
+      {/* Observatory Console Header */}
+      <header className="obs-console-header">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-sm border border-cyan-400/25 bg-cyan-950/30 px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-[0.14em] text-cyan-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_6px_#38bdf8]" />
+            Observatory Console · Session Active
+          </div>
+          <h1 className="obs-console-title mt-2">
+            {user?.display_name ? `${user.display_name}’s Workspace` : "Research Workspace"}
+          </h1>
+          <p className="mt-1 text-xs text-slate-400">
+            AI-assisted exoplanet candidate screening from stellar light-curve observations.
+          </p>
+        </div>
+
+        {/* Primary Action Zone */}
+        <div className="obs-console-actions">
+          <Link href="/demo" className="btn-secondary">
+            <FlaskConical className="h-3.5 w-3.5 text-cyan-400" aria-hidden="true" /> Explore Demo
+          </Link>
+          <Link href="/upload" className="obs-aperture-cta">
+            <Telescope className="h-4 w-4 text-cyan-950" aria-hidden="true" />
+            <span>Analyze Observation</span>
+          </Link>
+        </div>
       </header>
 
       {loading ? <DashboardSkeleton /> : error ? <DashboardError message={error} retry={() => void load()} /> : page.total === 0 ? <DashboardEmpty /> : <>
-        <section className="dashboard-metrics" aria-label="Analysis summary">
-          {metrics.map((metric) => <article key={metric.label}><p>{metric.label}</p><strong>{metric.value}</strong><span>{metric.note}</span></article>)}
+        {/* Compact Instrument Status Strip */}
+        <section className="obs-instrument-strip" aria-label="Analysis summary">
+          <article className="obs-instrument-chip">
+            <div className="obs-chip-header">
+              <span className="obs-chip-label">Total Observations</span>
+              <span className="obs-chip-dot bg-slate-400" />
+            </div>
+            <strong className="obs-chip-value">{page.counts.total}</strong>
+            <span className="obs-chip-sub">Registered runs</span>
+          </article>
+
+          <article className="obs-instrument-chip">
+            <div className="obs-chip-header">
+              <span className="obs-chip-label">Completed</span>
+              <span className="obs-chip-dot bg-emerald-400 shadow-[0_0_6px_#10b981]" />
+            </div>
+            <strong className="obs-chip-value text-emerald-300">{page.counts.completed}</strong>
+            <span className="obs-chip-sub">Screening complete</span>
+          </article>
+
+          <article className="obs-instrument-chip">
+            <div className="obs-chip-header">
+              <span className="obs-chip-label">Processing</span>
+              <span className="obs-chip-dot bg-sky-400 shadow-[0_0_6px_#38bdf8] animate-pulse" />
+            </div>
+            <strong className="obs-chip-value text-sky-300">{page.counts.processing}</strong>
+            <span className="obs-chip-sub">Active pipeline runs</span>
+          </article>
+
+          <article className="obs-instrument-chip">
+            <div className="obs-chip-header">
+              <span className="obs-chip-label">Failed</span>
+              <span className="obs-chip-dot bg-amber-400" />
+            </div>
+            <strong className="obs-chip-value text-amber-300">{page.counts.failed}</strong>
+            <span className="obs-chip-sub">Requires review</span>
+          </article>
         </section>
 
         {active.length > 0 && <section className="dashboard-active" aria-labelledby="active-analysis-heading">

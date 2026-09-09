@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import logging
 import re
+import threading
 import time
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -16,6 +18,50 @@ MAST_INVOKE_URL = "https://mast.stsci.edu/api/v0/invoke"
 MAST_DOWNLOAD_URL = "https://mast.stsci.edu/api/v0.1/Download/file"
 logger = logging.getLogger(__name__)
 MAX_MAST_RESPONSE_BYTES = 2 * 1024 * 1024
+
+
+class _MastSearchCache:
+    """Thread-safe, bounded in-process LRU + TTL cache for public MAST search metadata."""
+
+    def __init__(self, maxsize: int = 128, ttl_seconds: float = 600.0) -> None:
+        self.maxsize = maxsize
+        self.ttl_seconds = ttl_seconds
+        self._lock = threading.Lock()
+        self._cache: OrderedDict[
+            tuple[str, tuple[str, ...], int], tuple[float, list[dict[str, Any]]]
+        ] = OrderedDict()
+
+    def get(
+        self, key: tuple[str, tuple[str, ...], int]
+    ) -> list[dict[str, Any]] | None:
+        with self._lock:
+            if key not in self._cache:
+                return None
+            timestamp, results = self._cache[key]
+            if time.monotonic() - timestamp > self.ttl_seconds:
+                del self._cache[key]
+                return None
+            self._cache.move_to_end(key)
+            return [dict(item) for item in results]
+
+    def set(
+        self,
+        key: tuple[str, tuple[str, ...], int],
+        results: list[dict[str, Any]],
+    ) -> None:
+        with self._lock:
+            if key in self._cache:
+                self._cache.move_to_end(key)
+            elif len(self._cache) >= self.maxsize:
+                self._cache.popitem(last=False)
+            self._cache[key] = (time.monotonic(), [dict(item) for item in results])
+
+    def clear(self) -> None:
+        with self._lock:
+            self._cache.clear()
+
+
+_search_cache = _MastSearchCache(maxsize=128, ttl_seconds=600.0)
 
 
 class _MastRedirectHandler(HTTPRedirectHandler):
@@ -40,16 +86,39 @@ class MastServiceError(RuntimeError):
 class MastService:
     """Search MAST observations and retrieve light-curve product metadata."""
 
-    def __init__(self, *, timeout: float = 20.0, attempts: int = 2) -> None:
+    def __init__(self, *, timeout: float = 30.0, attempts: int = 2) -> None:
         self.timeout = timeout
         self.attempts = max(1, attempts)
 
+    @staticmethod
+    def clear_search_cache() -> None:
+        """Clear cached public search metadata."""
+        _search_cache.clear()
+
     def search(
-        self, target: str, missions: tuple[str, ...], *, limit: int = 20
+        self,
+        target: str,
+        missions: tuple[str, ...],
+        *,
+        limit: int = 20,
+        use_cache: bool = True,
     ) -> list[dict[str, Any]]:
         target = target.strip()
         if not target:
             return []
+        normalized_missions = tuple(sorted(m.upper() for m in missions))
+        cache_key = (target.lower(), normalized_missions, limit)
+        if use_cache:
+            cached = _search_cache.get(cache_key)
+            if cached is not None:
+                logger.info(
+                    "MAST cache hit: target=%s missions=%s limit=%d",
+                    target,
+                    ",".join(missions),
+                    limit,
+                )
+                return cached
+
         request = {
             "service": "Mast.Name.Lookup",
             "params": {"input": target, "format": "json"},
@@ -86,7 +155,7 @@ class MastService:
         observations_by_id = {
             str(row.get("obsid")): row for row in selected if row.get("obsid")
         }
-        product_observation_ids = list(observations_by_id)[:50]
+        product_observation_ids = list(observations_by_id)[:15]
         products = self._products(",".join(product_observation_ids))
         logger.info("Products found: %d target=%s", len(products), target)
         results: list[dict[str, Any]] = []
@@ -123,6 +192,8 @@ class MastService:
             if len(results) >= limit:
                 break
         logger.info("Light curve FITS files: %d target=%s", fits_count, target)
+        if use_cache and results:
+            _search_cache.set(cache_key, results)
         return results
 
     def _tess_target_id(

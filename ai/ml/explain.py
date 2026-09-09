@@ -83,18 +83,24 @@ class CandidateExplainer:
             raise ValueError("top_n must be a positive integer.")
         self.classifier = classifier
         self.top_n = min(top_n, len(ML_FEATURE_NAMES))
-
-    def rank_feature_importance(self) -> list[dict[str, float | str]]:
-        """Return the model's highest global impurity-based importances."""
         importances = self.classifier.estimator.feature_importances_
+        self._importance_lookup = {
+            name: float(imp)
+            for name, imp in zip(ML_FEATURE_NAMES, importances, strict=True)
+        }
         ranked = sorted(
             zip(ML_FEATURE_NAMES, importances, strict=True),
             key=lambda item: (-float(item[1]), item[0]),
         )
-        return [
+        self._ranked_importance = [
             {"feature": name, "importance": float(importance)}
             for name, importance in ranked[: self.top_n]
         ]
+        self._ranked_names = [item["feature"] for item in self._ranked_importance]
+
+    def rank_feature_importance(self) -> list[dict[str, float | str]]:
+        """Return the model's highest global impurity-based importances."""
+        return [dict(item) for item in self._ranked_importance]
 
     def get_feature_importance(self) -> list[dict[str, float | str]]:
         """Alias exposing the top-ranked model feature importances."""
@@ -124,20 +130,9 @@ class CandidateExplainer:
         )
 
         contributions: list[dict[str, Any]] = []
-        importance_lookup = dict(
-            zip(
-                ML_FEATURE_NAMES,
-                self.classifier.estimator.feature_importances_,
-                strict=True,
-            )
-        )
-        ranked_names = sorted(
-            ML_FEATURE_NAMES,
-            key=lambda name: (-float(importance_lookup[name]), name),
-        )[: self.top_n]
-        for name in ranked_names:
+        for name in self._ranked_names:
             direction, strength = _direction(name, complete, class_id)
-            importance = float(importance_lookup[name])
+            importance = self._importance_lookup[name]
             signed_score = importance * strength
             if direction == "negative":
                 signed_score *= -1.0
