@@ -3,6 +3,7 @@ import type { AnalysisHistoryItem, AnalysisHistoryPage, AnalysisResponse, Analys
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 const DEFAULT_TIMEOUT_MS = 15_000;
+const MAST_SEARCH_TIMEOUT_MS = 60_000;
 const DOWNLOAD_TIMEOUT_MS = 30_000;
 
 export class ApiError extends Error {
@@ -117,7 +118,7 @@ export const api = {
     }
     return response.blob();
   },
-  searchDatasets: (target: string, mission: "all" | "kepler" | "tess") => request<DatasetSearchResult[]>(`/api/v1/datasets/search?target=${encodeURIComponent(target)}&mission=${mission}`, { cache: "no-store" }),
+  searchDatasets: (target: string, mission: "all" | "kepler" | "tess") => request<DatasetSearchResult[]>(`/api/v1/datasets/search?target=${encodeURIComponent(target)}&mission=${mission}`, { cache: "no-store" }, MAST_SEARCH_TIMEOUT_MS),
   downloadDataset: (dataUri: string, filename: string) => downloadFile(`/api/v1/datasets/download?data_uri=${encodeURIComponent(dataUri)}`, filename),
   downloadDemoDataset: () => downloadFile("/api/v1/datasets/demo", "exoplanet_demo_transit.fits"),
 };

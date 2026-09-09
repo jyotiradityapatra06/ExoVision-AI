@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowRight, CalendarDays, Database, FileArchive, LoaderCircle, Search, Telescope } from "lucide-react";
+import { ArrowRight, CalendarDays, Database, FileArchive, LoaderCircle, RotateCcw, Search, Telescope, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, ReactNode, useState } from "react";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ObservationSources } from "@/components/observation-sources";
@@ -11,6 +11,7 @@ import { api, ApiError } from "@/lib/api";
 import type { DatasetSearchResult } from "@/types/api";
 
 type Mission = "all" | "kepler" | "tess";
+type SearchState = "initial" | "loading" | "success-with-results" | "success-empty" | "error";
 export default function DatasetsPage() { return <ProtectedRoute><DatasetExplorer /></ProtectedRoute>; }
 
 function DatasetExplorer() {
@@ -18,22 +19,26 @@ function DatasetExplorer() {
   const [target, setTarget] = useState("");
   const [mission, setMission] = useState<Mission>("all");
   const [results, setResults] = useState<DatasetSearchResult[]>([]);
-  const [searched, setSearched] = useState(false);
-  const [searching, setSearching] = useState(false);
+  const [searchState, setSearchState] = useState<SearchState>("initial");
   const [importing, setImporting] = useState<string | null>(null);
   const [stage, setStage] = useState<IntakeStage>("idle");
   const [error, setError] = useState<string | null>(null);
 
   async function search(event: FormEvent) {
     event.preventDefault();
+    await runSearch();
+  }
+
+  async function runSearch() {
     const normalized = target.trim();
-    if (!normalized || searching) return;
-    setSearching(true);
-    setSearched(true);
+    if (!normalized || searchState === "loading") return;
+    setSearchState("loading");
     setError(null);
     setResults([]);
     try {
-      setResults(await api.searchDatasets(normalized, mission));
+      const found = await api.searchDatasets(normalized, mission);
+      setResults(found);
+      setSearchState(found.length > 0 ? "success-with-results" : "success-empty");
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 429) {
         if (typeof caught.retryAfter === "number" && caught.retryAfter > 0) {
@@ -44,12 +49,15 @@ function DatasetExplorer() {
           setError("MAST search is temporarily rate limited. Wait briefly before searching again.");
         }
       } else if (caught instanceof ApiError) {
-        setError(caught.message);
+        setError(
+          caught.status === 0 && caught.message.includes("timed out")
+            ? "NASA archive search timed out. The archive did not respond within the allowed time. Try the search again."
+            : caught.message,
+        );
       } else {
         setError("The MAST archive could not be searched safely.");
       }
-    } finally {
-      setSearching(false);
+      setSearchState("error");
     }
   }
 
@@ -109,8 +117,8 @@ function DatasetExplorer() {
             <option value="tess">TESS</option>
           </select>
         </label>
-        <button type="submit" disabled={searching || !target.trim()}>
-          {searching ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Search aria-hidden="true" />}
+        <button type="submit" disabled={searchState === "loading" || !target.trim()}>
+          {searchState === "loading" ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Search aria-hidden="true" />}
           Search MAST
         </button>
       </form>
@@ -119,7 +127,7 @@ function DatasetExplorer() {
         Search by a catalog identifier, common target name, or supported mission object ID. ExoVision is independent and is not endorsed by NASA.
       </p>
 
-      {error && (
+      {error && searchState !== "error" && (
         <div className="intake-error" role="alert">
           {error}
         </div>
@@ -131,27 +139,34 @@ function DatasetExplorer() {
             <p className="dashboard-section-label">Public archive</p>
             <h2 id="mast-results-heading">Observation products</h2>
           </div>
-          {searched && !searching && (
+          {(searchState === "success-with-results" || searchState === "success-empty") && (
             <span>
               {results.length} compatible {results.length === 1 ? "product" : "products"}
             </span>
           )}
         </header>
 
-        {searching ? (
+        {searchState === "loading" ? (
           <div className="mast-loading" role="status">
             <span className="sr-only">Searching NASA MAST</span>
             {[0, 1, 2].map((item) => (
               <div className="skeleton-line" key={item} />
             ))}
           </div>
-        ) : !searched ? (
+        ) : searchState === "initial" ? (
           <MastState
             icon={Search}
             title="Search supported public observations"
             copy="Enter a target and choose Kepler/K2, TESS, or all supported missions."
           />
-        ) : results.length === 0 ? (
+        ) : searchState === "error" ? (
+          <MastState
+            icon={TriangleAlert}
+            title="Archive search unavailable"
+            copy={error ?? "The archive search could not be completed. Try the search again."}
+            action={<button type="button" className="mast-retry" onClick={() => void runSearch()}><RotateCcw aria-hidden="true" /> Retry search</button>}
+          />
+        ) : searchState === "success-empty" ? (
           <MastState
             icon={Telescope}
             title="No compatible light curves found"
@@ -216,11 +231,11 @@ function DatasetExplorer() {
   );
 }
 
-function MastState({ icon: Icon, title, copy }: { icon: typeof Search; title: string; copy: string }) {
+function MastState({ icon: Icon, title, copy, action }: { icon: typeof Search; title: string; copy: string; action?: ReactNode }) {
   return (
     <div className="mast-state">
       <div className="mast-catalog-visual" aria-hidden="true"><span /><span /><span /><Icon /></div>
-      <div><p className="dashboard-section-label">MAST catalog query</p><h3>{title}</h3><p>{copy}</p><ul aria-hidden="true"><li>Kepler</li><li>K2</li><li>TESS</li></ul></div>
+      <div><p className="dashboard-section-label">MAST catalog query</p><h3>{title}</h3><p>{copy}</p>{action}<ul aria-hidden="true"><li>Kepler</li><li>K2</li><li>TESS</li></ul></div>
     </div>
   );
 }
