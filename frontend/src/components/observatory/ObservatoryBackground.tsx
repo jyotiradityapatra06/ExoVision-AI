@@ -16,45 +16,23 @@ export function ObservatoryBackground({
   className?: string;
   variant?: AtmosphereVariant;
 }) {
-  // Results view requires deep optical black without distracting drifting stars so photometric charts dominate
-  const isResults = variant === "results";
-  const isUpload = variant === "upload";
-  const isDatasets = variant === "datasets";
-  const isDemo = variant === "demo";
-  const isLanding = variant === "landing";
-  const isAuth = variant === "auth";
-
   return (
     <div
-      className={`observatory-background obs-variant-${variant} ${className}`.trim()}
+      className={`observatory-background obs-variant-${variant} pointer-events-none fixed inset-0 z-0 overflow-hidden ${className}`.trim()}
       aria-hidden="true"
     >
-      {/* Deep optical haze - suppressed on results workbench */}
-      {!isResults && <span className="observatory-nebula" />}
+      {/* Subtle top spotlight reminiscent of Linear/Vercel */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[340px] bg-gradient-to-b from-sky-500/[0.04] via-cyan-500/[0.015] to-transparent blur-3xl pointer-events-none" />
 
-      {/* Sparse star layers - excluded on results to keep charts pristine */}
-      {!isResults && (
-        <>
-          <span className="star-layer star-layer-far" />
-          {(isLanding || isAuth || variant === "dashboard") && (
-            <span className="star-layer star-layer-mid" />
-          )}
-        </>
-      )}
-
-      {/* Astronomical geometry depending on route context */}
-      {(isLanding || isAuth || variant === "dashboard") && (
-        <span className="observatory-coordinate-arc" />
-      )}
-
-      {/* Instrument reticle markers for observation intake */}
-      {isUpload && <span className="observatory-reticle-grid" />}
-
-      {/* Catalog celestial coordinate grid for MAST datasets */}
-      {isDatasets && <span className="observatory-catalog-grid" />}
-
-      {/* Signal pathway vector illumination for Demo */}
-      {isDemo && <span className="observatory-signal-grid" />}
+      {/* Subtle Cartesian dot grid */}
+      <div
+        className="absolute inset-0 opacity-[0.035] pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
     </div>
   );
 }
+

@@ -69,7 +69,15 @@ const config: Config = {
         "ice-blue": "#7DD3FC",
         "controlled-violet": "#8B5CF6",
         "transit-amber": "#F59E0B",
-        // Candidate-screening flag state (indicates candidate flag for review; does not confirm an exoplanet)
+        // Modern DSO / Linear-style tokens
+        "surface-void": "#030508",
+        "surface-base": "#090a0f",
+        "surface-panel": "#0e111a",
+        "surface-raised": "#141824",
+        "surface-overlay": "#1a2030",
+        "border-subtle": "rgba(255, 255, 255, 0.08)",
+        "border-medium": "rgba(255, 255, 255, 0.15)",
+        "border-prominent": "rgba(56, 189, 248, 0.28)",
         "candidate-emerald": "#10B981",
         "muted-slate": "#64748B",
         "secondary-slate": "#94A3B8",

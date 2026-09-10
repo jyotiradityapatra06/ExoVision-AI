@@ -7,7 +7,7 @@ const sources = [
   { href: "/demo", label: "Demo", icon: FlaskConical },
 ];
 
-export function ObservationSources({ current }: { current: "/upload" | "/datasets" | "/demo" }) {
+export function ObservationSources({ current }: { current: "/upload" | "/upload/local" | "/datasets" | "/demo" }) {
   return (
     <nav className="intake-sources" aria-label="Observation source">
       {sources.map((source) => (

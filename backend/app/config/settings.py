@@ -17,7 +17,7 @@ def _cors_origins() -> tuple[str, ...]:
     """Parse the JSON-encoded CORS origin list."""
     raw_origins = getenv(
         "BACKEND_CORS_ORIGINS",
-        '["http://localhost:3000"]',
+        '["http://localhost:3000", "http://127.0.0.1:3000"]',
     )
     try:
         parsed = json.loads(raw_origins)

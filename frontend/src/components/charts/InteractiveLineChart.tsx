@@ -1,7 +1,7 @@
 "use client";
 
-import { RotateCcw, ZoomIn } from "lucide-react";
-import { PointerEvent, WheelEvent, useEffect, useRef, useState } from "react";
+import { Minus, Plus, RotateCcw } from "lucide-react";
+import { PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type InteractiveLineChartProps = {
   x: number[];
@@ -9,6 +9,10 @@ type InteractiveLineChartProps = {
   xLabel: string;
   yLabel: string;
   accent?: string;
+  renderMode?: "line" | "scatter" | "both";
+  modelX?: number[];
+  modelY?: number[];
+  modelAccent?: string;
   zoom?: boolean;
 };
 
@@ -16,12 +20,77 @@ type Tooltip = { left: number; top: number; x: number; y: number };
 
 const PADDING = { left: 62, right: 24, top: 22, bottom: 44 };
 
+// Largest-Triangle-Three-Buckets (LTTB) downsampling algorithm for high-performance astronomical scatter rendering
+function downsampleLTTB(x: number[], y: number[], threshold: number): [number[], number[]] {
+  const dataLength = Math.min(x.length, y.length);
+  if (threshold >= dataLength || threshold <= 2) return [x, y];
+
+  const sampledX: number[] = new Array(threshold);
+  const sampledY: number[] = new Array(threshold);
+  let sampledIndex = 0;
+
+  const every = (dataLength - 2) / (threshold - 2);
+  let a = 0;
+  sampledX[sampledIndex] = x[a];
+  sampledY[sampledIndex] = y[a];
+  sampledIndex++;
+
+  for (let i = 0; i < threshold - 2; i++) {
+    let avgX = 0;
+    let avgY = 0;
+    const avgRangeStart = Math.floor((i + 1) * every) + 1;
+    let avgRangeEnd = Math.floor((i + 2) * every) + 1;
+    avgRangeEnd = avgRangeEnd < dataLength ? avgRangeEnd : dataLength;
+    const avgRangeLength = avgRangeEnd - avgRangeStart;
+
+    for (let j = avgRangeStart; j < avgRangeEnd; j++) {
+      avgX += x[j];
+      avgY += y[j];
+    }
+    avgX /= avgRangeLength || 1;
+    avgY /= avgRangeLength || 1;
+
+    let rangeOffs = Math.floor(i * every) + 1;
+    const rangeTo = Math.floor((i + 1) * every) + 1;
+    const pointAX = x[a];
+    const pointAY = y[a];
+
+    let maxArea = -1;
+    let maxAreaIndex = rangeOffs;
+
+    for (; rangeOffs < rangeTo; rangeOffs++) {
+      const area = Math.abs(
+        (pointAX - avgX) * (y[rangeOffs] - pointAY) -
+          (pointAX - x[rangeOffs]) * (avgY - pointAY)
+      ) * 0.5;
+      if (area > maxArea) {
+        maxArea = area;
+        maxAreaIndex = rangeOffs;
+      }
+    }
+
+    sampledX[sampledIndex] = x[maxAreaIndex];
+    sampledY[sampledIndex] = y[maxAreaIndex];
+    sampledIndex++;
+    a = maxAreaIndex;
+  }
+
+  sampledX[sampledIndex] = x[dataLength - 1];
+  sampledY[sampledIndex] = y[dataLength - 1];
+
+  return [sampledX, sampledY];
+}
+
 export function InteractiveLineChart({
   x,
   y,
   xLabel,
   yLabel,
-  accent = "#00f0ff",
+  accent = "#38bdf8",
+  renderMode = "both",
+  modelX,
+  modelY,
+  modelAccent = "#38bdf8",
   zoom = false,
 }: InteractiveLineChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,7 +98,15 @@ export function InteractiveLineChart({
   const [size, setSize] = useState({ width: 700, height: 320 });
   const [domain, setDomain] = useState<[number, number]>([0, 1]);
   const [tooltip, setTooltip] = useState<Tooltip | null>(null);
-  const pairedLength = Math.min(x.length, y.length);
+
+  const [filteredX, filteredY] = useMemo(() => {
+    if (x.length > 2500) {
+      return downsampleLTTB(x, y, 2500);
+    }
+    return [x, y];
+  }, [x, y]);
+
+  const pairedLength = Math.min(filteredX.length, filteredY.length);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -54,16 +131,16 @@ export function InteractiveLineChart({
     context.scale(ratio, ratio);
     context.clearRect(0, 0, size.width, size.height);
 
-    const xMinimum = x[0] + (x[pairedLength - 1] - x[0]) * domain[0];
-    const xMaximum = x[0] + (x[pairedLength - 1] - x[0]) * domain[1];
+    const xMinimum = filteredX[0] + (filteredX[pairedLength - 1] - filteredX[0]) * domain[0];
+    const xMaximum = filteredX[0] + (filteredX[pairedLength - 1] - filteredX[0]) * domain[1];
 
     let yMinimum = Infinity;
     let yMaximum = -Infinity;
     let visibleCount = 0;
 
     for (let i = 0; i < pairedLength; i += 1) {
-      const px = x[i];
-      const py = y[i];
+      const px = filteredX[i];
+      const py = filteredY[i];
       if (px >= xMinimum && px <= xMaximum && Number.isFinite(py)) {
         if (py < yMinimum) yMinimum = py;
         if (py > yMaximum) yMaximum = py;
@@ -84,14 +161,14 @@ export function InteractiveLineChart({
     const projectY = (value: number) =>
       PADDING.top + (1 - (value - yMinimum) / (yMaximum - yMinimum || 1)) * plotHeight;
 
-    // Draw Technical Outer Frame
+    // Outer Frame
     context.strokeStyle = "rgba(255, 255, 255, 0.08)";
     context.lineWidth = 1;
     context.strokeRect(PADDING.left, PADDING.top, plotWidth, plotHeight);
 
-    // Draw Horizontal Grid Ticks
+    // Horizontal Grid Ticks
     context.fillStyle = "#64748b";
-    context.font = "10px monospace";
+    context.font = "10px JetBrains Mono, monospace";
     for (let index = 0; index <= 4; index += 1) {
       const horizontal = PADDING.top + (plotHeight * index) / 4;
       context.beginPath();
@@ -100,134 +177,189 @@ export function InteractiveLineChart({
       context.strokeStyle = "rgba(255, 255, 255, 0.04)";
       context.stroke();
       const label = (yMaximum - ((yMaximum - yMinimum) * index) / 4).toFixed(4);
-      context.fillText(label, 6, horizontal + 3);
+      context.fillText(label, 8, horizontal + 3);
     }
 
-    // Draw Plot Line - crisp, restrained scientific stroke
-    context.save();
-    context.shadowBlur = 0;
-    context.strokeStyle = accent;
-    context.lineWidth = 1.5;
-    context.beginPath();
-    let first = true;
-    for (let i = 0; i < pairedLength; i += 1) {
-      const px = x[i];
-      const py = y[i];
-      if (px >= xMinimum && px <= xMaximum && Number.isFinite(py)) {
-        const horizontal = projectX(px);
-        const vertical = projectY(py);
-        if (first) {
-          context.moveTo(horizontal, vertical);
-          first = false;
-        } else {
-          context.lineTo(horizontal, vertical);
+    // Vertical Grid Ticks
+    for (let index = 0; index <= 4; index += 1) {
+      const xVal = xMinimum + ((xMaximum - xMinimum) * index) / 4;
+      const vertical = PADDING.left + (plotWidth * index) / 4;
+      context.beginPath();
+      context.moveTo(vertical, PADDING.top);
+      context.lineTo(vertical, size.height - PADDING.bottom);
+      context.strokeStyle = "rgba(255, 255, 255, 0.04)";
+      context.stroke();
+      context.fillText(xVal.toFixed(2), vertical - 12, size.height - 14);
+    }
+
+    // Render Data Points (Scatter Dots)
+    if (renderMode === "scatter" || renderMode === "both") {
+      context.fillStyle = accent;
+      for (let i = 0; i < pairedLength; i += 1) {
+        const px = filteredX[i];
+        const py = filteredY[i];
+        if (px >= xMinimum && px <= xMaximum && Number.isFinite(py)) {
+          const horizontal = projectX(px);
+          const vertical = projectY(py);
+          context.beginPath();
+          context.arc(horizontal, vertical, 1.4, 0, Math.PI * 2);
+          context.fill();
         }
       }
     }
-    context.stroke();
-    context.restore();
+
+    // Render Line Connection (if line or both)
+    if (renderMode === "line" || (renderMode === "both" && pairedLength < 300)) {
+      context.strokeStyle = accent;
+      context.lineWidth = 1.2;
+      context.beginPath();
+      let first = true;
+      for (let i = 0; i < pairedLength; i += 1) {
+        const px = filteredX[i];
+        const py = filteredY[i];
+        if (px >= xMinimum && px <= xMaximum && Number.isFinite(py)) {
+          const horizontal = projectX(px);
+          const vertical = projectY(py);
+          if (first) {
+            context.moveTo(horizontal, vertical);
+            first = false;
+          } else {
+            context.lineTo(horizontal, vertical);
+          }
+        }
+      }
+      context.stroke();
+    }
+
+    // Render Theoretical Transit Model Curve (Overlay)
+    if (modelX && modelY && modelX.length > 2) {
+      context.save();
+      context.strokeStyle = modelAccent;
+      context.lineWidth = 2.0;
+      context.beginPath();
+      let mFirst = true;
+      const mLen = Math.min(modelX.length, modelY.length);
+      for (let i = 0; i < mLen; i++) {
+        const mx = modelX[i];
+        const my = modelY[i];
+        if (mx >= xMinimum && mx <= xMaximum && Number.isFinite(my)) {
+          const h = projectX(mx);
+          const v = projectY(my);
+          if (mFirst) {
+            context.moveTo(h, v);
+            mFirst = false;
+          } else {
+            context.lineTo(h, v);
+          }
+        }
+      }
+      context.stroke();
+      context.restore();
+    }
 
     // Axis Labels
     context.fillStyle = "#94a3b8";
-    context.fillText(xMinimum.toFixed(2), PADDING.left, size.height - 18);
-    context.fillText(xMaximum.toFixed(2), size.width - PADDING.right - 44, size.height - 18);
-    context.fillText(xLabel, size.width / 2 - 20, size.height - 5);
+    context.font = "11px Inter, sans-serif";
+    context.fillText(xLabel, size.width / 2 - 30, size.height - 2);
 
     context.save();
-    context.translate(14, size.height / 2 + 20);
+    context.translate(14, size.height / 2 + 30);
     context.rotate(-Math.PI / 2);
     context.fillText(yLabel, 0, 0);
     context.restore();
-  }, [accent, domain, pairedLength, size, x, xLabel, y, yLabel]);
+  }, [domain, filteredX, filteredY, pairedLength, size, accent, renderMode, modelX, modelY, modelAccent, xLabel, yLabel]);
 
-  function move(event: PointerEvent<HTMLCanvasElement>) {
-    if (pairedLength === 0) return;
+  function handlePointer(event: PointerEvent<HTMLDivElement>) {
     const bounds = event.currentTarget.getBoundingClientRect();
-    const position = Math.max(
-      0,
-      Math.min(
-        1,
-        (event.clientX - bounds.left - PADDING.left) /
-          Math.max(1, bounds.width - PADDING.left - PADDING.right)
-      )
-    );
-    const fraction = domain[0] + position * (domain[1] - domain[0]);
-    const index = Math.min(pairedLength - 1, Math.max(0, Math.round(fraction * (pairedLength - 1))));
+    const plotWidth = size.width - PADDING.left - PADDING.right;
+    const rawLeft = event.clientX - bounds.left;
+    if (rawLeft < PADDING.left || rawLeft > size.width - PADDING.right) {
+      setTooltip(null);
+      return;
+    }
+
+    const xMin = filteredX[0] + (filteredX[pairedLength - 1] - filteredX[0]) * domain[0];
+    const xMax = filteredX[0] + (filteredX[pairedLength - 1] - filteredX[0]) * domain[1];
+    const ratio = (rawLeft - PADDING.left) / (plotWidth || 1);
+    const targetX = xMin + (xMax - xMin) * ratio;
+
+    let closestIndex = 0;
+    let smallestDelta = Infinity;
+    for (let index = 0; index < pairedLength; index += 1) {
+      const delta = Math.abs(filteredX[index] - targetX);
+      if (delta < smallestDelta) {
+        smallestDelta = delta;
+        closestIndex = index;
+      }
+    }
+
     setTooltip({
-      left: event.clientX - bounds.left,
-      top: event.clientY - bounds.top,
-      x: x[index],
-      y: y[index],
+      left: rawLeft,
+      top: Math.max(12, Math.min(size.height - 70, event.clientY - bounds.top - 50)),
+      x: filteredX[closestIndex],
+      y: filteredY[closestIndex],
     });
   }
 
-  function wheel(event: WheelEvent<HTMLCanvasElement>) {
-    if (!zoom) return;
-    event.preventDefault();
-    const width = domain[1] - domain[0];
-    const nextWidth = Math.min(1, Math.max(0.06, width * (event.deltaY > 0 ? 1.25 : 0.8)));
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const anchor = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
-    const center = domain[0] + anchor * width;
-    let start = center - anchor * nextWidth;
-    start = Math.max(0, Math.min(1 - nextWidth, start));
-    setDomain([start, start + nextWidth]);
+  function handleZoom(factor: number) {
+    setDomain(([start, end]) => {
+      const center = (start + end) / 2;
+      const span = (end - start) * factor;
+      const half = Math.max(0.02, span / 2);
+      return [Math.max(0, center - half), Math.min(1, center + half)];
+    });
   }
 
-  if (pairedLength < 2) {
-    return (
-      <div className="flex h-[320px] items-center justify-center font-mono text-xs text-slate-500">
-        Photometric telemetry data unavailable for plotting.
-      </div>
-    );
+  function handleReset() {
+    setDomain([0, 1]);
+    setTooltip(null);
   }
 
   return (
-    <div className="relative font-mono" ref={containerRef}>
-      {zoom && domain[1] - domain[0] < 1 && (
-        <button
-          className="absolute right-3 top-3 z-10 flex items-center gap-1.5 border border-white/15 bg-[#060a0f]/90 px-2.5 py-1 text-[11px] font-mono text-slate-300 hover:border-cyan-300/40 hover:text-white transition"
-          onClick={() => setDomain([0, 1])}
-          type="button"
-        >
-          <RotateCcw className="h-3 w-3" />
-          <span>Reset Zoom</span>
-        </button>
-      )}
-
-      <canvas
-        aria-label={`${yLabel} plotted against ${xLabel}`}
-        className={zoom ? "cursor-crosshair" : ""}
-        onPointerLeave={() => setTooltip(null)}
-        onPointerMove={move}
-        onWheel={wheel}
-        ref={canvasRef}
-        role="img"
-      />
-
-      {tooltip && (
-        <div
-          className="pointer-events-none absolute border border-white/10 bg-[#060a0f]/95 px-3 py-2 text-xs font-mono shadow-xl"
-          style={{
-            left: Math.min(tooltip.left + 12, size.width - 160),
-            top: Math.max(10, tooltip.top - 58),
-          }}
-        >
-          <p className="text-slate-400 text-[11px]">
-            {xLabel}: <span className="text-white font-semibold">{tooltip.x.toFixed(4)}</span>
-          </p>
-          <p className="mt-0.5 text-slate-400 text-[11px]">
-            {yLabel}: <span className="text-cyan-300 font-semibold">{tooltip.y.toFixed(6)}</span>
-          </p>
+    <div
+      ref={containerRef}
+      className="relative w-full overflow-hidden select-none"
+      onPointerMove={handlePointer}
+      onPointerLeave={() => setTooltip(null)}
+    >
+      {zoom && (
+        <div className="absolute top-2 right-4 z-10 flex items-center gap-1 rounded-md border border-white/[0.08] bg-[#0c1017]/90 p-0.5 backdrop-blur-sm">
+          <button
+            type="button"
+            className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-white/10 hover:text-white transition"
+            title="Zoom in"
+            onClick={() => handleZoom(0.7)}
+          >
+            <Plus className="h-3 w-3" />
+          </button>
+          <button
+            type="button"
+            className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-white/10 hover:text-white transition"
+            title="Zoom out"
+            onClick={() => handleZoom(1.3)}
+          >
+            <Minus className="h-3 w-3" />
+          </button>
+          <button
+            type="button"
+            className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-white/10 hover:text-white transition"
+            title="Reset view"
+            onClick={handleReset}
+          >
+            <RotateCcw className="h-3 w-3" />
+          </button>
         </div>
       )}
 
-      {zoom && (
-        <div className="mt-2 flex items-center justify-between text-[10px] font-mono text-slate-500">
-          <span className="flex items-center gap-1 text-slate-400">
-            <ZoomIn className="h-3 w-3 text-cyan-400/70" /> Scroll on canvas to zoom · Drag crosshair to inspect
-          </span>
-          <span>Domain: {(domain[0] * 100).toFixed(0)}%–{(domain[1] * 100).toFixed(0)}%</span>
+      <canvas ref={canvasRef} className="block w-full" />
+
+      {tooltip && (
+        <div
+          className="pointer-events-none absolute z-20 rounded border border-white/[0.12] bg-[#090d14]/95 px-2.5 py-1.5 font-mono text-[11px] text-white shadow-xl backdrop-blur-md"
+          style={{ left: `${tooltip.left + 12}px`, top: `${tooltip.top}px` }}
+        >
+          <div className="text-slate-400">Time: <span className="text-white">{tooltip.x.toFixed(4)} d</span></div>
+          <div className="text-slate-400">Flux: <span className="text-cyan-300">{tooltip.y.toFixed(5)}</span></div>
         </div>
       )}
     </div>

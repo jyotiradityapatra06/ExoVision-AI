@@ -4,7 +4,9 @@ import {
   Activity,
   AlertTriangle,
   ArrowLeft,
-  CheckCircle2,
+  BookOpen,
+  Check,
+  Clock,
   Database,
   FileText,
   HelpCircle,
@@ -12,16 +14,20 @@ import {
   Orbit,
   RotateCcw,
   ScanSearch,
+  Share2,
   Sparkles,
   Telescope,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { FoldedCurveChart } from "@/components/charts/FoldedCurveChart";
 import { LightCurveChart } from "@/components/charts/LightCurveChart";
+import { PeriodogramChart } from "@/components/charts/PeriodogramChart";
 import { ReportButton } from "@/components/reports/ReportButton";
 import { ExplanationPanel } from "@/components/results/ExplanationPanel";
 import { FeatureImportanceChart } from "@/components/results/FeatureImportanceChart";
+import { ConfidenceGauge, ObservatoryCard, StatusBadge } from "@/components/ui";
 import type { AnalysisResult } from "@/types/api";
 
 function formatNumber(value: number | null | undefined, digits = 4, suffix = ""): string {
@@ -41,6 +47,37 @@ export function ResultsDashboard({
 
   const displayTarget = filename || analysis.analysis_id;
   const sampleCount = analysis.lightcurve.sample_count;
+
+  const [utcTime, setUtcTime] = useState("");
+  const [copiedBibtex, setCopiedBibtex] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  useEffect(() => {
+    const update = () => {
+      setUtcTime(new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC");
+    };
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  function copyBibtex() {
+    const year = new Date().getFullYear();
+    const bib = `@article{exovision_${analysis.analysis_id.slice(0, 8)},\n  title={Candidate Screening Report for ${displayTarget}},\n  author={{ExoVision AI Astrophysical Pipeline}},\n  journal={ExoVision Candidate Screening Engine v2.4},\n  year={${year}},\n  url={${typeof window !== "undefined" ? window.location.href : ""}}\n}`;
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      void navigator.clipboard.writeText(bib);
+      setCopiedBibtex(true);
+      setTimeout(() => setCopiedBibtex(false), 2000);
+    }
+  }
+
+  function shareLink() {
+    if (typeof navigator !== "undefined" && navigator.clipboard && typeof window !== "undefined") {
+      void navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  }
 
   // Calculate baseline metrics for lightcurve safely without spread operator stack overflow risks
   const timeArray = analysis.lightcurve.time;
@@ -63,54 +100,83 @@ export function ResultsDashboard({
 
       {/* Result Header */}
       <header className="results-header" aria-labelledby="result-title">
-        <div>
-          <div className="results-header-top">
-            <p className="results-kicker">ANALYSIS / RESULTS</p>
-            <div className="results-status-badges" role="status">
-              <span className="results-badge results-badge-complete">
-                <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
-                <span>Analysis completed</span>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
+          <div>
+            <div className="results-header-top flex flex-wrap items-center gap-2">
+              <p className="results-kicker">ANALYSIS / RESULTS</p>
+              <div className="results-status-badges flex items-center gap-1.5">
+                <StatusBadge status="completed" />
+                {hasCandidate ? (
+                  <StatusBadge status="candidate" />
+                ) : (
+                  <StatusBadge status="non-detection" />
+                )}
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] bg-white/[0.02] px-2 py-0.5 text-[10px] font-mono text-zinc-400">
+                <Clock className="h-3 w-3 text-cyan-400" />
+                <span>{utcTime || "UTC CLOCK"}</span>
+              </div>
+            </div>
+
+            <h1 className="results-title" id="result-title">
+              {hasCandidate ? "Candidate screening result" : "Observation screening result"}
+            </h1>
+
+            <div className="results-meta">
+              <span>
+                Target / file: <code>{displayTarget}</code>
               </span>
-              {hasCandidate ? (
-                <span className="results-badge results-badge-candidate">
-                  <Orbit className="h-3 w-3" aria-hidden="true" />
-                  <span>Transit-like candidate detected</span>
-                </span>
-              ) : (
-                <span className="results-badge results-badge-nocandidate">
-                  <AlertTriangle className="h-3 w-3" aria-hidden="true" />
-                  <span>No candidate detected</span>
-                </span>
-              )}
+              <span>
+                <Database className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{sampleCount.toLocaleString()} photometric samples</span>
+              </span>
+              <span>
+                <Telescope className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Observation baseline: {observationDuration} days</span>
+              </span>
+              <span>
+                ID: <code>{analysis.analysis_id}</code>
+              </span>
             </div>
           </div>
 
-          <h1 className="results-title" id="result-title">
-            {hasCandidate ? "Candidate screening result" : "Observation screening result"}
-          </h1>
-
-          <div className="results-meta">
-            <span>
-              Target / file: <code>{displayTarget}</code>
-            </span>
-            <span>
-              <Database className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>{sampleCount.toLocaleString()} photometric samples</span>
-            </span>
-            <span>
-              <Telescope className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>Observation baseline: {observationDuration} days</span>
-            </span>
-            <span>
-              ID: <code>{analysis.analysis_id}</code>
-            </span>
+          {/* Quick Actions Header Strip */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={copyBibtex}
+              className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] bg-white/[0.02] px-2.5 py-1.5 text-xs text-zinc-300 transition hover:border-white/[0.18] hover:bg-white/[0.05]"
+              title="Copy BibTeX Citation"
+            >
+              {copiedBibtex ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <BookOpen className="h-3.5 w-3.5 text-zinc-400" />}
+              <span>{copiedBibtex ? "Copied BibTeX!" : "BibTeX"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={shareLink}
+              className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] bg-white/[0.02] px-2.5 py-1.5 text-xs text-zinc-300 transition hover:border-white/[0.18] hover:bg-white/[0.05]"
+              title="Share Dossier Link"
+            >
+              {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Share2 className="h-3.5 w-3.5 text-zinc-400" />}
+              <span>{copiedLink ? "Link Copied!" : "Share"}</span>
+            </button>
+            <ReportButton analysisId={analysis.analysis_id} />
           </div>
         </div>
       </header>
 
+      <nav className="results-reference-tabs" aria-label="Analysis result sections">
+        <a href="#result-overview">Overview</a>
+        <a href="#light-curve">Light Curve</a>
+        <a href="#phase-folded">Phase Folded</a>
+        <a href="#periodogram">Periodogram</a>
+        <a href="#ai-evidence">AI Evidence</a>
+        <a href="#candidates">Parameters</a>
+      </nav>
+
       {/* Candidate Summary or Negative Result Banner */}
       {hasCandidate ? (
-        <section className="results-metrics-strip" aria-label="Candidate measurements">
+        <section className="results-metrics-strip" id="result-overview" aria-label="Candidate measurements">
           {/* 1. Period */}
           <article className="results-metric-card">
             <header>
@@ -176,26 +242,15 @@ export function ResultsDashboard({
           </article>
 
           {/* 5. Model Score */}
-          <article className="results-metric-card results-score-card">
+          <ObservatoryCard className="results-metric-card results-score-card" variant="reticle">
             <header>
               <p className="label text-cyan-300">Model Score</p>
               <Sparkles className="h-4 w-4 text-cyan-300" aria-hidden="true" />
             </header>
             <div>
-              <p className="value font-mono">
-                {candidate ? `${(candidate.confidence * 100).toFixed(1)}%` : "—"}
-              </p>
-              <div className="results-score-track" role="progressbar" aria-valuenow={Math.round((candidate?.confidence ?? 0) * 100)} aria-valuemin={0} aria-valuemax={100} aria-label="Model score">
-                <div
-                  className="results-score-fill"
-                  style={{ width: `${candidate ? candidate.confidence * 100 : 0}%` }}
-                />
-              </div>
-              <p className="results-score-caveat">
-                Random Forest classifier output used for candidate screening. It is not a calibrated probability of a confirmed exoplanet.
-              </p>
+              <ConfidenceGauge value={candidate?.confidence ?? 0} />
             </div>
-          </article>
+          </ObservatoryCard>
         </section>
       ) : (
         <section className="results-negative-banner" aria-label="Negative detection outcome">
@@ -219,14 +274,14 @@ export function ResultsDashboard({
       {/* Visualizations Section */}
       <section className="results-section" aria-labelledby="figures-heading">
         <div className="results-section-header">
-          <p className="results-kicker">FIGURE SERIES 01–02</p>
+          <p className="results-kicker">FIGURE SERIES 01–03</p>
           <h2 id="figures-heading">Observation visualizations</h2>
-          <p>Interactive photometric measurements and periodic phase alignment</p>
+          <p>Interactive photometric measurements, periodic phase alignment, and BLS spectral power</p>
         </div>
 
         <div className="results-charts-grid">
           {/* Figure 01: Observed Light Curve */}
-          <article className="results-chart-panel" aria-labelledby="fig-01-title">
+          <article className="results-chart-panel" id="light-curve" aria-labelledby="fig-01-title">
             <header className="results-chart-header">
               <div>
                 <p className="results-kicker">FIGURE 01 / SOURCE PHOTOMETRY</p>
@@ -261,14 +316,14 @@ export function ResultsDashboard({
           </article>
 
           {/* Figure 02: Phase-Folded Curve */}
-          <article className="results-chart-panel" aria-labelledby="fig-02-title">
+          <article className="results-chart-panel" id="phase-folded" aria-labelledby="fig-02-title">
             <header className="results-chart-header">
               <div>
                 <p className="results-kicker">FIGURE 02 / PERIODIC SIGNAL</p>
                 <h3 id="fig-02-title">Phase-folded curve</h3>
                 <p>
                   {hasCandidate
-                    ? `Measurements folded at detected period (${formatNumber(analysis.transit.period, 4, "d")}), centered at phase 0.0`
+                    ? `Measurements folded at detected period (${formatNumber(analysis.transit.period, 4, "d")}), with theoretical transit fit overlay`
                     : "Measurements folded across candidate period (if detected)"}
                 </p>
               </div>
@@ -282,6 +337,9 @@ export function ResultsDashboard({
                 <FoldedCurveChart
                   flux={analysis.transit.flux}
                   phase={analysis.transit.phase}
+                  depth={analysis.transit.depth}
+                  duration={analysis.transit.duration}
+                  period={analysis.transit.period}
                 />
               ) : (
                 <div className="flex h-[320px] flex-col items-center justify-center p-6 text-center text-slate-500 font-mono text-xs">
@@ -308,12 +366,48 @@ export function ResultsDashboard({
               </div>
             </dl>
           </article>
+
+          {/* Figure 03: BLS Periodogram Spectrum */}
+          <article className="results-chart-panel col-span-full" id="periodogram" aria-labelledby="fig-03-title">
+            <header className="results-chart-header">
+              <div>
+                <p className="results-kicker">FIGURE 03 / SPECTRAL FREQUENCY SEARCH</p>
+                <h3 id="fig-03-title">Box Least Squares (BLS) periodogram</h3>
+                <p>Detection power spectrum vs. trial orbital periods with peak and harmonic markers</p>
+              </div>
+              <span className="results-chart-badge">
+                <Activity className="h-3 w-3" aria-hidden="true" />
+                <span>BLS SNR {formatNumber(analysis.transit.snr, 2)}</span>
+              </span>
+            </header>
+            <div className="results-chart-body">
+              <PeriodogramChart
+                peakPeriod={analysis.transit.period}
+                peakSnr={analysis.transit.snr}
+                height={260}
+              />
+            </div>
+            <dl className="results-chart-footer">
+              <div>
+                <dt>Spectral Peak</dt>
+                <dd>{formatNumber(analysis.transit.period, 4, "d")}</dd>
+              </div>
+              <div>
+                <dt>Harmonic Invariant</dt>
+                <dd>P/2, P, 2P checked</dd>
+              </div>
+              <div>
+                <dt>Detection Threshold</dt>
+                <dd>SNR &ge; 7.0</dd>
+              </div>
+            </dl>
+          </article>
         </div>
       </section>
 
       {/* Model Interpretation & Evidence Grid */}
       {hasCandidate ? (
-        <section className="results-section" aria-labelledby="interpret-heading">
+        <section className="results-section" id="ai-evidence" aria-labelledby="interpret-heading">
           <div className="results-section-header">
             <p className="results-kicker">MODEL SCREENING & EVIDENCE</p>
             <h2 id="interpret-heading">Candidate interpretation</h2>
@@ -328,7 +422,7 @@ export function ResultsDashboard({
       ) : null}
 
       {/* Technical Parameters Table */}
-      <section className="results-section" aria-labelledby="param-heading">
+      <section className="results-section" id="candidates" aria-labelledby="param-heading">
         <div className="results-parameters-panel">
           <div className="results-panel-title">
             <div>

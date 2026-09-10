@@ -66,8 +66,12 @@ export default function RootLayout({
       lang="en"
       className={`dark ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       data-scroll-behavior="smooth"
+      suppressHydrationWarning
     >
-      <body className="min-h-screen bg-obs-void text-starlight antialiased selection:bg-sky-500/30 selection:text-white">
+      <body
+        className="min-h-screen bg-obs-void text-starlight antialiased selection:bg-sky-500/30 selection:text-white"
+        suppressHydrationWarning
+      >
         <AuthProvider><SiteLayout>{children}</SiteLayout></AuthProvider>
       </body>
     </html>
