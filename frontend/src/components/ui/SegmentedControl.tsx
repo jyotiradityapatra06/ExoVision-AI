@@ -24,7 +24,7 @@ export function SegmentedControl<T extends string>({
 }: SegmentedControlProps<T>) {
   return (
     <div
-      className={`inline-flex items-center gap-1 rounded-lg border border-white/[0.08] bg-[#0c1017] p-1 ${className}`.trim()}
+      className={`inline-flex items-center gap-1 rounded border border-stone-300/80 bg-stone-100/80 p-0.5 ${className}`.trim()}
       role="tablist"
       aria-label={ariaLabel}
     >
@@ -38,10 +38,10 @@ export function SegmentedControl<T extends string>({
             aria-selected={active}
             type="button"
             onClick={() => onChange(item.id)}
-            className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 font-mono text-xs font-medium transition-colors ${
+            className={`inline-flex items-center gap-2 rounded px-3 py-1 font-mono text-xs font-medium transition-all ${
               active
-                ? "bg-white/10 text-white shadow-sm"
-                : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+                ? "bg-white text-stone-900 shadow-sm border border-stone-200/80"
+                : "text-stone-500 hover:text-stone-900 border border-transparent"
             }`}
           >
             {Icon && <Icon className="h-3.5 w-3.5 shrink-0 opacity-70" />}
@@ -49,7 +49,7 @@ export function SegmentedControl<T extends string>({
             {item.count !== undefined && (
               <span
                 className={`rounded px-1.5 py-0.2 text-[10px] ${
-                  active ? "bg-white/15 text-white" : "bg-white/[0.05] text-slate-400"
+                  active ? "bg-stone-100 text-stone-900" : "bg-stone-200/60 text-stone-500"
                 }`}
               >
                 {item.count}

@@ -67,11 +67,11 @@ export function FoldedCurveChart({
 
   return (
     <InteractiveLineChart
-      accent="#38bdf8"
+      accent="#0284c7"
       renderMode="scatter"
       modelX={modelX}
       modelY={modelY}
-      modelAccent="#f59e0b"
+      modelAccent="#d97706"
       x={phase}
       xLabel="Orbital Phase (-0.5 to +0.5)"
       y={flux}

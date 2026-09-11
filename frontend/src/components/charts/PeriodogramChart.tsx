@@ -97,7 +97,7 @@ export function PeriodogramChart({
     const projY = (val: number) => PADDING.top + (1 - val / yMax) * plotH;
 
     // Outer boundary & Grid
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.strokeStyle = "rgba(15, 23, 42, 0.12)";
     ctx.lineWidth = 1;
     ctx.strokeRect(PADDING.left, PADDING.top, plotW, plotH);
 
@@ -110,7 +110,7 @@ export function PeriodogramChart({
       ctx.beginPath();
       ctx.moveTo(PADDING.left, py);
       ctx.lineTo(width - PADDING.right, py);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+      ctx.strokeStyle = "rgba(15, 23, 42, 0.06)";
       ctx.stroke();
       ctx.fillText(yVal.toFixed(2), 12, py + 3);
     }
@@ -122,13 +122,13 @@ export function PeriodogramChart({
       ctx.beginPath();
       ctx.moveTo(px, PADDING.top);
       ctx.lineTo(px, height - PADDING.bottom);
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+      ctx.strokeStyle = "rgba(15, 23, 42, 0.06)";
       ctx.stroke();
       ctx.fillText(`${xVal.toFixed(1)}d`, px - 10, height - 14);
     }
 
     // Power curve path
-    ctx.strokeStyle = accent;
+    ctx.strokeStyle = "#0284c7";
     ctx.lineWidth = 1.4;
     ctx.beginPath();
     for (let i = 0; i < pData.length; i++) {
@@ -143,7 +143,7 @@ export function PeriodogramChart({
     ctx.lineTo(projX(pData[pData.length - 1]), PADDING.top + plotH);
     ctx.lineTo(projX(pData[0]), PADDING.top + plotH);
     ctx.closePath();
-    ctx.fillStyle = "rgba(56, 189, 248, 0.04)";
+    ctx.fillStyle = "rgba(2, 132, 199, 0.04)";
     ctx.fill();
 
     // Mark Detected Peak
@@ -152,7 +152,7 @@ export function PeriodogramChart({
       const peakX = projX(peak);
       ctx.save();
       ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = "#38bdf8";
+      ctx.strokeStyle = "#d97706";
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.moveTo(peakX, PADDING.top);
@@ -161,20 +161,20 @@ export function PeriodogramChart({
       ctx.restore();
 
       // Peak label badge
-      ctx.fillStyle = "#38bdf8";
+      ctx.fillStyle = "#d97706";
       ctx.font = "bold 10px JetBrains Mono, monospace";
       ctx.fillText(`P = ${peak.toFixed(4)} d (Peak)`, Math.min(peakX + 6, width - PADDING.right - 130), PADDING.top + 16);
       if (peakSnr) {
-        ctx.fillStyle = "#94a3b8";
+        ctx.fillStyle = "#64748b";
         ctx.font = "9px JetBrains Mono, monospace";
         ctx.fillText(`SNR = ${peakSnr.toFixed(1)}`, Math.min(peakX + 6, width - PADDING.right - 130), PADDING.top + 28);
       }
     }
 
     // Axis Labels
-    ctx.fillStyle = "#94a3b8";
+    ctx.fillStyle = "#475569";
     ctx.font = "10px Inter, sans-serif";
-    ctx.fillText("Period (days)", width / 2 - 30, height - 2);
+    ctx.fillText("Orbital Period (days)", width / 2 - 30, height - 2);
 
     ctx.save();
     ctx.translate(14, height / 2 + 30);

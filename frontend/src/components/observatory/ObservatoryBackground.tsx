@@ -16,20 +16,37 @@ export function ObservatoryBackground({
   className?: string;
   variant?: AtmosphereVariant;
 }) {
+  const isDarkCanvas = variant === "landing" || variant === "auth";
+
+  if (!isDarkCanvas) {
+    // Warm paper application canvas background — subtle, calm, no neon or blue glow
+    return (
+      <div
+        className={`pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#F7F5EF] ${className}`.trim()}
+        aria-hidden="true"
+      >
+        <div
+          className="absolute inset-0 opacity-[0.02] pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(circle, #0f172a 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Cinematic deep landing & auth background
   return (
     <div
-      className={`observatory-background obs-variant-${variant} pointer-events-none fixed inset-0 z-0 overflow-hidden ${className}`.trim()}
+      className={`pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#07090D] ${className}`.trim()}
       aria-hidden="true"
     >
-      {/* Subtle top spotlight reminiscent of Linear/Vercel */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[340px] bg-gradient-to-b from-sky-500/[0.04] via-cyan-500/[0.015] to-transparent blur-3xl pointer-events-none" />
-
-      {/* Subtle Cartesian dot grid */}
       <div
         className="absolute inset-0 opacity-[0.035] pointer-events-none"
         style={{
           backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
+          backgroundSize: "32px 32px",
         }}
       />
     </div>

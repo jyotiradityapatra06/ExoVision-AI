@@ -162,7 +162,7 @@ export function InteractiveLineChart({
       PADDING.top + (1 - (value - yMinimum) / (yMaximum - yMinimum || 1)) * plotHeight;
 
     // Outer Frame
-    context.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    context.strokeStyle = "rgba(15, 23, 42, 0.12)";
     context.lineWidth = 1;
     context.strokeRect(PADDING.left, PADDING.top, plotWidth, plotHeight);
 
@@ -174,7 +174,7 @@ export function InteractiveLineChart({
       context.beginPath();
       context.moveTo(PADDING.left, horizontal);
       context.lineTo(size.width - PADDING.right, horizontal);
-      context.strokeStyle = "rgba(255, 255, 255, 0.04)";
+      context.strokeStyle = "rgba(15, 23, 42, 0.06)";
       context.stroke();
       const label = (yMaximum - ((yMaximum - yMinimum) * index) / 4).toFixed(4);
       context.fillText(label, 8, horizontal + 3);
@@ -187,9 +187,9 @@ export function InteractiveLineChart({
       context.beginPath();
       context.moveTo(vertical, PADDING.top);
       context.lineTo(vertical, size.height - PADDING.bottom);
-      context.strokeStyle = "rgba(255, 255, 255, 0.04)";
+      context.strokeStyle = "rgba(15, 23, 42, 0.06)";
       context.stroke();
-      context.fillText(xVal.toFixed(2), vertical - 12, size.height - 14);
+      context.fillText(xVal.toFixed(2), vertical - 14, size.height - 14);
     }
 
     // Render Data Points (Scatter Dots)
@@ -258,7 +258,7 @@ export function InteractiveLineChart({
     }
 
     // Axis Labels
-    context.fillStyle = "#94a3b8";
+    context.fillStyle = "#475569";
     context.font = "11px Inter, sans-serif";
     context.fillText(xLabel, size.width / 2 - 30, size.height - 2);
 
@@ -318,15 +318,15 @@ export function InteractiveLineChart({
   return (
     <div
       ref={containerRef}
-      className="relative w-full overflow-hidden select-none"
+      className="relative w-full overflow-hidden select-none bg-white rounded"
       onPointerMove={handlePointer}
       onPointerLeave={() => setTooltip(null)}
     >
       {zoom && (
-        <div className="absolute top-2 right-4 z-10 flex items-center gap-1 rounded-md border border-white/[0.08] bg-[#0c1017]/90 p-0.5 backdrop-blur-sm">
+        <div className="absolute top-2 right-4 z-10 flex items-center gap-1 rounded border border-[#090D0F]/15 bg-white p-0.5 shadow-sm">
           <button
             type="button"
-            className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-white/10 hover:text-white transition"
+            className="flex h-6 w-6 items-center justify-center rounded text-zinc-600 hover:bg-black/5 hover:text-[#090D0F] transition"
             title="Zoom in"
             onClick={() => handleZoom(0.7)}
           >
@@ -334,7 +334,7 @@ export function InteractiveLineChart({
           </button>
           <button
             type="button"
-            className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-white/10 hover:text-white transition"
+            className="flex h-6 w-6 items-center justify-center rounded text-zinc-600 hover:bg-black/5 hover:text-[#090D0F] transition"
             title="Zoom out"
             onClick={() => handleZoom(1.3)}
           >
@@ -342,7 +342,7 @@ export function InteractiveLineChart({
           </button>
           <button
             type="button"
-            className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:bg-white/10 hover:text-white transition"
+            className="flex h-6 w-6 items-center justify-center rounded text-zinc-600 hover:bg-black/5 hover:text-[#090D0F] transition"
             title="Reset view"
             onClick={handleReset}
           >
@@ -355,11 +355,11 @@ export function InteractiveLineChart({
 
       {tooltip && (
         <div
-          className="pointer-events-none absolute z-20 rounded border border-white/[0.12] bg-[#090d14]/95 px-2.5 py-1.5 font-mono text-[11px] text-white shadow-xl backdrop-blur-md"
+          className="pointer-events-none absolute z-20 rounded border border-[#090D0F]/15 bg-white px-3 py-2 font-mono text-[11px] text-[#090D0F] shadow-lg"
           style={{ left: `${tooltip.left + 12}px`, top: `${tooltip.top}px` }}
         >
-          <div className="text-slate-400">Time: <span className="text-white">{tooltip.x.toFixed(4)} d</span></div>
-          <div className="text-slate-400">Flux: <span className="text-cyan-300">{tooltip.y.toFixed(5)}</span></div>
+          <div className="text-zinc-500">Time: <span className="font-semibold text-[#090D0F]">{tooltip.x.toFixed(4)} d</span></div>
+          <div className="text-zinc-500">Flux: <span className="font-semibold text-signal">{tooltip.y.toFixed(5)}</span></div>
         </div>
       )}
     </div>

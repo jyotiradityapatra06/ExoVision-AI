@@ -5,7 +5,6 @@ import {
   ChevronRight,
   Database,
   FileText,
-  FlaskConical,
   LogOut,
   Menu,
   RadioTower,
@@ -20,49 +19,44 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navigation = [
-  {
-    label: "Workspace",
-    links: [
-      { href: "/dashboard", label: "Overview", icon: BarChart3 },
-      { href: "/upload", label: "Analyze Curve", icon: Telescope },
-      { href: "/datasets", label: "MAST Explorer", icon: Database },
-      { href: "/demo", label: "Synthetic Demo", icon: FlaskConical },
-    ],
-  },
-  {
-    label: "Research",
-    links: [{ href: "/reports", label: "Reports Archive", icon: FileText }],
-  },
+  { href: "/dashboard", label: "Workspace", icon: BarChart3 },
+  { href: "/upload", label: "Analyze", icon: Telescope },
+  { href: "/datasets", label: "NASA Archive", icon: Database },
+  { href: "/reports", label: "Reports", icon: FileText },
 ];
 
 const routeMeta = [
-  { match: (path: string) => path.startsWith("/results/"), section: "Analysis", title: "Analysis Results" },
-  { match: (path: string) => path === "/dashboard", section: "Workspace", title: "Overview" },
-  { match: (path: string) => path.startsWith("/upload"), section: "Analysis", title: "Analyze Curve" },
-  { match: (path: string) => path === "/datasets", section: "Analysis", title: "MAST Explorer" },
-  { match: (path: string) => path === "/demo", section: "Analysis", title: "Synthetic Demo" },
-  { match: (path: string) => path === "/reports", section: "Research", title: "Reports Archive" },
+  { match: (path: string) => path.startsWith("/results/"), section: "Analysis", title: "Scientific Dossier" },
+  { match: (path: string) => path === "/dashboard", section: "Observatory", title: "Research Workspace" },
+  { match: (path: string) => path.startsWith("/upload"), section: "Analysis", title: "Analyze Observation" },
+  { match: (path: string) => path === "/datasets", section: "Archive", title: "NASA MAST Explorer" },
+  { match: (path: string) => path === "/demo", section: "Analysis", title: "Demo Pipeline" },
+  { match: (path: string) => path === "/reports", section: "Research", title: "Scientific Archive" },
 ];
 
 function isActive(pathname: string, href: string) {
-  return pathname === href || (href === "/upload" && pathname.startsWith("/results/"));
+  if (href === "/dashboard") return pathname === "/dashboard";
+  if (href === "/upload") return pathname === "/upload" || pathname.startsWith("/upload/") || pathname.startsWith("/results/") || pathname === "/demo";
+  if (href === "/datasets") return pathname === "/datasets";
+  if (href === "/reports") return pathname === "/reports";
+  return pathname === href;
 }
 
 function Brand() {
   return (
-    <Link href="/dashboard" className="flex items-center gap-2.5 px-3 py-2 group" aria-label="ExoVision AI dashboard">
-      <div className="flex h-7 w-7 items-center justify-center rounded border border-cyan-400/30 bg-cyan-950/40 text-cyan-400 transition group-hover:border-cyan-400/50">
-        <RadioTower className="h-4 w-4" aria-hidden="true" />
+    <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 group" aria-label="ExoVision AI dashboard">
+      <div className="flex h-7 w-7 items-center justify-center rounded border border-stone-700/60 bg-stone-900 text-stone-300 transition group-hover:border-stone-500">
+        <RadioTower className="h-3.5 w-3.5" aria-hidden="true" />
       </div>
       <div className="flex flex-col">
-        <span className="text-xs font-medium tracking-tight text-white flex items-center gap-1.5">
-          ExoVision AI
-          <span className="rounded border border-white/10 bg-white/5 px-1 py-0.2 text-[9px] font-mono text-zinc-400">
-            v2.4
+        <span className="font-serif text-sm font-medium tracking-tight text-stone-100 flex items-center gap-1.5">
+          ExoVision
+          <span className="text-[9px] font-mono text-stone-500 uppercase tracking-wider">
+            AI
           </span>
         </span>
-        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-          Transit Classifier
+        <span className="text-[9px] font-mono text-stone-400 tracking-wider">
+          Observatory
         </span>
       </div>
     </Link>
@@ -119,39 +113,30 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
           </button>
         </div>
 
-        {/* Navigation Sections */}
-        <nav className="mt-3 px-2 space-y-4" aria-label="Application navigation">
-          {navigation.map((group) => (
-            <div key={group.label}>
-              <h2 className="px-2 pb-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500">
-                {group.label}
-              </h2>
-              <div className="space-y-0.5">
-                {group.links.map((link) => {
-                  const active = isActive(pathname, link.href);
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={onNavigate}
-                      aria-current={active ? "page" : undefined}
-                      className={`flex items-center gap-2.5 rounded px-2.5 py-1.5 text-xs font-normal transition ${
-                        active
-                          ? "bg-white/[0.07] text-white border border-white/[0.09]"
-                          : "text-zinc-400 hover:bg-white/[0.03] hover:text-zinc-200 border border-transparent"
-                      }`}
-                    >
-                      <link.icon
-                        className={`h-4 w-4 shrink-0 ${active ? "text-cyan-400" : "text-zinc-500"}`}
-                        aria-hidden="true"
-                      />
-                      <span>{link.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+        {/* Navigation Section */}
+        <nav className="mt-3 px-2 space-y-1" aria-label="Application navigation">
+          {navigation.map((item) => {
+            const active = isActive(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                aria-current={active ? "page" : undefined}
+                className={`flex items-center gap-3 rounded px-2.5 py-2 text-xs font-normal transition ${
+                  active
+                    ? "bg-stone-800/80 text-stone-100 border border-stone-700/60"
+                    : "text-stone-400 hover:bg-stone-900/50 hover:text-stone-200 border border-transparent"
+                }`}
+              >
+                <item.icon
+                  className={`h-4 w-4 shrink-0 ${active ? "text-stone-200" : "text-stone-500"}`}
+                  aria-hidden="true"
+                />
+                <span className="tracking-wide">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
