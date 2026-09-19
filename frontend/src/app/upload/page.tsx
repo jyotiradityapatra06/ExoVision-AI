@@ -13,23 +13,24 @@ export default function AnalyzePage() {
 
   return (
     <ProtectedRoute>
-      <main className="app-workspace intake-workspace">
-        <header className="intake-header">
+      <main className="app-workspace max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Page Header */}
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 border-b border-white/[0.08] pb-6">
           <div>
             <div className="inline-flex items-center gap-2 rounded border border-white/[0.08] bg-white/[0.02] px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-[0.1em] text-cyan-400 mb-2">
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#38bdf8]" />
               Observation Ingestion · Pipeline v2.4
             </div>
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-white">
-              <FileUp className="h-6 w-6 text-cyan-400" aria-hidden="true" />
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white font-sans">
               Analyze Stellar Observation
             </h1>
-            <p className="text-xs text-zinc-400 mt-1">
+            <p className="mt-1 text-xs text-zinc-400 font-sans max-w-2xl">
               Provide a FITS, CSV, or TXT stellar light curve for Box Least Squares period searching and candidate screening.
             </p>
           </div>
 
-          <div className="flex items-center">
+          {/* Ingestion Source Switcher */}
+          <div className="flex items-center shrink-0">
             <SegmentedControl<string>
               value="upload"
               onChange={(val) => {
@@ -45,16 +46,18 @@ export default function AnalyzePage() {
           </div>
         </header>
 
+        {/* Primary Ingestion Workspace */}
         <UploadDropzone />
 
-        <p className="intake-crosslink text-xs text-zinc-500 font-mono mt-4 text-center">
+        {/* Quiet Footer Crosslink */}
+        <p className="mt-8 text-center text-xs font-mono text-zinc-500">
           Need another observation source?{" "}
-          <Link href="/datasets" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2">
+          <Link href="/datasets" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors">
             Search NASA MAST Archives
           </Link>
           , or{" "}
-          <Link href="/demo" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2">
-            run the bundled demonstration
+          <Link href="/demo" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors">
+            run the synthetic demonstration
           </Link>
           .
         </p>
