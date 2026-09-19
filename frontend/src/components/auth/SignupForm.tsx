@@ -37,149 +37,125 @@ export function SignupForm() {
 
   return (
     <form className="space-y-4" onSubmit={submit} aria-busy={busy}>
-      {/* Display Name */}
       <div className="space-y-1.5">
-        <label
-          htmlFor="signup-name"
-          className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold"
-        >
+        <label htmlFor="signup-name" className="block text-xs font-medium text-zinc-300">
           Display name
         </label>
-        <div className="group relative flex items-center rounded-xl bg-white/[0.03] border border-white/[0.12] hover:border-white/[0.22] focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all duration-200">
-          <User className="w-4 h-4 text-zinc-500 group-focus-within:text-amber-400 transition-colors ml-3.5 pointer-events-none shrink-0" />
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+            <User className="h-4 w-4" aria-hidden="true" />
+          </div>
           <input
             id="signup-name"
-            maxLength={80}
-            autoComplete="name"
             name="displayName"
-            placeholder="Dr. Eleanor Arroway"
-            required
             type="text"
-            className="w-full bg-transparent px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none font-sans"
+            required
+            autoComplete="name"
+            maxLength={80}
+            placeholder="Dr. Eleanor Arroway"
+            className="w-full rounded-md border border-white/[0.10] bg-[#0d1015] pl-9 pr-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400/60 focus:ring-1 focus:ring-cyan-400/30 transition-colors"
           />
         </div>
       </div>
 
-      {/* Email Address */}
       <div className="space-y-1.5">
-        <label
-          htmlFor="signup-email"
-          className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold"
-        >
+        <label htmlFor="signup-email" className="block text-xs font-medium text-zinc-300">
           Email address
         </label>
-        <div className="group relative flex items-center rounded-xl bg-white/[0.03] border border-white/[0.12] hover:border-white/[0.22] focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all duration-200">
-          <Mail className="w-4 h-4 text-zinc-500 group-focus-within:text-amber-400 transition-colors ml-3.5 pointer-events-none shrink-0" />
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+            <Mail className="h-4 w-4" aria-hidden="true" />
+          </div>
           <input
             id="signup-email"
-            maxLength={254}
-            autoCapitalize="none"
-            autoComplete="email"
-            inputMode="email"
             name="email"
-            placeholder="researcher@observatory.org"
-            required
             type="email"
-            className="w-full bg-transparent px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none font-sans"
+            required
+            autoComplete="email"
+            autoCapitalize="none"
+            inputMode="email"
+            maxLength={254}
+            placeholder="researcher@observatory.org"
+            className="w-full rounded-md border border-white/[0.10] bg-[#0d1015] pl-9 pr-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400/60 focus:ring-1 focus:ring-cyan-400/30 transition-colors"
           />
         </div>
       </div>
 
-      {/* Password */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <label
-            htmlFor="signup-password"
-            className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold"
-          >
+          <label htmlFor="signup-password" className="block text-xs font-medium text-zinc-300">
             Password
           </label>
           <span className="text-[10px] font-mono text-zinc-500">12–128 characters</span>
         </div>
-        <div className="group relative flex items-center rounded-xl bg-white/[0.03] border border-white/[0.12] hover:border-white/[0.22] focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all duration-200">
-          <Lock className="w-4 h-4 text-zinc-500 group-focus-within:text-amber-400 transition-colors ml-3.5 pointer-events-none shrink-0" />
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+            <Lock className="h-4 w-4" aria-hidden="true" />
+          </div>
           <input
             id="signup-password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            required
+            autoComplete="new-password"
             minLength={12}
             maxLength={128}
-            autoComplete="new-password"
-            name="password"
             placeholder="Create a strong password"
-            required
-            type={showPassword ? "text" : "password"}
             aria-describedby="password-requirements"
-            className="w-full bg-transparent px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none font-sans"
+            className="w-full rounded-md border border-white/[0.10] bg-[#0d1015] pl-9 pr-10 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400/60 focus:ring-1 focus:ring-cyan-400/30 transition-colors"
           />
           <button
             type="button"
+            onClick={() => setShowPassword((shown) => !shown)}
             aria-controls="signup-password signup-confirm"
             aria-label={showPassword ? "Hide passwords" : "Show passwords"}
             aria-pressed={showPassword}
-            onClick={() => setShowPassword((shown) => !shown)}
-            className="px-3 py-2.5 text-zinc-500 hover:text-zinc-200 transition-colors focus:outline-none"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-200 transition-colors"
           >
-            {showPassword ? (
-              <EyeOff className="w-4 h-4" aria-hidden="true" />
-            ) : (
-              <Eye className="w-4 h-4" aria-hidden="true" />
-            )}
+            {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
           </button>
         </div>
-        <p id="password-requirements" className="text-[10px] font-mono text-zinc-500">
-          Backend security requirement: minimum 12 characters.
+        <p id="password-requirements" className="text-[11px] text-zinc-500 font-mono">
+          Backend requirement: at least 12 characters.
         </p>
       </div>
 
-      {/* Confirm Password */}
       <div className="space-y-1.5">
-        <label
-          htmlFor="signup-confirm"
-          className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold"
-        >
+        <label htmlFor="signup-confirm" className="block text-xs font-medium text-zinc-300">
           Confirm password
         </label>
-        <div className="group relative flex items-center rounded-xl bg-white/[0.03] border border-white/[0.12] hover:border-white/[0.22] focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/20 transition-all duration-200">
-          <Lock className="w-4 h-4 text-zinc-500 group-focus-within:text-amber-400 transition-colors ml-3.5 pointer-events-none shrink-0" />
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+            <Lock className="h-4 w-4" aria-hidden="true" />
+          </div>
           <input
             id="signup-confirm"
+            name="confirm"
+            type={showPassword ? "text" : "password"}
+            required
+            autoComplete="new-password"
             minLength={12}
             maxLength={128}
-            autoComplete="new-password"
-            name="confirm"
             placeholder="Repeat your password"
-            required
-            type={showPassword ? "text" : "password"}
-            className="w-full bg-transparent px-3 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none font-sans"
+            className="w-full rounded-md border border-white/[0.10] bg-[#0d1015] pl-9 pr-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400/60 focus:ring-1 focus:ring-cyan-400/30 transition-colors"
           />
         </div>
       </div>
 
-      {/* Error Alert */}
       {error && (
-        <div
-          role="alert"
-          className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300 flex items-start gap-2.5 backdrop-blur-md"
-        >
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-          <span>{error}</span>
+        <div className="flex items-start gap-2.5 rounded-md border border-rose-500/30 bg-rose-500/[0.08] p-3 text-xs text-rose-300" role="alert">
+          <AlertCircle className="h-4 w-4 shrink-0 text-rose-400 mt-0.5" aria-hidden="true" />
+          <span className="leading-relaxed">{error}</span>
         </div>
       )}
 
-      {/* Submit Button */}
       <button
         type="submit"
         disabled={busy}
-        className="group/btn relative w-full py-3.5 px-6 rounded-xl font-semibold text-xs tracking-wide bg-[#F4F1EA] text-[#090D0F] hover:bg-white transition-all duration-200 flex items-center justify-center gap-2.5 shadow-[0_0_24px_rgba(255,255,255,0.15)] hover:shadow-[0_0_32px_rgba(245,158,11,0.35)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none overflow-hidden mt-2"
+        className="w-full min-h-[42px] rounded-md bg-[#e6f6fa] hover:bg-white text-[#081216] font-semibold text-xs transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 disabled:opacity-50 disabled:cursor-wait shadow-sm mt-2"
       >
-        <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover/btn:translate-x-[300%] transition-transform duration-700 pointer-events-none" />
-        {busy ? (
-          <LoaderCircle className="w-4 h-4 animate-spin text-zinc-950" aria-hidden="true" />
-        ) : (
-          <UserPlus className="w-4 h-4 text-zinc-950 transition-transform duration-200 group-hover/btn:scale-110" aria-hidden="true" />
-        )}
-        <span className="relative z-10 font-sans">
-          {busy ? "Registering research workspace…" : "Create Research Account"}
-        </span>
+        {busy ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <UserPlus className="h-4 w-4" aria-hidden="true" />}
+        <span>{busy ? "Creating account…" : "Create Research Account"}</span>
       </button>
     </form>
   );

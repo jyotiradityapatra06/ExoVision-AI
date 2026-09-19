@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Newsreader } from "next/font/google";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
 import { SiteLayout } from "@/components/layout";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { CustomObservatoryCursor } from "@/components/ui/CustomObservatoryCursor";
 
 import "./globals.css";
 
-const newsreader = Newsreader({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-serif",
-  style: ["normal", "italic"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -66,15 +64,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${newsreader.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      className={`dark ${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body
-        className="min-h-screen bg-[#07090D] text-stone-900 antialiased selection:bg-blue-600/20 selection:text-blue-900"
+        className="min-h-screen bg-obs-void text-starlight antialiased selection:bg-sky-500/30 selection:text-white"
         suppressHydrationWarning
       >
-        <CustomObservatoryCursor />
         <AuthProvider><SiteLayout>{children}</SiteLayout></AuthProvider>
       </body>
     </html>

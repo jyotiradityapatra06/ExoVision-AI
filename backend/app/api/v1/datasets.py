@@ -46,11 +46,22 @@ def download_dataset(
     try:
         filename, content = MastService().download(data_uri)
     except MastServiceError as error:
+        detail_msg = str(error)
+        if "exceeds" in detail_msg.lower() or "limit" in detail_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=detail_msg,
+            ) from error
+        if "not return a valid fits" in detail_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=detail_msg,
+            ) from error
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=(
-                "NASA MAST archive is temporarily unavailable. "
-                "Please retry the search."
+                "NASA MAST observation download failed. "
+                "The archive file could not be retrieved."
             ),
         ) from error
     return Response(

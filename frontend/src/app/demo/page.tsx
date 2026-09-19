@@ -1,18 +1,78 @@
 "use client";
 
 import {
+  AlertCircle,
   ArrowRight,
+  BrainCircuit,
+  Database,
+  FileCheck,
+  FileSearch,
+  FileUp,
   FlaskConical,
-  LoaderCircle,
+  Layers,
   Play,
+  ScanSearch,
+  Telescope,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { PrecisionButton, SegmentedControl } from "@/components/ui";
 import { IntakeStage, intakeError, startObservation } from "@/lib/analysis-intake";
 import { api } from "@/lib/api";
+
+const workflowSteps = [
+  {
+    num: "01",
+    title: "Observation",
+    desc: "Retrieve the bundled FITS light-curve sample from the repository archive.",
+    icon: Database,
+  },
+  {
+    num: "02",
+    title: "Validation",
+    desc: "Apply standard server format, size bounds, and ownership checks.",
+    icon: FileCheck,
+  },
+  {
+    num: "03",
+    title: "Transit Search",
+    desc: "Evaluate periodic transit-like dips via Box Least Squares (BLS).",
+    icon: ScanSearch,
+  },
+  {
+    num: "04",
+    title: "Classification",
+    desc: "Screen extracted signal features using the Random Forest classifier.",
+    icon: BrainCircuit,
+  },
+  {
+    num: "05",
+    title: "Evidence",
+    desc: "Review candidate metrics, folded curves, and diagnostic plots in Results.",
+    icon: FileSearch,
+  },
+];
+
+const explanationPoints = [
+  {
+    title: "Identical Ingestion Pathway",
+    desc: "The demo does not bypass backend systems. It sends a real FITS binary through the standard /api/v1/upload/lightcurve ingestion pipeline.",
+    icon: Layers,
+  },
+  {
+    title: "Authoritative Analysis Pipeline",
+    desc: "Executes the live Python pipeline: LTTB downsampling, Box Least Squares period grid search, and Random Forest feature scoring.",
+    icon: BrainCircuit,
+  },
+  {
+    title: "Full Scientific Dossier",
+    desc: "Generates the complete scientific analysis dossier: interactive phase-folded light curves, candidate ranking, SNR metrics, and PDF export.",
+    icon: Telescope,
+  },
+];
 
 export default function DemoPage() {
   return (
@@ -44,194 +104,201 @@ function DemoContent() {
 
   const label =
     stage === "downloading"
-      ? "Fetching bundled observation…"
+      ? "Retrieving bundled observation…"
       : stage === "uploading"
-      ? "Uploading observation…"
-      : stage === "starting"
-      ? "Preparing analysis…"
-      : "Execute Kepler-10b Benchmark";
+        ? "Uploading observation…"
+        : stage === "starting"
+          ? "Starting analysis pipeline…"
+          : "Run Demo Analysis";
 
   return (
-    <main className="max-w-7xl mx-auto px-6 sm:px-8 py-10 text-[#090D0F]">
-      {/* Editorial Header */}
-      <header className="border-b border-[#090D0F]/10 pb-8 mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+    <main className="app-workspace max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      {/* Header */}
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 border-b border-white/[0.08] pb-6">
         <div>
-          <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-signal" />
-            <span>Verification Benchmark</span>
-            <span className="text-zinc-400">/</span>
-            <span>Bundled Photometry</span>
+          <div className="inline-flex items-center gap-2 rounded border border-white/[0.08] bg-white/[0.02] px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-[0.1em] text-cyan-400 mb-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#38bdf8]" />
+            Demonstration · Curated Workflow
           </div>
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[#090D0F] tracking-tight">
-            Kepler-10b Transit Benchmark
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white font-sans">
+            Explore the Screening Workflow
           </h1>
-          <p className="mt-2 text-xs sm:text-sm text-zinc-600 font-sans max-w-2xl leading-relaxed">
-            Execute the complete observational transit pipeline using real Kepler staring photometry.
-            No upload or external archive credentials required.
+          <p className="mt-1 text-xs text-zinc-400 font-sans max-w-2xl">
+            Run a curated transit-like observation through the same ingestion and candidate-screening pipeline used for uploaded observations.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-mono">
-          <Link
-            href="/upload"
-            className="inline-flex items-center gap-1.5 text-zinc-600 hover:text-[#090D0F] underline underline-offset-4"
-          >
-            <span>Upload custom file</span>
-            <ArrowRight className="w-3 h-3" />
-          </Link>
-          <span className="text-zinc-300">·</span>
-          <Link
-            href="/datasets"
-            className="inline-flex items-center gap-1.5 text-zinc-600 hover:text-[#090D0F] underline underline-offset-4"
-          >
-            <span>Search NASA MAST</span>
-            <ArrowRight className="w-3 h-3" />
-          </Link>
+        {/* Ingestion Source Switcher */}
+        <div className="flex items-center shrink-0">
+          <SegmentedControl<string>
+            value="demo"
+            onChange={(val) => {
+              if (val === "upload") router.push("/upload");
+              if (val === "datasets") router.push("/datasets");
+            }}
+            items={[
+              { id: "upload", label: "File Upload", icon: FileUp },
+              { id: "datasets", label: "NASA MAST", icon: Database },
+              { id: "demo", label: "Synthetic Demo", icon: FlaskConical },
+            ]}
+          />
         </div>
       </header>
 
-      {/* Main Benchmark Presentation */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Benchmark Summary & Run Trigger */}
-        <section className="lg:col-span-8 bg-white border border-[#090D0F]/10 rounded p-6 sm:p-8">
-          <div className="flex items-center gap-3 pb-6 border-b border-[#090D0F]/10 mb-6">
-            <div className="w-12 h-12 rounded bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-900">
-              <FlaskConical className="w-6 h-6 text-signal" />
-            </div>
-            <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-signal font-semibold">
-                Gold Standard Reference
+      {/* Primary Observation & Action Panel */}
+      <section className="mt-6 rounded-lg border border-white/[0.08] bg-[#0d1015] p-5 sm:p-6 shadow-sm" aria-labelledby="demo-observation-heading">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-white/[0.06]">
+          <div className="space-y-2 max-w-2xl">
+            <div className="flex items-center gap-2">
+              <span className="rounded border border-purple-500/30 bg-purple-950/40 px-2 py-0.5 font-mono text-[10px] font-medium text-purple-300 uppercase">
+                Curated Sample
               </span>
-              <h2 className="font-serif text-2xl font-medium text-[#090D0F]">
-                Target KOI-072.01 (Kepler-10)
-              </h2>
+              <span className="text-[11px] font-mono text-zinc-500">Repository Demo File</span>
             </div>
+
+            <h2 id="demo-observation-heading" className="text-lg font-semibold text-white tracking-tight">
+              Curated Light-Curve Observation
+            </h2>
+
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              The repository’s deterministic demonstration observation (<code className="text-zinc-200 font-mono text-[11px]">exoplanet_demo_transit.fits</code>) is retrieved from the server, validated, and handed to the live processing lifecycle. Results provide candidate-screening evidence, not planet confirmation.
+            </p>
           </div>
 
-          <p className="text-xs sm:text-sm text-zinc-600 font-sans leading-relaxed">
-            Kepler-10b was the first confirmed rocky exoplanet discovered by NASA’s Kepler mission.
-            This bundled dataset contains long-cadence calibrated flux measurements demonstrating
-            a shallow, periodic orbital transit with period <code className="font-mono text-xs bg-zinc-100 px-1 py-0.5 rounded">P ≈ 0.8375 d</code> and fractional depth <code className="font-mono text-xs bg-zinc-100 px-1 py-0.5 rounded">δ ≈ 198 ppm</code>.
-          </p>
-
-          {/* Reference Values Strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6 pt-4 border-t border-[#090D0F]/05 text-xs font-mono">
-            <div className="p-3 bg-[#FAF9F5] rounded border border-[#090D0F]/05">
-              <span className="text-[10px] uppercase text-zinc-500 block">Expected Period</span>
-              <strong className="text-xs text-zinc-800 mt-0.5 block">0.8375 d</strong>
-            </div>
-            <div className="p-3 bg-[#FAF9F5] rounded border border-[#090D0F]/05">
-              <span className="text-[10px] uppercase text-zinc-500 block">Transit Depth</span>
-              <strong className="text-xs text-zinc-800 mt-0.5 block">198 ppm</strong>
-            </div>
-            <div className="p-3 bg-[#FAF9F5] rounded border border-[#090D0F]/05">
-              <span className="text-[10px] uppercase text-zinc-500 block">Expected SNR</span>
-              <strong className="text-xs text-signal mt-0.5 block">18.42</strong>
-            </div>
-            <div className="p-3 bg-[#FAF9F5] rounded border border-[#090D0F]/05">
-              <span className="text-[10px] uppercase text-zinc-500 block">Instrument</span>
-              <strong className="text-xs text-zinc-800 mt-0.5 block">Kepler Stare</strong>
-            </div>
-          </div>
-
-          {error && (
-            <div className="p-4 rounded border border-red-200 bg-red-50 text-red-800 text-xs mb-6" role="alert">
-              {error}
-            </div>
-          )}
-
-          {/* Execute CTA */}
-          <div className="pt-4 border-t border-[#090D0F]/10 flex items-center gap-4">
-            <button
+          {/* Primary Action Button */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            <PrecisionButton
               type="button"
+              variant="primary"
+              size="lg"
               onClick={() => void runDemo()}
               disabled={busy}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded bg-[#090D0F] text-[#F7F5EF] text-xs font-semibold hover:bg-[#1E293B] disabled:opacity-50 transition-colors"
+              loading={busy}
+              className="font-semibold text-xs h-11 px-6 justify-center"
             >
               {busy ? (
-                <>
-                  <LoaderCircle className="w-3.5 h-3.5 animate-spin text-signal" />
-                  <span>{label}</span>
-                </>
+                <span>{label}</span>
               ) : (
-                <>
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Execute Benchmark Pipeline</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </>
+                <span className="flex items-center gap-2">
+                  <Play className="h-4 w-4 fill-current" aria-hidden="true" />
+                  <span>Run Demo Analysis</span>
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </span>
               )}
-            </button>
+            </PrecisionButton>
           </div>
-        </section>
+        </div>
 
-        {/* Right Column: Execution Sequence Walkthrough */}
-        <aside className="lg:col-span-4 bg-white border border-[#090D0F]/10 rounded p-6">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 block mb-1">
-            Pipeline Architecture
-          </span>
-          <h3 className="font-serif text-lg font-medium text-[#090D0F] mb-4">
-            Analytical Progression
-          </h3>
+        {/* Observation Metadata Grid */}
+        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="rounded-md border border-white/[0.06] bg-[#090b0e] p-3">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">Filename</span>
+            <span className="font-mono text-xs text-zinc-200 block truncate mt-1" title="exoplanet_demo_transit.fits">
+              exoplanet_demo_transit.fits
+            </span>
+          </div>
 
-          <ol className="space-y-4 text-xs font-sans">
-            <li className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded border border-[#090D0F]/15 bg-[#FAF9F5] flex items-center justify-center font-mono text-[10px] font-medium shrink-0 mt-0.5">
-                01
-              </span>
-              <div>
-                <strong className="text-zinc-800 block">Ingest FITS Photometry</strong>
-                <span className="text-zinc-500 text-[11px] leading-tight block mt-0.5">
-                  Load calibrated flux arrays and Barycentric Julian Date timestamps.
-                </span>
+          <div className="rounded-md border border-white/[0.06] bg-[#090b0e] p-3">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">Format</span>
+            <span className="font-mono text-xs text-zinc-200 block mt-1">FITS Binary Table</span>
+          </div>
+
+          <div className="rounded-md border border-white/[0.06] bg-[#090b0e] p-3">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">File Size</span>
+            <span className="font-mono text-xs text-zinc-200 block mt-1">123.8 KiB (126,720 B)</span>
+          </div>
+
+          <div className="rounded-md border border-white/[0.06] bg-[#090b0e] p-3">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">Source</span>
+            <span className="font-mono text-xs text-zinc-200 block mt-1">Repository Sample</span>
+          </div>
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div role="alert" className="mt-4 flex items-start gap-2.5 rounded-md border border-rose-500/30 bg-rose-500/[0.08] p-3.5 text-xs text-rose-300">
+            <AlertCircle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
+            <span>{error}</span>
+          </div>
+        )}
+      </section>
+
+      {/* Workflow Sequence (Horizontal on Desktop, Vertical on Mobile) */}
+      <section className="mt-6 rounded-lg border border-white/[0.08] bg-[#0d1015] p-5 sm:p-6 shadow-sm" aria-labelledby="workflow-heading">
+        <header className="pb-4 border-b border-white/[0.06] mb-5">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Pipeline Lifecycle</p>
+          <h2 id="workflow-heading" className="text-sm font-semibold text-white tracking-tight">
+            Conceptual Screening Workflow
+          </h2>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Every observation passes through five disciplined analysis stages
+          </p>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          {workflowSteps.map((step) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={step.num}
+                className="flex flex-col justify-between rounded-md border border-white/[0.06] bg-[#090b0e] p-4 transition-colors"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="flex h-6 w-6 items-center justify-center rounded border border-white/[0.10] bg-[#11151b] font-mono text-[10px] font-semibold text-cyan-400">
+                      {step.num}
+                    </span>
+                    <Icon className="h-4 w-4 text-zinc-500" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-xs font-semibold text-white tracking-tight">{step.title}</h3>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed mt-1.5">{step.desc}</p>
+                </div>
               </div>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded border border-[#090D0F]/15 bg-[#FAF9F5] flex items-center justify-center font-mono text-[10px] font-medium shrink-0 mt-0.5">
-                02
-              </span>
-              <div>
-                <strong className="text-zinc-800 block">Box Least Squares (BLS)</strong>
-                <span className="text-zinc-500 text-[11px] leading-tight block mt-0.5">
-                  Scan thousands of trial orbital periods to maximize spectral peak power.
-                </span>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* What this Demonstration Shows */}
+      <section className="mt-6 rounded-lg border border-white/[0.08] bg-[#0d1015] p-5 sm:p-6 shadow-sm" aria-labelledby="demonstration-notes-heading">
+        <header className="pb-4 border-b border-white/[0.06] mb-5">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">Methodology</p>
+          <h2 id="demonstration-notes-heading" className="text-sm font-semibold text-white tracking-tight">
+            What This Demonstration Shows
+          </h2>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Understanding the difference between interactive demonstration and production research screening
+          </p>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {explanationPoints.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="rounded-md border border-white/[0.06] bg-[#090b0e] p-4 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-semibold text-white">
+                  <Icon className="h-4 w-4 text-cyan-400" aria-hidden="true" />
+                  <span>{item.title}</span>
+                </div>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">{item.desc}</p>
               </div>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded border border-[#090D0F]/15 bg-[#FAF9F5] flex items-center justify-center font-mono text-[10px] font-medium shrink-0 mt-0.5">
-                03
-              </span>
-              <div>
-                <strong className="text-zinc-800 block">Phase-Fold & Transit Model</strong>
-                <span className="text-zinc-500 text-[11px] leading-tight block mt-0.5">
-                  Fold all observational epochs onto the primary candidate period.
-                </span>
-              </div>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded border border-[#090D0F]/15 bg-[#FAF9F5] flex items-center justify-center font-mono text-[10px] font-medium shrink-0 mt-0.5">
-                04
-              </span>
-              <div>
-                <strong className="text-zinc-800 block">Random Forest Screening</strong>
-                <span className="text-zinc-500 text-[11px] leading-tight block mt-0.5">
-                  Classify transit morphology and assess false-positive indicators.
-                </span>
-              </div>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded border border-[#090D0F]/15 bg-[#FAF9F5] flex items-center justify-center font-mono text-[10px] font-medium shrink-0 mt-0.5">
-                05
-              </span>
-              <div>
-                <strong className="text-zinc-800 block">Publication Dossier</strong>
-                <span className="text-zinc-500 text-[11px] leading-tight block mt-0.5">
-                  Interactive charts, parameter strips, and exportable PDF summaries.
-                </span>
-              </div>
-            </li>
-          </ol>
-        </aside>
-      </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Footer Crosslink */}
+      <p className="mt-8 text-center text-xs font-mono text-zinc-500">
+        Ready to analyze your own data?{" "}
+        <Link href="/upload" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors">
+          Upload an observation
+        </Link>
+        , or{" "}
+        <Link href="/datasets" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors">
+          search NASA MAST
+        </Link>
+        .
+      </p>
     </main>
   );
 }

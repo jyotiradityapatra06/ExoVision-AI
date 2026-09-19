@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Database,
   FileText,
+  FlaskConical,
   LogOut,
   Menu,
   RadioTower,
@@ -19,44 +20,53 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navigation = [
-  { href: "/dashboard", label: "Workspace", icon: BarChart3 },
-  { href: "/upload", label: "Analyze", icon: Telescope },
-  { href: "/datasets", label: "NASA Archive", icon: Database },
-  { href: "/reports", label: "Reports", icon: FileText },
+  {
+    label: "Workspace",
+    links: [
+      { href: "/dashboard", label: "Overview", icon: BarChart3 },
+      { href: "/upload", label: "Analyze Curve", icon: Telescope },
+      { href: "/datasets", label: "MAST Explorer", icon: Database },
+      { href: "/demo", label: "Synthetic Demo", icon: FlaskConical },
+    ],
+  },
+  {
+    label: "Research",
+    links: [{ href: "/reports", label: "Reports Archive", icon: FileText }],
+  },
 ];
 
 const routeMeta = [
-  { match: (path: string) => path.startsWith("/results/"), section: "Analysis", title: "Scientific Dossier" },
-  { match: (path: string) => path === "/dashboard", section: "Observatory", title: "Research Workspace" },
-  { match: (path: string) => path.startsWith("/upload"), section: "Analysis", title: "Analyze Observation" },
-  { match: (path: string) => path === "/datasets", section: "Archive", title: "NASA MAST Explorer" },
-  { match: (path: string) => path === "/demo", section: "Analysis", title: "Demo Pipeline" },
-  { match: (path: string) => path === "/reports", section: "Research", title: "Scientific Archive" },
+  { match: (path: string) => path.startsWith("/results/"), section: "Analysis", title: "Analysis Results" },
+  { match: (path: string) => path === "/dashboard", section: "Workspace", title: "Overview" },
+  { match: (path: string) => path.startsWith("/upload"), section: "Analysis", title: "Analyze Curve" },
+  { match: (path: string) => path === "/datasets", section: "Analysis", title: "MAST Explorer" },
+  { match: (path: string) => path === "/demo", section: "Analysis", title: "Synthetic Demo" },
+  { match: (path: string) => path === "/reports", section: "Research", title: "Reports Archive" },
 ];
 
 function isActive(pathname: string, href: string) {
-  if (href === "/dashboard") return pathname === "/dashboard";
-  if (href === "/upload") return pathname === "/upload" || pathname.startsWith("/upload/") || pathname.startsWith("/results/") || pathname === "/demo";
-  if (href === "/datasets") return pathname === "/datasets";
-  if (href === "/reports") return pathname === "/reports";
-  return pathname === href;
+  return pathname === href || (href === "/upload" && pathname.startsWith("/results/"));
 }
 
 function Brand() {
   return (
-    <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 group" aria-label="ExoVision AI dashboard">
-      <div className="flex h-7 w-7 items-center justify-center rounded border border-stone-700/60 bg-stone-900 text-stone-300 transition group-hover:border-stone-500">
+    <Link
+      href="/dashboard"
+      className="flex items-center gap-2.5 px-3 py-2 rounded-md transition-colors hover:bg-white/[0.03] group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400"
+      aria-label="ExoVision AI dashboard"
+    >
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.12] bg-[#11151b] text-cyan-400 transition-colors group-hover:border-cyan-400/40">
         <RadioTower className="h-3.5 w-3.5" aria-hidden="true" />
       </div>
-      <div className="flex flex-col">
-        <span className="font-serif text-sm font-medium tracking-tight text-stone-100 flex items-center gap-1.5">
-          ExoVision
-          <span className="text-[9px] font-mono text-stone-500 uppercase tracking-wider">
-            AI
+      <div className="flex flex-col min-w-0">
+        <span className="text-xs font-semibold tracking-tight text-white flex items-center gap-1.5 leading-none">
+          ExoVision AI
+          <span className="rounded border border-white/10 bg-white/5 px-1 py-0.2 text-[9px] font-mono text-zinc-400 font-normal">
+            v2.4
           </span>
         </span>
-        <span className="text-[9px] font-mono text-stone-400 tracking-wider">
-          Observatory
+        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mt-1 leading-none truncate">
+          Transit Classifier
         </span>
       </div>
     </Link>
@@ -87,71 +97,89 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
   }, [router]);
 
   return (
-    <div className="flex h-full flex-col justify-between">
-      <div>
-        <div className="border-b border-white/[0.08] pb-2 pt-3">
+    <div className="flex h-full flex-col justify-between bg-[#090b0e] text-[#f1f5f9]">
+      <div className="flex flex-col flex-1 min-h-0">
+        {/* Brand Header */}
+        <div className="border-b border-white/[0.08] p-2">
           <Brand />
         </div>
 
         {/* Quick Search / Command Shortcut */}
-        <div className="px-3 pt-3">
+        <div className="px-3 pt-3 pb-1">
           <button
             type="button"
             onClick={() => {
               onNavigate?.();
               router.push("/datasets");
             }}
-            className="flex w-full items-center justify-between rounded border border-white/[0.08] bg-white/[0.02] px-2.5 py-1.5 text-xs text-zinc-400 transition hover:border-white/[0.16] hover:bg-white/[0.05] hover:text-zinc-200"
+            className="flex w-full items-center justify-between rounded-md border border-white/[0.08] bg-[#0d1015] px-2.5 py-1.5 text-xs text-zinc-400 transition hover:border-white/[0.16] hover:bg-[#11151b] hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400"
           >
             <span className="flex items-center gap-2">
-              <Search className="h-3.5 w-3.5 text-zinc-500" />
+              <Search className="h-3.5 w-3.5 text-zinc-500" aria-hidden="true" />
               <span>Search targets…</span>
             </span>
-            <kbd className="rounded border border-white/[0.1] bg-white/[0.05] px-1 py-0.5 font-mono text-[9px] text-zinc-400">
+            <kbd className="rounded border border-white/[0.10] bg-white/[0.04] px-1 py-0.5 font-mono text-[9px] text-zinc-400">
               ⌘K
             </kbd>
           </button>
         </div>
 
-        {/* Navigation Section */}
-        <nav className="mt-3 px-2 space-y-1" aria-label="Application navigation">
-          {navigation.map((item) => {
-            const active = isActive(pathname, item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onNavigate}
-                aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-3 rounded px-2.5 py-2 text-xs font-normal transition ${
-                  active
-                    ? "bg-stone-800/80 text-stone-100 border border-stone-700/60"
-                    : "text-stone-400 hover:bg-stone-900/50 hover:text-stone-200 border border-transparent"
-                }`}
-              >
-                <item.icon
-                  className={`h-4 w-4 shrink-0 ${active ? "text-stone-200" : "text-stone-500"}`}
-                  aria-hidden="true"
-                />
-                <span className="tracking-wide">{item.label}</span>
-              </Link>
-            );
-          })}
+        {/* Navigation Sections */}
+        <nav className="mt-3 px-2 space-y-4 flex-1 overflow-y-auto" aria-label="Application navigation">
+          {navigation.map((group) => (
+            <div key={group.label}>
+              <h2 className="px-2.5 pb-1.5 text-[10px] font-mono uppercase tracking-[0.14em] text-zinc-500 font-medium">
+                {group.label}
+              </h2>
+              <div className="space-y-0.5">
+                {group.links.map((link) => {
+                  const active = isActive(pathname, link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={onNavigate}
+                      aria-current={active ? "page" : undefined}
+                      className={`group relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all ${
+                        active
+                          ? "bg-white/[0.08] text-white"
+                          : "text-zinc-400 hover:bg-white/[0.03] hover:text-zinc-200"
+                      }`}
+                    >
+                      {active && (
+                        <span
+                          className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-r bg-cyan-400"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <link.icon
+                        className={`h-4 w-4 shrink-0 transition-colors ${
+                          active ? "text-cyan-400" : "text-zinc-500 group-hover:text-zinc-300"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span>{link.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
       </div>
 
       {/* Account Footer */}
       <div className="border-t border-white/[0.08] p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-white/[0.12] bg-white/[0.04] text-xs font-mono text-zinc-300">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.10] bg-[#11151b] text-xs font-mono font-medium text-zinc-300">
               {user?.display_name?.slice(0, 1).toUpperCase() ?? "R"}
             </div>
-            <div className="flex flex-col overflow-hidden">
-              <span className="truncate text-xs font-normal text-zinc-200">
+            <div className="flex flex-col min-w-0">
+              <span className="truncate text-xs font-medium text-zinc-200 leading-tight">
                 {user?.display_name ?? "Researcher"}
               </span>
-              <span className="truncate text-[10px] font-mono text-zinc-500">
+              <span className="truncate text-[10px] font-mono text-zinc-500 leading-tight mt-0.5">
                 {user?.email ?? "Authenticated account"}
               </span>
             </div>
@@ -159,7 +187,7 @@ function NavigationContent({ onNavigate }: { onNavigate?: () => void }) {
           <button
             type="button"
             onClick={signOut}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-transparent text-zinc-500 transition hover:border-white/[0.08] hover:bg-white/[0.04] hover:text-zinc-300"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-400"
             aria-label="Sign out"
             title="Sign out"
           >

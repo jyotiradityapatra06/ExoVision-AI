@@ -27,7 +27,7 @@ export function PrecisionButton({
   if (href && !disabled && !loading) {
     return (
       <Link href={href} className={classes}>
-        <span>{children}</span>
+        <span className="inline-flex items-center gap-2">{children}</span>
         {shortcut && <kbd>{shortcut}</kbd>}
       </Link>
     );
@@ -41,7 +41,7 @@ export function PrecisionButton({
       {...props}
     >
       {loading && <LoaderCircle className="precision-button__spinner" aria-hidden="true" />}
-      <span>{children}</span>
+      <span className="inline-flex items-center gap-2">{children}</span>
       {shortcut && <kbd>{shortcut}</kbd>}
     </button>
   );

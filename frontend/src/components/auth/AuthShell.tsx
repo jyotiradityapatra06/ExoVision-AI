@@ -1,14 +1,12 @@
 "use client";
 
-import { ArrowLeft, LoaderCircle, ShieldCheck } from "lucide-react";
+import { ArrowLeft, LoaderCircle, RadioTower, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
-import { motion } from "framer-motion";
 
 import { useAuth } from "@/contexts/AuthContext";
-
-import { ProductCapabilitiesShowcase } from "@/components/auth/ProductCapabilitiesShowcase";
+import { ObservatoryBackground } from "@/components/observatory/ObservatoryBackground";
 
 export function AuthShell({
   children,
@@ -34,127 +32,137 @@ export function AuthShell({
 
   if (loading || user) {
     return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center bg-[#07090D] text-zinc-300 gap-3"
-        role="status"
-        aria-live="polite"
-      >
-        <LoaderCircle className="w-5 h-5 animate-spin text-amber-400" aria-hidden="true" />
-        <p className="font-mono text-xs text-zinc-400">
-          {loading ? "Restoring research session…" : "Opening research workspace…"}
-        </p>
+      <div className="app-session-loading" role="status" aria-live="polite">
+        <span className="app-brand-mark">
+          <LoaderCircle className="animate-spin" aria-hidden="true" />
+        </span>
+        <p>{loading ? "Restoring research session" : "Opening research workspace"}</p>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen flex flex-col justify-between items-center bg-[#07090D] text-zinc-100 font-sans selection:bg-amber-500 selection:text-black relative overflow-x-hidden p-6 sm:p-10">
-      {/* Astrometric Coordinate Grid Background */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 pointer-events-none opacity-40 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:32px_32px]"
-      />
+    <main className="min-h-screen w-full bg-[#090b0e] text-starlight flex flex-col lg:flex-row relative overflow-x-hidden selection:bg-sky-500/30 selection:text-white">
+      <ObservatoryBackground variant="auth" />
 
-      {/* Radiant Central Nebular Glow */}
-      <div
-        aria-hidden="true"
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[650px] bg-[radial-gradient(ellipse_at_center,_rgba(245,158,11,0.08)_0%,_rgba(56,189,248,0.03)_45%,_transparent_72%)] blur-3xl pointer-events-none"
-      />
-
-      {/* Top Header Bar */}
-      <header className="w-full max-w-7xl flex items-center justify-between relative z-10 py-2">
-        <Link href="/" className="inline-flex items-center gap-3 text-white group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-[0_0_16px_rgba(245,158,11,0.45)]">
-            <span className="font-serif font-bold text-xs text-black">Ex</span>
-          </div>
-          <span className="font-serif text-lg font-semibold tracking-wide group-hover:text-amber-300 transition-colors">
-            ExoVision AI
-          </span>
-          <span className="text-zinc-600">/</span>
-          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400">
-            Observatory Terminal
-          </span>
-        </Link>
-
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-mono text-zinc-400 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
-          <span className="hidden sm:inline">Return to Observatory</span>
-        </Link>
-      </header>
-
-      {/* Content Area: Side-by-Side on Wide Screens (Terminal on Left, Product Capabilities Showcase on Right) */}
-      <div className="w-full max-w-7xl my-auto relative z-10 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-        {/* Left Column: Focused Glassmorphic Observatory Login Terminal */}
-        <div className="lg:col-span-5 w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative rounded-2xl border border-white/[0.12] bg-[#0A0E17]/85 backdrop-blur-2xl p-7 sm:p-9 shadow-[0_24px_80px_rgba(0,0,0,0.85)] overflow-hidden"
+      {/* Left Column: Scientific Research Identity (~58% desktop width) */}
+      <section
+        className="lg:w-[56%] xl:w-[58%] flex flex-col justify-between p-8 sm:p-12 lg:p-14 xl:p-16 border-b lg:border-b-0 lg:border-r border-white/[0.06] bg-gradient-to-b from-[#0d1015]/80 via-[#090b0e]/90 to-[#090b0e] relative z-10"
+        aria-labelledby="auth-product-title"
+      >
+        {/* Top Header: Brand Identity */}
+        <header>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-md p-1 -m-1"
+            aria-label="ExoVision AI home"
           >
-            {/* Luminous Top Golden Starlight Edge Beam */}
-            <div
-              aria-hidden="true"
-              className="absolute top-0 inset-x-8 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent pointer-events-none"
-            />
-
-            {/* Terminal Eyebrow & Headline */}
-            <div className="pb-5 border-b border-white/[0.08]">
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-amber-400/30 bg-amber-400/10 text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 mb-3 backdrop-blur-md">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b] animate-pulse" />
-                <span>{eyebrow}</span>
-              </div>
-
-              <h1
-                id="auth-form-title"
-                className="font-serif text-2xl sm:text-3xl font-medium text-white tracking-tight leading-tight"
-              >
-                {title}
-              </h1>
-
-              <p className="mt-2 text-xs text-zinc-400 leading-relaxed font-sans">
-                {description}
-              </p>
+            <div className="flex h-8 w-8 items-center justify-center rounded border border-white/[0.12] bg-[#11151b] text-cyan-400 transition-colors group-hover:border-cyan-400/40">
+              <RadioTower className="h-4 w-4" aria-hidden="true" />
             </div>
-
-            {/* Form Children */}
-            <div className="py-5">
-              {children}
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold tracking-tight text-white flex items-center gap-1.5" id="auth-product-title">
+                ExoVision AI
+                <span className="rounded border border-white/10 bg-white/5 px-1 py-0.2 text-[9px] font-mono text-zinc-400 font-normal">
+                  v2.4
+                </span>
+              </span>
+              <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-zinc-500">
+                Exoplanet Transit Screening
+              </span>
             </div>
+          </Link>
+        </header>
 
-            {/* Alternate Pathway Link */}
-            <div className="pt-5 border-t border-white/[0.08] flex items-center justify-between text-xs font-sans">
-              <span className="text-zinc-400">Need another pathway?</span>
-              <Link
-                href={alternateHref}
-                className="font-medium text-amber-300 hover:text-amber-200 hover:underline underline-offset-4 transition-colors"
-              >
-                {alternateLabel}
-              </Link>
+        {/* Center: Editorial Narrative & Scientific Waveform Motif */}
+        <div className="my-auto py-10 lg:py-16 max-w-xl">
+          <div className="inline-flex items-center gap-2 rounded border border-white/[0.08] bg-white/[0.02] px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-[0.15em] text-cyan-400 mb-6">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#38bdf8]" />
+            AI-Assisted Transit Analysis
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-semibold text-white tracking-tight leading-[1.15] mb-5 font-sans">
+            Evidence-first<br />
+            exoplanet candidate<br />
+            <span className="text-zinc-400">screening.</span>
+          </h1>
+
+          <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-lg mb-8 font-sans">
+            Analyze stellar light curves with a transparent pipeline built around measurable transit signals, classifier output, and scientific caveats.
+          </p>
+
+          {/* Restrained Scientific Waveform Motif (Pure SVG, subtle, decorative) */}
+          <div className="rounded border border-white/[0.06] bg-[#0c1017]/80 p-3.5 max-w-md" aria-hidden="true">
+            <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 mb-2">
+              <span className="flex items-center gap-1.5 text-zinc-400">
+                <span className="h-1 w-1 rounded-full bg-cyan-400" />
+                Transit Photometry Baseline
+              </span>
+              <span>P = 3.52 d · δ = 1.42%</span>
             </div>
-          </motion.div>
-
-          {/* Security Provenance Assurance */}
-          <div className="mt-5 flex items-center justify-center gap-2 text-zinc-500 text-[11px] font-mono text-center">
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-400/70 shrink-0" />
-            <span>Authenticated workspace · Deterministic ledger</span>
+            <svg className="w-full h-10" viewBox="0 0 400 40" fill="none">
+              <line x1="0" y1="14" x2="400" y2="14" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+              <path
+                d="M 0 14 L 130 14 C 150 14 165 32 200 32 C 235 32 250 14 270 14 L 400 14"
+                stroke="#38bdf8"
+                strokeWidth="1.25"
+                strokeLinecap="round"
+                opacity="0.8"
+              />
+            </svg>
           </div>
         </div>
 
-        {/* Right Column: Real Product Capabilities Showcase (Real Images & Telemetry) */}
-        <div className="lg:col-span-7 w-full">
-          <ProductCapabilitiesShowcase />
-        </div>
-      </div>
+        {/* Bottom: Research Assurance */}
+        <footer className="flex items-center gap-2.5 text-xs text-zinc-400 border-t border-white/[0.06] pt-5 max-w-md">
+          <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" aria-hidden="true" />
+          <span className="text-[11px] leading-relaxed">
+            Account-scoped workspace with authenticated observation ownership checks.
+          </span>
+        </footer>
+      </section>
 
-      {/* Bottom Footer Stamp */}
-      <footer className="w-full max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] font-mono text-zinc-500 relative z-10 py-2 border-t border-white/[0.04]">
-        <span>ExoVision AI v2.4 · NASA MAST Direct Access</span>
-        <span className="hidden sm:inline">SHA-256 Cryptographic Session Tokens</span>
-      </footer>
+      {/* Right Column: Authentication Form (~44% desktop width) */}
+      <section
+        className="lg:w-[44%] xl:w-[42%] flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 bg-[#090b0e] relative z-10"
+        aria-labelledby="auth-form-title"
+      >
+        <div className="my-auto w-full max-w-[440px] mx-auto py-6">
+          <div className="mb-6">
+            <p className="text-[10px] font-mono uppercase tracking-[0.14em] text-cyan-400 mb-1.5 font-medium">
+              {eyebrow}
+            </p>
+            <h2 id="auth-form-title" className="text-xl sm:text-2xl font-semibold tracking-tight text-white mb-2">
+              {title}
+            </h2>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              {description}
+            </p>
+          </div>
+
+          {children}
+
+          <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center justify-between text-xs text-zinc-400">
+            <span>Need another path?</span>
+            <Link
+              href={alternateHref}
+              className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors focus-visible:outline-none focus-visible:underline"
+            >
+              {alternateLabel}
+            </Link>
+          </div>
+
+          <div className="mt-4">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors focus-visible:outline-none focus-visible:underline"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Return to public overview</span>
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

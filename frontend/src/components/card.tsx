@@ -9,15 +9,22 @@ type CardProps = HTMLAttributes<HTMLDivElement> & {
 export function Card({
   children,
   className = "",
-  hudCorners,
-  glow,
+  hudCorners = false,
+  glow = "none",
   ...props
 }: CardProps) {
-  void hudCorners;
-  void glow;
+  const glowStyles =
+    glow === "cyan"
+      ? "border-primary/50 shadow-[0_0_20px_rgba(0,218,243,0.2)]"
+      : glow === "orange"
+      ? "border-secondary/50 shadow-[0_0_20px_rgba(255,182,142,0.2)]"
+      : glow === "purple"
+      ? "border-ai-accent/50 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+      : "";
+
   return (
     <div
-      className={`border border-stone-200/80 bg-[#FAF9F5] text-stone-900 ${className}`}
+      className={`glass-panel hud-border ${hudCorners ? "corner-bracket-tl corner-bracket-br" : ""} ${glowStyles} ${className}`}
       {...props}
     >
       {children}

@@ -3,11 +3,11 @@ import { InteractiveLineChart } from "@/components/charts/InteractiveLineChart";
 export function LightCurveChart({ time, flux }: { time: number[]; flux: number[] }) {
   return (
     <InteractiveLineChart
-      accent="#0284c7"
+      accent="#80d7e4"
       x={time}
-      xLabel="Observation Time (days)"
+      xLabel="Time (days)"
       y={flux}
-      yLabel="Relative Stellar Flux"
+      yLabel="Relative Flux"
       zoom
     />
   );
