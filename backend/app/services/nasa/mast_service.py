@@ -64,9 +64,27 @@ class _MastSearchCache:
 _search_cache = _MastSearchCache(maxsize=128, ttl_seconds=600.0)
 
 
+def _is_safe_mast_redirect_host(host: str | None) -> bool:
+    """Validate that HTTP redirects point exclusively to official STScI/MAST or S3 data endpoints."""
+    if not host:
+        return False
+    h = host.lower()
+    # Official Space Telescope Science Institute domains
+    if h == "stsci.edu" or h.endswith(".stsci.edu"):
+        return True
+    # Official STScI public data S3 buckets (TESS, Kepler, Hubble)
+    if h in {"stpubdata.s3.amazonaws.com", "stpubdata.s3.us-east-1.amazonaws.com"}:
+        return True
+    if h.startswith("stpubdata.s3.") and h.endswith(".amazonaws.com"):
+        return True
+    return False
+
+
 class _MastRedirectHandler(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        if urlsplit(newurl).hostname != "mast.stsci.edu":
+        host = (urlsplit(newurl).hostname or "").lower()
+        if not _is_safe_mast_redirect_host(host):
+            logger.warning("mast_unsafe_redirect host=%s url=%s", host, newurl)
             raise MastServiceError("MAST returned an unsafe redirect.")
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
@@ -127,6 +145,7 @@ class MastService:
         lookup = self._invoke(request)
         resolved = lookup.get("resolvedCoordinate") or []
         if not isinstance(resolved, list) or not resolved:
+            logger.info("TARGET_NOT_FOUND: target=%s", target)
             return []
         coordinate = resolved[0]
         if (
@@ -171,6 +190,15 @@ class MastService:
                 "mast:"
             ):
                 continue
+            # Filter out non-lightcurve products (target pixel files and data validation timeseries)
+            fn_lower = filename.lower()
+            subgroup = str(product.get("productSubGroupDescription", "")).upper()
+            if fn_lower.endswith(("_tp.fits", "-tp.fits", "_dvt.fits", "-dvt.fits")) or subgroup in {"TP", "DVT"}:
+                continue
+            # Filter out files that exceed the 25 MB pipeline limit so users aren't presented with un-importable items
+            size_bytes = _safe_size(product.get("size"))
+            if size_bytes > 25 * 1024 * 1024:
+                continue
             fits_count += 1
             if data_uri in seen_uris:
                 continue
@@ -186,12 +214,14 @@ class MastService:
                     "format": "FITS",
                     "filename": filename,
                     "data_uri": data_uri,
-                    "size_bytes": _safe_size(product.get("size")),
+                    "size_bytes": size_bytes,
                 }
             )
             if len(results) >= limit:
                 break
         logger.info("Light curve FITS files: %d target=%s", fits_count, target)
+        if not results:
+            logger.info("NO_COMPATIBLE_PRODUCTS: target=%s missions=%s", target, ",".join(missions))
         if use_cache and results:
             _search_cache.set(cache_key, results)
         return results
@@ -305,7 +335,20 @@ class MastService:
                             "MAST could not complete the archive request."
                         )
                     return payload
-            except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as error:
+            except TimeoutError as error:
+                logger.warning("MAST_TIMEOUT (attempt %d/%d): %s", attempt + 1, self.attempts, error)
+                last_error = error
+                self._retry_delay(attempt)
+            except HTTPError as error:
+                logger.warning("MAST_HTTP_ERROR (attempt %d/%d): code=%d reason=%s", attempt + 1, self.attempts, error.code, error.reason)
+                last_error = error
+                self._retry_delay(attempt)
+            except URLError as error:
+                logger.warning("MAST_CONNECTION_ERROR (attempt %d/%d): reason=%s", attempt + 1, self.attempts, error.reason)
+                last_error = error
+                self._retry_delay(attempt)
+            except json.JSONDecodeError as error:
+                logger.error("MAST_INVALID_RESPONSE (attempt %d/%d): JSON decode failed: %s", attempt + 1, self.attempts, error)
                 last_error = error
                 self._retry_delay(attempt)
         raise MastServiceError(

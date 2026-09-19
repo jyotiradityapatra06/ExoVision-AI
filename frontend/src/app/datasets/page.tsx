@@ -4,19 +4,23 @@ import {
   AlertCircle,
   ArrowRight,
   CalendarDays,
+  ChevronRight,
   Database,
   FileArchive,
   FileUp,
   FlaskConical,
+  Info,
   LoaderCircle,
   RotateCcw,
   Search,
+  Sparkles,
   Telescope,
   TriangleAlert,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PrecisionButton, SegmentedControl } from "@/components/ui";
@@ -26,6 +30,82 @@ import type { DatasetSearchResult } from "@/types/api";
 
 type Mission = "all" | "kepler" | "tess";
 type SearchState = "initial" | "loading" | "success-with-results" | "success-empty" | "error";
+
+interface PresetTarget {
+  name: string;
+  mission: Mission;
+  badge: string;
+  badgeStyle: string;
+  highlight: string;
+  description: string;
+}
+
+const PRESET_TARGETS: PresetTarget[] = [
+  {
+    name: "Kepler-10",
+    mission: "kepler",
+    badge: "Kepler",
+    badgeStyle: "border-amber-500/30 text-amber-400 bg-amber-950/40",
+    highlight: "First Confirmed Rocky Planet",
+    description: "Kepler-10b is a landmark rocky world with high SNR transit detections.",
+  },
+  {
+    name: "TOI-700",
+    mission: "tess",
+    badge: "TESS",
+    badgeStyle: "border-sky-500/30 text-sky-400 bg-sky-950/40",
+    highlight: "Habitable-Zone System",
+    description: "Multi-planet red dwarf system hosting Earth-sized candidate TOI-700 d.",
+  },
+  {
+    name: "TRAPPIST-1",
+    mission: "all",
+    badge: "K2 / TESS",
+    badgeStyle: "border-purple-500/30 text-purple-400 bg-purple-950/40",
+    highlight: "7 Earth-Sized Planets",
+    description: "Ultra-cool red dwarf system observed across multiple campaigns.",
+  },
+  {
+    name: "Kepler-452",
+    mission: "kepler",
+    badge: "Kepler",
+    badgeStyle: "border-amber-500/30 text-amber-400 bg-amber-950/40",
+    highlight: "Earth's Older Cousin",
+    description: "Near-Earth-sized candidate orbiting in a Sun-like star's habitable zone.",
+  },
+  {
+    name: "TOI-1338",
+    mission: "tess",
+    badge: "TESS",
+    badgeStyle: "border-sky-500/30 text-sky-400 bg-sky-950/40",
+    highlight: "Circumbinary Exoplanet",
+    description: "Famous planet orbiting two stars, discovered in TESS sector data.",
+  },
+  {
+    name: "K2-18",
+    mission: "kepler",
+    badge: "K2",
+    badgeStyle: "border-purple-500/30 text-purple-400 bg-purple-950/40",
+    highlight: "Sub-Neptune Atmosphere",
+    description: "Habitable-zone candidate with verified atmospheric spectroscopic signatures.",
+  },
+  {
+    name: "Kepler-8",
+    mission: "kepler",
+    badge: "Kepler",
+    badgeStyle: "border-amber-500/30 text-amber-400 bg-amber-950/40",
+    highlight: "Hot Jupiter Transit",
+    description: "Deep, periodic transit signature ideal for pipeline verification.",
+  },
+  {
+    name: "KIC 8462852",
+    mission: "kepler",
+    badge: "Kepler (KIC)",
+    badgeStyle: "border-amber-500/30 text-amber-400 bg-amber-950/40",
+    highlight: "Boyajian's Star",
+    description: "Famous for mysterious, extreme non-periodic photometric dips.",
+  },
+];
 
 export default function DatasetsPage() {
   return (
@@ -51,42 +131,56 @@ function DatasetExplorer() {
   const [searchState, setSearchState] = useState<SearchState>("initial");
   const [importing, setImporting] = useState<string | null>(null);
   const [stage, setStage] = useState<IntakeStage>("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<{ filename: string; message: string } | null>(null);
+  const activeRequestIdRef = useRef<number>(0);
 
   async function search(event: FormEvent) {
     event.preventDefault();
     await runSearch();
   }
 
-  async function runSearch() {
-    const normalized = target.trim();
-    if (!normalized || searchState === "loading") return;
+  async function runSearch(overrideTarget?: string, overrideMission?: Mission) {
+    const queryTarget = (overrideTarget !== undefined ? overrideTarget : target).trim();
+    const queryMission = overrideMission !== undefined ? overrideMission : mission;
+    if (!queryTarget) return;
+
+    if (overrideTarget !== undefined) setTarget(overrideTarget);
+    if (overrideMission !== undefined) setMission(overrideMission);
+
+    const currentRequestId = ++activeRequestIdRef.current;
+
     setSearchState("loading");
-    setError(null);
+    setSearchError(null);
+    setActionError(null);
     setResults([]);
+
     try {
-      const found = await api.searchDatasets(normalized, mission);
+      const found = await api.searchDatasets(queryTarget, queryMission);
+      if (currentRequestId !== activeRequestIdRef.current) return;
       setResults(found);
       setSearchState(found.length > 0 ? "success-with-results" : "success-empty");
     } catch (caught) {
+      if (currentRequestId !== activeRequestIdRef.current) return;
       if (caught instanceof ApiError && caught.status === 429) {
         if (typeof caught.retryAfter === "number" && caught.retryAfter > 0) {
-          setError(
+          setSearchError(
             `MAST search is temporarily rate limited. Please wait ${caught.retryAfter} second${caught.retryAfter === 1 ? "" : "s"} before searching again.`,
           );
         } else {
-          setError("MAST search is temporarily rate limited. Wait briefly before searching again.");
+          setSearchError("MAST search is temporarily rate limited. Wait briefly before searching again.");
         }
       } else if (caught instanceof ApiError) {
-        setError(
+        setSearchError(
           caught.status === 0 && caught.message.includes("timed out")
             ? "NASA archive search timed out. The archive did not respond within the allowed time. Try the search again."
             : caught.message,
         );
       } else {
-        setError("The MAST archive could not be searched safely.");
+        setSearchError("The MAST archive could not be searched safely.");
       }
       setSearchState("error");
+      setResults([]);
     }
   }
 
@@ -94,13 +188,16 @@ function DatasetExplorer() {
     if (importing) return;
     setImporting(item.data_uri);
     setStage("downloading");
-    setError(null);
+    setActionError(null);
     try {
       const file = await api.downloadDataset(item.data_uri, item.filename);
       const analysisId = await startObservation(file, setStage);
       router.push(`/results/${analysisId}`);
     } catch (caught) {
-      setError(intakeError(caught));
+      setActionError({
+        filename: item.filename,
+        message: intakeError(caught),
+      });
       setImporting(null);
       setStage("idle");
     }
@@ -172,7 +269,7 @@ function DatasetExplorer() {
                   type="text"
                   value={target}
                   onChange={(e) => setTarget(e.target.value)}
-                  placeholder="e.g. Kepler-10"
+                  placeholder="e.g. Kepler-10, TOI-700, TRAPPIST-1, TIC 150428135"
                   required
                   maxLength={120}
                   className="w-full rounded-md border border-white/[0.10] bg-[#090b0e] pl-9 pr-3.5 py-2 text-xs text-white placeholder-zinc-500 transition-colors focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 font-sans"
@@ -198,8 +295,37 @@ function DatasetExplorer() {
             </div>
           </div>
 
-          {/* Mission Filter Selector */}
-          <div className="pt-2 border-t border-white/[0.04] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Suggested Quick-Search Target Chips */}
+          <div className="pt-1 flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium mr-1">
+              <Sparkles className="h-3 w-3 text-cyan-400" />
+              <span>Suggested:</span>
+            </span>
+            {PRESET_TARGETS.map((preset) => {
+              const isSelected = target.trim().toLowerCase() === preset.name.toLowerCase();
+              return (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => void runSearch(preset.name, preset.mission)}
+                  title={`${preset.highlight}: ${preset.description}`}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-xs font-mono transition shadow-sm ${
+                    isSelected
+                      ? "border-cyan-400 bg-cyan-950/60 text-cyan-300 ring-1 ring-cyan-400/40"
+                      : "border-white/[0.08] bg-[#090b0e] text-zinc-300 hover:border-cyan-500/40 hover:text-white hover:bg-white/[0.03]"
+                  }`}
+                >
+                  <span className="font-medium">{preset.name}</span>
+                  <span className={`text-[9px] px-1 py-0.2 rounded border ${preset.badgeStyle}`}>
+                    {preset.badge}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mission Filter Selector & Guidance Notes */}
+          <div className="pt-3 border-t border-white/[0.04] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
                 Mission:
@@ -215,18 +341,41 @@ function DatasetExplorer() {
               />
             </div>
 
-            <p className="text-[11px] text-zinc-500 font-mono">
-              Search by catalog ID, target name, or TIC number. Independent research tooling.
-            </p>
+            <div className="flex items-center gap-3 text-[11px] text-zinc-400 font-mono">
+              <span className="flex items-center gap-1">
+                <Info className="h-3 w-3 text-cyan-400 shrink-0" />
+                <span>Search by star name, KOI, TIC, or KIC number</span>
+              </span>
+              <Link
+                href="/demo"
+                className="text-purple-300 hover:text-purple-200 transition underline underline-offset-2 shrink-0"
+              >
+                Offline demo &rarr;
+              </Link>
+            </div>
           </div>
         </form>
       </section>
 
-      {/* Inline Non-Fatal Error Alert */}
-      {error && searchState !== "error" && (
-        <div role="alert" className="mt-4 flex items-start gap-2.5 rounded-md border border-rose-500/30 bg-rose-500/[0.08] p-3 text-xs text-rose-300">
-          <AlertCircle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
-          <span>{error}</span>
+      {/* Action-specific Error Alert (e.g. download or pipeline launch failure) */}
+      {actionError && (
+        <div role="alert" className="mt-4 flex items-start justify-between gap-2.5 rounded-md border border-amber-500/30 bg-amber-500/[0.08] p-3.5 text-xs text-amber-200">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />
+            <div>
+              <span className="font-semibold text-white">Observation Import Notice: </span>
+              <span>Could not retrieve <span className="font-mono text-amber-300">{actionError.filename}</span>. {actionError.message}</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionError(null)}
+            className="text-amber-400 hover:text-white p-0.5 transition shrink-0"
+            title="Dismiss notice"
+            aria-label="Dismiss notice"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
 
@@ -264,18 +413,88 @@ function DatasetExplorer() {
 
         {/* State: Initial Unsearched */}
         {searchState === "initial" && (
-          <div className="py-12 text-center max-w-md mx-auto">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.10] bg-[#11151b] text-cyan-400 mx-auto mb-4">
-              <Database className="h-6 w-6" aria-hidden="true" />
+          <div className="py-8 max-w-4xl mx-auto space-y-8">
+            <div className="text-center max-w-lg mx-auto">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 mx-auto mb-3 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                <Database className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <h3 className="text-base sm:text-lg font-semibold text-white tracking-tight">
+                Explore Public Astronomical Light Curves
+              </h3>
+              <p className="mt-1.5 text-xs text-zinc-400 leading-relaxed">
+                Query confirmed exoplanets, candidates, or host stars directly from the Mikulski Archive for Space Telescopes. Click any verified target below to load public observations instantly.
+              </p>
             </div>
-            <h3 className="text-base font-semibold text-white">Search the MAST Archive</h3>
-            <p className="mt-1.5 text-xs text-zinc-400 leading-relaxed">
-              Enter a stellar target identifier (e.g. <span className="text-zinc-200 font-mono">Kepler-10</span>) to inspect public light-curve products from Kepler, K2, or TESS.
-            </p>
-            <div className="mt-4 flex items-center justify-center gap-2 text-[11px] font-mono text-zinc-500">
-              <span className="rounded border border-white/[0.08] px-2 py-0.5">Kepler</span>
-              <span className="rounded border border-white/[0.08] px-2 py-0.5">K2</span>
-              <span className="rounded border border-white/[0.08] px-2 py-0.5">TESS</span>
+
+            {/* Curated Target Quick-Start Cards */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                  <span>Featured Exploration Targets</span>
+                </span>
+                <span className="text-[11px] font-mono text-zinc-500">
+                  Click card to query
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {PRESET_TARGETS.slice(0, 4).map((preset) => (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    onClick={() => void runSearch(preset.name, preset.mission)}
+                    className="group relative p-3.5 rounded-lg border border-white/[0.08] bg-[#090b0e] hover:border-cyan-500/40 hover:bg-[#0c1017] transition text-left flex flex-col justify-between shadow-sm"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="font-mono text-sm font-semibold text-white group-hover:text-cyan-300 transition">
+                          {preset.name}
+                        </span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded border font-mono ${preset.badgeStyle}`}>
+                          {preset.badge}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-medium text-cyan-400/90 mb-1">
+                        {preset.highlight}
+                      </p>
+                      <p className="text-[11px] text-zinc-400 leading-snug line-clamp-2">
+                        {preset.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-3 pt-2.5 border-t border-white/[0.04] flex items-center justify-between text-[10px] font-mono text-zinc-500 group-hover:text-cyan-400 transition">
+                      <span>Query MAST archive</span>
+                      <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Target Nomenclature & Format Guide */}
+            <div className="rounded-lg border border-white/[0.06] bg-[#080a0e] p-4 sm:p-5">
+              <h4 className="text-xs font-semibold text-zinc-200 uppercase tracking-wider font-mono mb-2 flex items-center gap-2">
+                <Info className="h-3.5 w-3.5 text-cyan-400" />
+                <span>Supported Astronomical Naming Conventions</span>
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded border border-white/[0.04] bg-[#0c1015]">
+                  <span className="font-mono font-semibold text-amber-400 text-[11px]">Kepler & K2</span>
+                  <p className="text-zinc-300 mt-1 font-mono text-[11px]">Kepler-10, Kepler-452, K2-18</p>
+                  <p className="text-zinc-500 text-[10px] mt-0.5">Or use Kepler Input Catalog: <span className="text-zinc-400 font-mono">KIC 6922244</span></p>
+                </div>
+                <div className="p-3 rounded border border-white/[0.04] bg-[#0c1015]">
+                  <span className="font-mono font-semibold text-sky-400 text-[11px]">TESS Missions</span>
+                  <p className="text-zinc-300 mt-1 font-mono text-[11px]">TOI-700, TOI-1338, TOI-849</p>
+                  <p className="text-zinc-500 text-[10px] mt-0.5">Or use TESS Input Catalog: <span className="text-zinc-400 font-mono">TIC 150428135</span></p>
+                </div>
+                <div className="p-3 rounded border border-white/[0.04] bg-[#0c1015]">
+                  <span className="font-mono font-semibold text-purple-400 text-[11px]">Host Stars & Systems</span>
+                  <p className="text-zinc-300 mt-1 font-mono text-[11px]">TRAPPIST-1, WASP-121, HD 209458</p>
+                  <p className="text-zinc-500 text-[10px] mt-0.5">Or test offline: <Link href="/demo" className="text-purple-300 hover:underline">5-day Synthetic Demo</Link></p>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -288,7 +507,7 @@ function DatasetExplorer() {
             </div>
             <h3 className="text-base font-semibold text-white">Archive search unavailable</h3>
             <p className="mt-1.5 text-xs text-rose-300/90 leading-relaxed">
-              {error ?? "The archive search could not be completed. The NASA MAST service may be temporarily unavailable."}
+              {searchError ?? "The archive search could not be completed. The NASA MAST service may be temporarily unavailable."}
             </p>
             <div className="mt-5">
               <PrecisionButton
@@ -308,15 +527,36 @@ function DatasetExplorer() {
 
         {/* State: Empty Results */}
         {searchState === "success-empty" && (
-          <div className="py-10 text-center max-w-md mx-auto">
+          <div className="py-10 text-center max-w-lg mx-auto">
             <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.10] bg-[#11151b] text-zinc-400 mx-auto mb-4">
               <Telescope className="h-6 w-6" aria-hidden="true" />
             </div>
             <h3 className="text-base font-semibold text-white">No compatible light curves found</h3>
             <p className="mt-1.5 text-xs text-zinc-400 leading-relaxed">
-              No public observations matched <span className="text-white font-mono">&ldquo;{target}&rdquo;</span> under the selected mission criteria. Verify the catalog name, choose all missions, or test with the bundled synthetic demo.
+              No public observations matched <span className="text-white font-mono">&ldquo;{target}&rdquo;</span> under the selected mission criteria. Try selecting &ldquo;All Missions&rdquo;, or choose one of these verified targets:
             </p>
-            <div className="mt-5">
+
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {["Kepler-10", "TOI-700", "TRAPPIST-1", "Kepler-452"].map((presetName) => {
+                const item = PRESET_TARGETS.find((p) => p.name === presetName);
+                if (!item) return null;
+                return (
+                  <button
+                    key={item.name}
+                    type="button"
+                    onClick={() => void runSearch(item.name, item.mission)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-white/[0.10] bg-[#090b0e] hover:border-cyan-400 hover:text-white text-xs font-mono text-zinc-300 transition"
+                  >
+                    <span>{item.name}</span>
+                    <span className={`text-[9px] px-1 py-0.2 rounded border ${item.badgeStyle}`}>
+                      {item.badge}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-6">
               <PrecisionButton href="/demo" variant="secondary" size="sm">
                 <span className="flex items-center gap-1.5">
                   <FlaskConical className="h-3 w-3 text-purple-400" />

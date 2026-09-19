@@ -60,6 +60,9 @@ export function intakeError(error: unknown): string {
     return "Candidate classification is temporarily unavailable.";
   }
   if (error.status === 502) {
+    if (error.message && !error.message.toLowerCase().includes("api request failed") && !error.message.toLowerCase().includes("bad gateway")) {
+      return error.message;
+    }
     return "The NASA MAST archive is temporarily unavailable. Please retry shortly.";
   }
   if (error.status >= 500) {

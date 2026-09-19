@@ -17,6 +17,26 @@ export class ApiError extends Error {
   }
 }
 
+function errorMessage(payload: ApiErrorPayload | null, fallback: string): string {
+  if (typeof payload?.detail === "string" && payload.detail.trim()) {
+    return payload.detail;
+  }
+  if (Array.isArray(payload?.detail)) {
+    const messages = payload.detail
+      .map((issue) => issue.msg?.trim())
+      .filter((message): message is string => Boolean(message));
+    if (messages.length) return [...new Set(messages)].join(" ");
+  }
+  return fallback;
+}
+
+function retryAfterSeconds(response: Response): number | undefined {
+  const value = response.headers.get("retry-after");
+  if (!value) return undefined;
+  const seconds = Number.parseInt(value, 10);
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : undefined;
+}
+
 async function request<T>(path: string, init?: RequestInit, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<T> {
   const isFormData = init?.body instanceof FormData;
   const token = getStoredToken();
@@ -46,10 +66,11 @@ async function request<T>(path: string, init?: RequestInit, timeoutMs = DEFAULT_
   if (!response.ok) {
     if (response.status === 401 && token) clearToken();
     const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
-    const detail = typeof payload?.detail === "string" ? payload.detail : "The ExoVision API request failed.";
-    const retryHeader = response.headers.get("retry-after");
-    const retryAfter = retryHeader ? parseInt(retryHeader, 10) : undefined;
-    throw new ApiError(response.status, detail, Number.isFinite(retryAfter) ? retryAfter : undefined);
+    throw new ApiError(
+      response.status,
+      errorMessage(payload, "The ExoVision API request failed."),
+      retryAfterSeconds(response),
+    );
   }
 
   return response.json() as Promise<T>;
@@ -72,9 +93,11 @@ async function downloadFile(path: string, fallbackName: string): Promise<File> {
   if (!response.ok) {
     if (response.status === 401 && token) clearToken();
     const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
-    const retryHeader = response.headers.get("retry-after");
-    const retryAfter = retryHeader ? parseInt(retryHeader, 10) : undefined;
-    throw new ApiError(response.status, typeof payload?.detail === "string" ? payload.detail : "Dataset download failed.", Number.isFinite(retryAfter) ? retryAfter : undefined);
+    throw new ApiError(
+      response.status,
+      errorMessage(payload, "Dataset download failed."),
+      retryAfterSeconds(response),
+    );
   }
   const disposition = response.headers.get("content-disposition") ?? "";
   const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1] ?? fallbackName;
@@ -114,7 +137,12 @@ export const api = {
     }
     if (!response.ok) {
       if (response.status === 401 && token) clearToken();
-      throw new ApiError(response.status, "The scientific report could not be downloaded.");
+      const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
+      throw new ApiError(
+        response.status,
+        errorMessage(payload, "The scientific report could not be downloaded."),
+        retryAfterSeconds(response),
+      );
     }
     return response.blob();
   },
