@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { ObservatoryCard, PrecisionButton, SegmentedControl, StatusBadge } from "@/components/ui";
+import { PrecisionButton, SegmentedControl, StatusBadge } from "@/components/ui";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, ApiError } from "@/lib/api";
 import type { AnalysisHistoryPage, AnalysisSummaryItem } from "@/types/api";
@@ -398,7 +398,9 @@ function Dashboard() {
                                     : "non-detection"
                                   : item.status === "processing"
                                     ? "processing"
-                                    : "failed"
+                                    : item.status === "uploaded"
+                                      ? "ready"
+                                      : "failed"
                               }
                             />
                           </td>
@@ -465,7 +467,9 @@ function Dashboard() {
                                 : "non-detection"
                               : item.status === "processing"
                                 ? "processing"
-                                : "failed"
+                                : item.status === "uploaded"
+                                  ? "ready"
+                                  : "failed"
                           }
                         />
                       </div>

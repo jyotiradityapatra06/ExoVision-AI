@@ -1,25 +1,20 @@
 "use client";
 
 import {
-  Activity,
   AlertTriangle,
   ArrowLeft,
   BookOpen,
   Check,
-  Clock,
   Database,
   FileText,
   HelpCircle,
-  Layers,
   Orbit,
   RotateCcw,
-  ScanSearch,
   Share2,
-  Sparkles,
   Telescope,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { FoldedCurveChart } from "@/components/charts/FoldedCurveChart";
 import { LightCurveChart } from "@/components/charts/LightCurveChart";
@@ -27,7 +22,7 @@ import { PeriodogramChart } from "@/components/charts/PeriodogramChart";
 import { ReportButton } from "@/components/reports/ReportButton";
 import { ExplanationPanel } from "@/components/results/ExplanationPanel";
 import { FeatureImportanceChart } from "@/components/results/FeatureImportanceChart";
-import { ConfidenceGauge, ObservatoryCard, StatusBadge } from "@/components/ui";
+import { StatusBadge } from "@/components/ui";
 import type { AnalysisResult } from "@/types/api";
 
 function formatNumber(value: number | null | undefined, digits = 4, suffix = ""): string {
@@ -48,22 +43,12 @@ export function ResultsDashboard({
   const displayTarget = filename || analysis.analysis_id;
   const sampleCount = analysis.lightcurve.sample_count;
 
-  const [utcTime, setUtcTime] = useState("");
   const [copiedBibtex, setCopiedBibtex] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  useEffect(() => {
-    const update = () => {
-      setUtcTime(new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC");
-    };
-    update();
-    const timer = setInterval(update, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   function copyBibtex() {
     const year = new Date().getFullYear();
-    const bib = `@article{exovision_${analysis.analysis_id.slice(0, 8)},\n  title={Candidate Screening Report for ${displayTarget}},\n  author={{ExoVision AI Astrophysical Pipeline}},\n  journal={ExoVision Candidate Screening Engine v2.4},\n  year={${year}},\n  url={${typeof window !== "undefined" ? window.location.href : ""}}\n}`;
+    const bib = `@article{exovision_${analysis.analysis_id.slice(0, 8)},\n  title={Candidate Screening Report for ${displayTarget}},\n  author={{ExoVision AI Astrophysical Pipeline}},\n  journal={ExoVision Candidate Screening Engine},\n  year={${year}},\n  url={${typeof window !== "undefined" ? window.location.href : ""}}\n}`;
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       void navigator.clipboard.writeText(bib);
       setCopiedBibtex(true);
@@ -98,12 +83,12 @@ export function ResultsDashboard({
         </Link>
       </div>
 
-      {/* Result Header */}
+      {/* 1. Observation Identity & Header */}
       <header className="results-header" aria-labelledby="result-title">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
           <div>
             <div className="results-header-top flex flex-wrap items-center gap-2">
-              <p className="results-kicker">ANALYSIS / RESULTS</p>
+              <p className="results-kicker">SCIENTIFIC EVIDENCE DOSSIER / OBSERVATION ANALYSIS</p>
               <div className="results-status-badges flex items-center gap-1.5">
                 <StatusBadge status="completed" />
                 {hasCandidate ? (
@@ -112,19 +97,15 @@ export function ResultsDashboard({
                   <StatusBadge status="non-detection" />
                 )}
               </div>
-              <div className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] bg-white/[0.02] px-2 py-0.5 text-[10px] font-mono text-zinc-400">
-                <Clock className="h-3 w-3 text-cyan-400" />
-                <span>{utcTime || "UTC CLOCK"}</span>
-              </div>
             </div>
 
             <h1 className="results-title" id="result-title">
-              {hasCandidate ? "Candidate screening result" : "Observation screening result"}
+              {hasCandidate ? "Candidate screening dossier" : "Observation screening dossier"}
             </h1>
 
             <div className="results-meta">
               <span>
-                Target / file: <code>{displayTarget}</code>
+                Target / observation: <code>{displayTarget}</code>
               </span>
               <span>
                 <Database className="h-3.5 w-3.5" aria-hidden="true" />
@@ -135,7 +116,7 @@ export function ResultsDashboard({
                 <span>Observation baseline: {observationDuration} days</span>
               </span>
               <span>
-                ID: <code>{analysis.analysis_id}</code>
+                Analysis ID: <code>{analysis.analysis_id}</code>
               </span>
             </div>
           </div>
@@ -165,103 +146,83 @@ export function ResultsDashboard({
         </div>
       </header>
 
+      {/* Dossier Reference Tabs */}
       <nav className="results-reference-tabs" aria-label="Analysis result sections">
-        <a href="#result-overview">Overview</a>
+        <a href="#classification-summary">Classification</a>
+        <a href="#signal-parameters">Parameters</a>
         <a href="#light-curve">Light Curve</a>
         <a href="#phase-folded">Phase Folded</a>
-        <a href="#periodogram">Periodogram</a>
-        <a href="#ai-evidence">AI Evidence</a>
-        <a href="#candidates">Parameters</a>
+        <a href="#periodogram">Period Search</a>
+        {hasCandidate && <a href="#model-evidence">Model Evidence</a>}
+        <a href="#param-registry">Registry</a>
+        <a href="#publication-export">Export</a>
       </nav>
 
-      {/* Candidate Summary or Negative Result Banner */}
+      {/* 2. Classification Summary */}
       {hasCandidate ? (
-        <section className="results-metrics-strip" id="result-overview" aria-label="Candidate measurements">
-          {/* 1. Period */}
-          <article className="results-metric-card">
-            <header>
-              <p className="label">Orbital Period</p>
-              <Orbit className="h-4 w-4" aria-hidden="true" />
-            </header>
-            <div>
-              <p className="value">{formatNumber(analysis.transit.period, 4, "d")}</p>
-              <p className="subtext">
-                {analysis.transit.period != null
-                  ? `${(analysis.transit.period * 24).toFixed(2)} hours`
-                  : "Unavailable"}
+        <section className="results-section" id="classification-summary" aria-labelledby="class-summary-title">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6 p-5 border border-white/[0.08] bg-gradient-to-br from-[#081018]/90 to-[#040a10]/95">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="results-kicker">CLASSIFICATION SUMMARY</span>
+                <span className="results-badge results-badge-candidate">Screening Candidate</span>
+              </div>
+              <h2 className="text-xl md:text-2xl font-semibold text-white tracking-tight" id="class-summary-title">
+                {candidate.classification}
+              </h2>
+              {candidate.explanation.summary && (
+                <p className="mt-1 text-xs md:text-sm leading-relaxed text-slate-300 max-w-2xl">
+                  {candidate.explanation.summary}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-col justify-between border border-white/[0.08] bg-[#060a0f]/80 p-4">
+              <div className="flex items-center justify-between">
+                <span className="results-kicker">MODEL SCORE</span>
+                <span className="font-mono text-[11px] text-slate-400">Random Forest</span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="font-mono text-2xl font-bold text-cyan-300">
+                  {(candidate.confidence * 100).toFixed(1)}%
+                </span>
+                <span className="font-mono text-xs text-slate-400">
+                  ({candidate.confidence.toFixed(4)})
+                </span>
+              </div>
+              <div
+                className="results-score-track mt-2"
+                role="progressbar"
+                aria-label="Model screening score"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(candidate.confidence * 100)}
+              >
+                <div
+                  className="results-score-fill"
+                  style={{ width: `${Math.max(0, Math.min(100, candidate.confidence * 100))}%` }}
+                />
+              </div>
+              <p className="mt-2 text-[10px] text-slate-500 leading-snug">
+                Supervised classification score from bundled Random Forest estimator. Diagnostic vetting metric; does not represent empirical exoplanetary confirmation.
               </p>
             </div>
-          </article>
-
-          {/* 2. Transit Depth */}
-          <article className="results-metric-card">
-            <header>
-              <p className="label">Transit Depth</p>
-              <ScanSearch className="h-4 w-4" aria-hidden="true" />
-            </header>
-            <div>
-              <p className="value">
-                {analysis.transit.depth != null
-                  ? `${(analysis.transit.depth * 100).toFixed(4)}%`
-                  : "—"}
-              </p>
-              <p className="subtext">
-                {analysis.transit.depth != null
-                  ? `${Math.round(analysis.transit.depth * 1_000_000).toLocaleString()} ppm`
-                  : "Unavailable"}
-              </p>
-            </div>
-          </article>
-
-          {/* 3. Duration */}
-          <article className="results-metric-card">
-            <header>
-              <p className="label">Transit Duration</p>
-              <Activity className="h-4 w-4" aria-hidden="true" />
-            </header>
-            <div>
-              <p className="value">{formatNumber(analysis.transit.duration, 4, "d")}</p>
-              <p className="subtext">
-                {analysis.transit.duration != null
-                  ? `${(analysis.transit.duration * 24).toFixed(2)} hours`
-                  : "Unavailable"}
-              </p>
-            </div>
-          </article>
-
-          {/* 4. Transit SNR */}
-          <article className="results-metric-card">
-            <header>
-              <p className="label">Transit SNR</p>
-              <Layers className="h-4 w-4" aria-hidden="true" />
-            </header>
-            <div>
-              <p className="value">{formatNumber(analysis.transit.snr, 2)}</p>
-              <p className="subtext">BLS detection ratio</p>
-            </div>
-          </article>
-
-          {/* 5. Model Score */}
-          <ObservatoryCard className="results-metric-card results-score-card" variant="reticle">
-            <header>
-              <p className="label text-cyan-300">Model Score</p>
-              <Sparkles className="h-4 w-4 text-cyan-300" aria-hidden="true" />
-            </header>
-            <div>
-              <ConfidenceGauge value={candidate?.confidence ?? 0} />
-            </div>
-          </ObservatoryCard>
+          </div>
         </section>
       ) : (
-        <section className="results-negative-banner" aria-label="Negative detection outcome">
+        <section className="results-negative-banner" id="classification-summary" aria-label="Negative detection outcome">
           <div className="results-negative-banner-main">
             <div className="results-negative-banner-icon">
               <AlertTriangle className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
-              <h2>No strong transit-like candidate identified</h2>
+              <div className="flex items-center gap-2">
+                <span className="results-kicker text-amber-400/80">DETECTION SEARCH OUTCOME</span>
+                <span className="results-badge results-badge-nocandidate">Non-Detection</span>
+              </div>
+              <h2 className="mt-1">No periodic transit candidate identified</h2>
               <p>
-                The Box Least Squares (BLS) periodogram search completed across all trial orbital frequencies for this observation, but did not detect periodic dips exceeding the detection criteria (SNR &ge; 7.0). Consequently, no candidate was submitted for machine-learning feature classification.
+                The Box Least Squares (BLS) periodogram search completed across all trial orbital frequencies for this observation, but did not detect periodic dips meeting the detection criteria for transit extraction. Consequently, no candidate was submitted for machine-learning feature classification.
               </p>
               <p className="mt-2 text-slate-500 font-mono text-xs">
                 A non-detection is a valid scientific outcome. Stellar variability, photometric noise, or lack of transits along the line of sight are common in unvetted stellar curves.
@@ -271,12 +232,93 @@ export function ResultsDashboard({
         </section>
       )}
 
-      {/* Visualizations Section */}
+      {/* 3. Signal Parameters Strip (Compact Scientific Strip) */}
+      <section className="mt-6 border border-white/[0.08] bg-[#080d13]" id="signal-parameters" aria-label="Signal parameters">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.07] bg-white/[0.015]">
+          <p className="results-kicker">MEASURED SIGNAL PARAMETERS</p>
+          <span className="text-[11px] font-mono text-slate-500">BLS Transit Fit</span>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/[0.07]">
+          {/* 1. Period */}
+          <div className="bg-[#080d13] p-3.5 flex flex-col justify-between min-h-[90px]">
+            <span className="font-mono text-[10px] uppercase text-[#647682] tracking-wider font-semibold">Orbital Period (P)</span>
+            <div className="flex items-baseline gap-1.5 mt-1.5">
+              <span className="font-mono text-lg md:text-xl font-semibold text-[#f1f6f8] tracking-tight">
+                {formatNumber(analysis.transit.period, 4)}
+              </span>
+              <span className="font-mono text-xs text-cyan-400">days</span>
+            </div>
+            <span className="font-mono text-[11px] text-[#71828d] mt-1">
+              {analysis.transit.period != null
+                ? `${(analysis.transit.period * 24).toFixed(2)} hrs`
+                : "Unavailable"}
+            </span>
+          </div>
+
+          {/* 2. Transit Depth */}
+          <div className="bg-[#080d13] p-3.5 flex flex-col justify-between min-h-[90px]">
+            <span className="font-mono text-[10px] uppercase text-[#647682] tracking-wider font-semibold">Transit Depth (δ)</span>
+            <div className="flex items-baseline gap-1.5 mt-1.5">
+              <span className="font-mono text-lg md:text-xl font-semibold text-[#f1f6f8] tracking-tight">
+                {analysis.transit.depth != null
+                  ? (analysis.transit.depth * 100).toFixed(4)
+                  : "—"}
+              </span>
+              <span className="font-mono text-xs text-cyan-400">%</span>
+            </div>
+            <span className="font-mono text-[11px] text-[#71828d] mt-1">
+              {analysis.transit.depth != null
+                ? `${Math.round(analysis.transit.depth * 1_000_000).toLocaleString()} ppm`
+                : "Unavailable"}
+            </span>
+          </div>
+
+          {/* 3. Duration */}
+          <div className="bg-[#080d13] p-3.5 flex flex-col justify-between min-h-[90px]">
+            <span className="font-mono text-[10px] uppercase text-[#647682] tracking-wider font-semibold">Transit Duration (T₁₄)</span>
+            <div className="flex items-baseline gap-1.5 mt-1.5">
+              <span className="font-mono text-lg md:text-xl font-semibold text-[#f1f6f8] tracking-tight">
+                {formatNumber(analysis.transit.duration, 4)}
+              </span>
+              <span className="font-mono text-xs text-cyan-400">days</span>
+            </div>
+            <span className="font-mono text-[11px] text-[#71828d] mt-1">
+              {analysis.transit.duration != null
+                ? `${(analysis.transit.duration * 24).toFixed(2)} hrs`
+                : "Unavailable"}
+            </span>
+          </div>
+
+          {/* 4. Center Epoch */}
+          <div className="bg-[#080d13] p-3.5 flex flex-col justify-between min-h-[90px]">
+            <span className="font-mono text-[10px] uppercase text-[#647682] tracking-wider font-semibold">Center Epoch (t₀)</span>
+            <div className="flex items-baseline gap-1.5 mt-1.5">
+              <span className="font-mono text-lg md:text-xl font-semibold text-[#f1f6f8] tracking-tight">
+                {formatNumber(analysis.transit.epoch, 4)}
+              </span>
+              <span className="font-mono text-xs text-cyan-400">days</span>
+            </div>
+          </div>
+
+          {/* 5. Transit SNR */}
+          <div className="bg-[#080d13] p-3.5 flex flex-col justify-between min-h-[90px]">
+            <span className="font-mono text-[10px] uppercase text-[#647682] tracking-wider font-semibold">Transit SNR</span>
+            <div className="flex items-baseline gap-1.5 mt-1.5">
+              <span className="font-mono text-lg md:text-xl font-semibold text-[#f1f6f8] tracking-tight">
+                {formatNumber(analysis.transit.snr, 2)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Diagnostic Evidence (Figures 01–03) */}
       <section className="results-section" aria-labelledby="figures-heading">
         <div className="results-section-header">
           <p className="results-kicker">FIGURE SERIES 01–03</p>
           <h2 id="figures-heading">Observation visualizations</h2>
-          <p>Interactive photometric measurements, periodic phase alignment, and BLS spectral power</p>
+          <p>Interactive photometric measurements, periodic phase alignment, and Box Least Squares (BLS) period search diagnostic</p>
         </div>
 
         <div className="results-charts-grid">
@@ -309,8 +351,8 @@ export function ResultsDashboard({
                 <dd>{sampleCount.toLocaleString()} points</dd>
               </div>
               <div>
-                <dt>Normalized Mean</dt>
-                <dd>1.0000 flux</dd>
+                <dt>Flux Normalization</dt>
+                <dd>Relative Median</dd>
               </div>
             </dl>
           </article>
@@ -367,16 +409,16 @@ export function ResultsDashboard({
             </dl>
           </article>
 
-          {/* Figure 03: BLS Periodogram Spectrum */}
+          {/* Figure 03: BLS Period Search Diagnostic */}
           <article className="results-chart-panel col-span-full" id="periodogram" aria-labelledby="fig-03-title">
             <header className="results-chart-header">
               <div>
-                <p className="results-kicker">FIGURE 03 / SPECTRAL FREQUENCY SEARCH</p>
-                <h3 id="fig-03-title">Box Least Squares (BLS) periodogram</h3>
-                <p>Detection power spectrum vs. trial orbital periods with peak and harmonic markers</p>
+                <p className="results-kicker">FIGURE 03 / PERIOD SEARCH DIAGNOSTIC</p>
+                <h3 id="fig-03-title">Period Search Diagnostic</h3>
+                <p>Diagnostic visualization derived from the detected BLS peak period and SNR. Raw periodogram samples are not returned by the current analysis API.</p>
               </div>
               <span className="results-chart-badge">
-                <Activity className="h-3 w-3" aria-hidden="true" />
+                <Orbit className="h-3 w-3" aria-hidden="true" />
                 <span>BLS SNR {formatNumber(analysis.transit.snr, 2)}</span>
               </span>
             </header>
@@ -387,31 +429,27 @@ export function ResultsDashboard({
                 height={260}
               />
             </div>
-            <dl className="results-chart-footer">
+            <dl className="results-chart-footer grid-cols-2">
               <div>
-                <dt>Spectral Peak</dt>
+                <dt>Peak Period</dt>
                 <dd>{formatNumber(analysis.transit.period, 4, "d")}</dd>
               </div>
               <div>
-                <dt>Harmonic Invariant</dt>
-                <dd>P/2, P, 2P checked</dd>
-              </div>
-              <div>
-                <dt>Detection Threshold</dt>
-                <dd>SNR &ge; 7.0</dd>
+                <dt>Peak SNR</dt>
+                <dd>{formatNumber(analysis.transit.snr, 2)}</dd>
               </div>
             </dl>
           </article>
         </div>
       </section>
 
-      {/* Model Interpretation & Evidence Grid */}
+      {/* 5. Model Screening & Evidence Grid */}
       {hasCandidate ? (
-        <section className="results-section" id="ai-evidence" aria-labelledby="interpret-heading">
+        <section className="results-section" id="model-evidence" aria-labelledby="interpret-heading">
           <div className="results-section-header">
             <p className="results-kicker">MODEL SCREENING & EVIDENCE</p>
             <h2 id="interpret-heading">Candidate interpretation</h2>
-            <p>Understand which observable properties influenced the machine-learning candidate screening</p>
+            <p>Observable properties and feature weights evaluated by the Random Forest screening pipeline</p>
           </div>
 
           <div className="results-interpret-grid">
@@ -421,15 +459,14 @@ export function ResultsDashboard({
         </section>
       ) : null}
 
-      {/* Technical Parameters Table */}
-      <section className="results-section" id="candidates" aria-labelledby="param-heading">
+      {/* 6. Technical Parameters Table & Provenance */}
+      <section className="results-section" id="param-registry" aria-labelledby="param-heading">
         <div className="results-parameters-panel">
           <div className="results-panel-title">
             <div>
               <p className="results-kicker">TABLE 01 / MEASUREMENT REGISTRY</p>
               <h3 id="param-heading">Transit & screening parameters</h3>
             </div>
-            <Activity className="h-4 w-4" aria-hidden="true" />
           </div>
 
           <table className="results-param-table">
@@ -443,8 +480,8 @@ export function ResultsDashboard({
                 <td>{analysis.summary.status ?? "completed"}</td>
               </tr>
               <tr>
-                <td>Detection Algorithm</td>
-                <td>Box Least Squares (BLS) Periodogram</td>
+                <td>Detection Method</td>
+                <td>Box Least Squares (BLS)</td>
               </tr>
               <tr>
                 <td>Detected Orbital Period</td>
@@ -488,23 +525,27 @@ export function ResultsDashboard({
                   {candidate ? `${(candidate.confidence * 100).toFixed(1)}% (${candidate.confidence.toFixed(4)})` : "—"}
                 </td>
               </tr>
+              <tr>
+                <td>Analysis Identifier</td>
+                <td><code>{analysis.analysis_id}</code></td>
+              </tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      {/* Scientific Transparency Caveat */}
-      <aside className="results-disclaimer" aria-label="Scientific transparency caveat">
+      {/* Scientific Notice */}
+      <aside className="results-disclaimer" aria-label="Scientific transparency notice">
         <HelpCircle className="h-4 w-4" aria-hidden="true" />
         <div>
           <p>
-            <strong>Scientific Transparency Notice:</strong> This analysis identifies and screens transit-like signals algorithmically. It does not independently confirm an exoplanet. Candidate confirmation requires independent scientific validation through radial velocity spectrography, high-contrast imaging, and multi-band transit verification to rule out astrophysical false positives such as blended eclipsing binaries.
+            <strong>Scientific Notice:</strong> ExoVision performs automated candidate screening. Results are analytical evidence for further review and do not constitute independent astronomical confirmation.
           </p>
         </div>
       </aside>
 
-      {/* Publication Export & Action Strip */}
-      <section className="results-export-strip" aria-labelledby="export-heading">
+      {/* 7. Publication Export & Action Strip */}
+      <section className="results-export-strip" id="publication-export" aria-labelledby="export-heading">
         <div className="results-export-strip-main">
           <div className="results-export-strip-icon">
             <FileText className="h-5 w-5" aria-hidden="true" />
@@ -521,7 +562,7 @@ export function ResultsDashboard({
         <div className="results-export-actions">
           <ReportButton analysisId={analysis.analysis_id} />
           <Link
-            className="dashboard-secondary-action"
+            className="dashboard-secondary-action min-h-[42px] px-4"
             href="/upload"
           >
             <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />

@@ -1,8 +1,9 @@
-import { AlertCircle, CheckCircle2, LoaderCircle, MinusCircle, Orbit } from "lucide-react";
+import { AlertCircle, CheckCircle2, Database, LoaderCircle, MinusCircle, Orbit } from "lucide-react";
 
-type Status = "processing" | "candidate" | "non-detection" | "failed" | "completed";
+type Status = "ready" | "processing" | "candidate" | "non-detection" | "failed" | "completed";
 
 const labels: Record<Status, string> = {
+  ready: "Ready for analysis",
   processing: "Pipeline processing",
   candidate: "Orbital candidate flag",
   "non-detection": "No transit detected",
@@ -12,8 +13,10 @@ const labels: Record<Status, string> = {
 
 export function StatusBadge({ status, label }: { status: Status; label?: string }) {
   const Icon =
-    status === "processing"
-      ? LoaderCircle
+    status === "ready"
+      ? Database
+      : status === "processing"
+        ? LoaderCircle
       : status === "candidate"
         ? Orbit
         : status === "completed"
