@@ -21,15 +21,15 @@ export function ObservatoryBackground({
       className={`observatory-background obs-variant-${variant} pointer-events-none fixed inset-0 z-0 overflow-hidden ${className}`.trim()}
       aria-hidden="true"
     >
-      {/* Subtle top spotlight reminiscent of Linear/Vercel */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[340px] bg-gradient-to-b from-sky-500/[0.04] via-cyan-500/[0.015] to-transparent blur-3xl pointer-events-none" />
+      {/* Restrained overhead focal light */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[280px] bg-gradient-to-b from-sky-500/[0.02] via-cyan-500/[0.008] to-transparent blur-3xl pointer-events-none" />
 
-      {/* Subtle Cartesian dot grid */}
+      {/* Barely visible Cartesian dot coordinate grid */}
       <div
-        className="absolute inset-0 opacity-[0.035] pointer-events-none"
+        className="absolute inset-0 opacity-[0.02] pointer-events-none"
         style={{
           backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
+          backgroundSize: "32px 32px",
         }}
       />
     </div>
